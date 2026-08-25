@@ -1,0 +1,277 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.intro,
+.createCard,
+.profileCard,
+.deletePanel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-sunken);
+}
+.intro {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  align-items: flex-start;
+}
+.introIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  background: var(--accent-faint);
+}
+.intro strong,
+.createCard h3,
+.sectionHeader h3,
+.deleteHeader h3 {
+  display: block;
+  margin: 0;
+  color: var(--fg);
+  font-size: 13px;
+}
+.intro p,
+.createCard p,
+.sectionHeader p,
+.deleteHeader p {
+  margin: 4px 0 0;
+  color: var(--fg-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.createCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(300px, 44%);
+  gap: 14px;
+  align-items: center;
+  padding: 16px 18px;
+  background: var(--panel);
+}
+.createIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  background: var(--accent-faint);
+}
+.createIcon svg {
+  display: block;
+}
+.createCopy {
+  min-width: 0;
+}
+.createRow {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.createRow input {
+  min-width: 0;
+  flex: 1;
+}
+.createRow button {
+  flex: 0 0 auto;
+  min-width: 112px;
+  white-space: nowrap;
+}
+.listSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.profileList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.profileCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+}
+.profileCardActive {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+  background: color-mix(in srgb, var(--accent-faint) 35%, var(--bg-sunken));
+}
+.profileAvatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--fg);
+  background: var(--panel);
+  font-size: 14px;
+  font-weight: 700;
+  object-fit: cover;
+}
+.profileMain {
+  min-width: 0;
+  flex: 1;
+}
+.profileTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.profileTitleRow strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg);
+  font-size: 14px;
+}
+.currentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--accent-faint);
+  font-size: 10px;
+  font-weight: 600;
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 6px;
+  color: var(--fg-muted);
+  font-size: 11px;
+}
+.actions,
+.renameRow,
+.deleteActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.renameRow {
+  flex: 1;
+}
+.createRow button,
+.actions button,
+.renameRow button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.createRow button svg,
+.actions button svg,
+.renameRow button svg {
+  display: block;
+  flex: 0 0 auto;
+}
+.renameRow input {
+  min-width: 160px;
+  flex: 1;
+}
+.empty {
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--fg-muted);
+  text-align: center;
+  font-size: 12px;
+}
+.footerHint {
+  color: var(--fg-muted);
+  font-size: 11px;
+}
+.feedbackError,
+.feedbackNotice {
+  padding: 9px 11px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.feedbackError {
+  color: var(--status-offline);
+  background: color-mix(in srgb, var(--status-offline) 12%, transparent);
+}
+.feedbackNotice {
+  color: var(--status-working);
+  background: color-mix(in srgb, var(--status-working) 12%, transparent);
+}
+.deletePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-color: color-mix(in srgb, var(--status-offline) 50%, var(--border));
+}
+.deleteHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.deleteHeader h3 {
+  color: var(--status-offline);
+}
+.closeDelete {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--fg-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.closeDelete:hover {
+  color: var(--fg);
+  background: var(--panel-hover);
+}
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 680px) {
+  .createCard,
+  .profileCard {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .createCard {
+    display: flex;
+  }
+  .createIcon {
+    display: none;
+  }
+  .createRow {
+    min-width: 0;
+  }
+  .actions {
+    justify-content: flex-start;
+  }
+}

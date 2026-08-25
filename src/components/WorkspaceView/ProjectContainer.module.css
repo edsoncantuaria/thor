@@ -1,0 +1,242 @@
+                                                                             
+                                                                       
+
+.box {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-top-color: color-mix(in srgb, var(--container-accent, var(--border)) 65%, var(--border));
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--bg);
+  min-height: 0;
+  min-width: 0;
+}
+
+.tag {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  flex: 0 0 32px;
+  padding: 0 8px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg);
+  z-index: 3;
+                                                                     
+                                                                            
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+.bullet {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.projectIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.tagName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.tagCount {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fg-faint);
+  padding: 0 3px;
+  line-height: 14px;
+  margin-right: 0;
+  flex-shrink: 0;
+}
+
+                                                                        
+                                                                        
+.tagActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 0;
+  flex-shrink: 0;
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    width 0.15s ease,
+    opacity 0.12s ease,
+    margin-left 0.15s ease;
+}
+.box:hover .tagActions {
+  width: auto;
+  opacity: 1;
+  margin-left: 2px;
+}
+
+.tagBtn {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--fg-muted);
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.tagBtn:hover {
+  background: var(--panel-hover);
+  color: var(--fg);
+}
+
+.dragHandle {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--fg-faint);
+  border-radius: 3px;
+  cursor: grab;
+  flex-shrink: 0;
+}
+.dragHandle:hover {
+  background: var(--panel-hover);
+  color: var(--fg);
+}
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.boxDragging {
+  opacity: 0.55;
+  outline: 2px dashed color-mix(in srgb, var(--container-accent, var(--accent)) 70%, transparent);
+}
+
+.boxDropTarget {
+  outline: 2px solid var(--container-accent, var(--accent));
+  outline-offset: 2px;
+}
+
+                                                                             
+                                                                                
+.gridResize {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  z-index: 5;
+  background: linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 6px,
+    var(--fg-faint) 6px,
+    var(--fg-faint) 7px,
+    transparent 7px,
+    transparent 9px,
+    var(--fg-faint) 9px,
+    var(--fg-faint) 10px,
+    transparent 10px
+  );
+  opacity: 0.4;
+  transition: opacity 0.12s ease;
+}
+.gridResize:hover {
+  opacity: 1;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+
+.emptyShell {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  min-height: 0;
+}
+
+/* ----- collapsed: barra vertical fina ----- */
+
+.collapsed {
+  width: 36px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-top-color: color-mix(in srgb, var(--container-accent, var(--border)) 65%, var(--border));
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.collapsed:hover {
+  background: var(--panel-hover);
+}
+
+.collapsedName {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-align: center;
+}
+
+.collapsedCount {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fg-faint);
+  background: var(--bg-sunken);
+  border-radius: 9px;
+  padding: 0 6px;
+  line-height: 14px;
+}
+
+:global([data-visual-style='clean']) :is(.box, .collapsed) {
+  border-top-color: var(--border);
+  border-radius: var(--clean-surface-radius);
+}
+
+:global([data-visual-style='clean']) .tag {
+  height: var(--clean-row-height);
+  flex-basis: var(--clean-row-height);
+}
+
+:global([data-visual-style='clean']) .boxDropTarget {
+  outline-width: 1px;
+  outline-offset: 0;
+}

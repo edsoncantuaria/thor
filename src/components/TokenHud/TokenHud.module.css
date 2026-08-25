@@ -1,0 +1,187 @@
+.panel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.headTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+.collapseBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--fg-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.collapseBtn:hover {
+  background: var(--panel-hover);
+  color: var(--fg);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.row:hover {
+  background: var(--panel-hover);
+}
+
+.rowIcon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.rowLabel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.rowLabel strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowMeta {
+  font-size: 10px;
+  color: var(--fg-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowCost {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.footCost {
+  font-weight: 700;
+}
+
+/* Pill colapsada */
+.pill {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  color: var(--fg-muted);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.pill:hover {
+  border-color: var(--border-strong);
+}
+
+.pillCost {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pillCount {
+  font-size: 11px;
+  color: var(--fg-faint);
+}
+
+                                                            
+.costLow {
+  color: var(--accent);
+}
+
+.costMid {
+  color: var(--status-waiting);
+}
+
+.costHigh {
+  color: var(--status-stopped);
+}
+
+.costNone {
+  color: var(--fg-faint);
+  font-weight: 500;
+}
+
+:global([data-visual-style='clean']) .panel {
+  border-radius: var(--clean-popover-radius);
+  box-shadow: var(--clean-shadow);
+}
+
+:global([data-visual-style='clean']) .row {
+  min-height: var(--clean-row-height);
+  border-radius: var(--clean-control-radius);
+}
+
+:global([data-visual-style='clean']) .pill {
+  border-radius: var(--clean-control-radius);
+  box-shadow: var(--clean-shadow);
+}

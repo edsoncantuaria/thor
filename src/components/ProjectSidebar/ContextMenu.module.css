@@ -1,0 +1,70 @@
+.menu {
+  position: fixed;
+  /* Menus are portaled to body, so they must sit above terminal panes and
+     their link menu (which can create a higher stacking context than the
+     sidebar panel). */
+  z-index: 2000;
+  min-width: 180px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--fg);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.itemIcon {
+  width: 15px;
+  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 15px;
+  color: var(--fg-muted);
+}
+
+.danger .itemIcon {
+  color: inherit;
+}
+.item:hover {
+  background: var(--panel-hover);
+}
+
+.danger {
+  color: var(--status-offline);
+}
+.danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.separator {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 2px;
+}
+
+:global([data-visual-style='clean']) .menu {
+  border-radius: var(--clean-popover-radius);
+  box-shadow: var(--clean-shadow);
+  transform-origin: top left;
+  animation: var(--clean-popover-animation);
+}
+
+:global([data-visual-style='clean']) .item {
+  min-height: var(--clean-row-height);
+  padding: 5px 9px;
+  border-radius: var(--clean-control-radius);
+}

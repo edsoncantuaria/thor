@@ -1,0 +1,287 @@
+.description {
+  margin: -2px 0 18px;
+  color: var(--fg-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.section + .section {
+  margin-top: 18px;
+}
+
+.stepTitle {
+  margin: 0 0 9px;
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.agentGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.agentCard {
+  min-width: 0;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 120ms,
+    border-color 120ms;
+}
+
+.agentCard:hover {
+  background: var(--panel-hover);
+  border-color: var(--border-strong);
+}
+
+.agentCardActive {
+  border-color: var(--accent);
+  background: var(--accent-faint);
+}
+
+.agentIcon {
+  width: 25px;
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 25px;
+}
+
+.agentLabel {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectedIcon {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.permissionToggle {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 9px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 120ms,
+    border-color 120ms;
+}
+
+.permissionToggle:hover {
+  background: var(--panel-hover);
+  border-color: var(--border-strong);
+}
+
+.permissionToggleActive {
+  border-color: var(--status-waiting);
+  background: color-mix(in srgb, var(--status-waiting) 9%, var(--bg-sunken));
+}
+
+.permissionToggleIcon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--fg-muted);
+}
+
+.permissionToggleActive .permissionToggleIcon {
+  color: var(--status-waiting);
+}
+
+.permissionToggleCopy {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.permissionToggleTitle {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.permissionToggleDescription {
+  color: var(--fg-muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.permissionToggleState {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--fg-faint);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.permissionToggleActive .permissionToggleState {
+  color: var(--status-waiting);
+}
+
+.alwaysUnrestricted {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: var(--fg-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.alwaysUnrestricted input {
+  accent-color: var(--accent);
+}
+
+.folderRow {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 5px 4px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+.folderRow:focus-within {
+  border-color: var(--accent);
+}
+
+.folderIcon {
+  flex: 0 0 auto;
+  color: var(--status-waiting);
+}
+
+.folderInput {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fg);
+  font: 11px var(--font-mono);
+}
+
+.browseButton {
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--fg-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.browseButton:hover {
+  border-color: var(--border-strong);
+  background: var(--panel-hover);
+  color: var(--fg);
+}
+
+.recentBlock {
+  margin-top: 10px;
+}
+
+.recentLabel {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--fg-faint);
+  font-size: 10px;
+}
+
+.recentFolders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.folderChip {
+  max-width: 150px;
+  overflow: hidden;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.folderChip:hover {
+  border-color: var(--border-strong);
+  color: var(--fg);
+}
+
+.autoNameHint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  color: var(--fg-faint);
+  font-size: 10px;
+}
+
+.advanced {
+  margin-top: 14px;
+  color: var(--fg-muted);
+  font-size: 11px;
+}
+
+.advanced summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.advancedBody {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+@media (max-width: 620px) {
+  .agentGrid {
+    grid-template-columns: 1fr;
+  }
+}

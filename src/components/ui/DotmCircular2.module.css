@@ -1,0 +1,86 @@
+.slot {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--status-working);
+}
+
+.matrix {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  place-items: center;
+}
+
+.dot {
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background: var(--dot-fill);
+  opacity: var(--dot-opacity-base);
+}
+
+.ring {
+  animation: circularChase calc(1.8s / var(--dot-speed)) steps(12, end) infinite;
+  animation-delay: calc(var(--ring-order) * -0.05s / var(--dot-speed));
+}
+
+.bloom {
+  filter: drop-shadow(0 0 2px var(--dot-color));
+}
+
+.muted {
+  filter: saturate(0.45);
+}
+
+@keyframes circularChase {
+  0%,
+  8.333% {
+    opacity: var(--dot-opacity-peak);
+    transform: scale(1.12);
+  }
+  16.666%,
+  25% {
+    opacity: var(--dot-opacity-mid);
+    transform: scale(1);
+  }
+  25.001%,
+  33.333% {
+    opacity: var(--dot-opacity-base);
+  }
+  33.334%,
+  41.666% {
+    opacity: var(--dot-opacity-peak);
+    transform: scale(1.12);
+  }
+  50%,
+  58.333% {
+    opacity: var(--dot-opacity-mid);
+    transform: scale(1);
+  }
+  58.334%,
+  66.666% {
+    opacity: var(--dot-opacity-base);
+  }
+  66.667%,
+  75% {
+    opacity: var(--dot-opacity-peak);
+    transform: scale(1.12);
+  }
+  83.333%,
+  91.666% {
+    opacity: var(--dot-opacity-mid);
+    transform: scale(1);
+  }
+  91.667%,
+  100% {
+    opacity: var(--dot-opacity-base);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    animation: none;
+    opacity: var(--dot-opacity-mid);
+  }
+}

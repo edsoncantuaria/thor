@@ -1,0 +1,75 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. English or Portuguese are both fine.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a project with two panes
+        2. Close the container
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Alethe version
+      description: Shown in the app menu, or the release tag you installed.
+      placeholder: v1.3.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+
+  - type: input
+    id: os-details
+    attributes:
+      label: OS version / distro
+      placeholder: Windows 11 23H2 · macOS 15.2 · Ubuntu 24.04
+    validations:
+      required: false
+
+  - type: input
+    id: agent
+    attributes:
+      label: Agent or shell involved
+      description: If the bug involves a terminal session.
+      placeholder: Claude Code · Codex · OpenCode · pwsh · zsh
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: |
+        Screenshots help a lot for UI bugs. Local data lives in `%APPDATA%/Alethe/`
+        (Windows) — `spawn.log` is often the relevant one for terminal issues.
+      render: text
+    validations:
+      required: false

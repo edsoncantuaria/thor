@@ -1,0 +1,435 @@
+.workspace {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fileDropActive {
+  position: relative;
+}
+
+.fileDropOverlay {
+  position: absolute;
+  inset: 10px;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.area {
+  flex: 1;
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+.surfaceStack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.surface {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Inactive workspace tabs keep their layout box so xterm never resizes to zero on switch. */
+.surfaceHidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.singlePane,
+.fullSize {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fullSize :global([data-panel]) {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  transition:
+    flex-grow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    flex-basis 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fullSize :global([data-panel-group]:active [data-panel]),
+.fullSize :global([data-panel-group][data-resize-handle-active] [data-panel]) {
+  transition: none !important;
+}
+
+.gridCell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.emptySlot {
+  min-width: 0;
+  min-height: 0;
+  margin: 4px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm, 4px);
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+
+.emptySlotOver {
+  border-color: var(--border-accent);
+  background: var(--accent-soft);
+}
+
+.paneGroup {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 92%, var(--accent) 8%);
+}
+
+.paneGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 28px;
+  padding: 0 8px 0 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.paneGroupAction {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.paneGroupAction:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.paneGroupBody {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+}
+
+.paneGroupItem {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+:global([data-visual-style='clean']) .paneGroup {
+  border-radius: 0;
+}
+
+/* Normal mode keeps the production separator spacing and visible center line. */
+.sepH,
+.sepV {
+  flex-shrink: 0;
+  flex-grow: 0;
+  background: transparent;
+  position: relative;
+  transition: background 0.12s ease;
+}
+.sepH {
+  width: 10px;
+  cursor: col-resize;
+}
+.sepV {
+  height: 10px;
+  cursor: row-resize;
+}
+
+.sepH::before,
+.sepV::before {
+  content: '';
+  position: absolute;
+  background: var(--border-strong);
+  border-radius: 2px;
+  opacity: 0.7;
+  transition:
+    opacity 0.12s ease,
+    background 0.12s ease;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.sepH::before {
+  width: 1px;
+  height: 100%;
+}
+.sepV::before {
+  height: 1px;
+  width: 100%;
+}
+
+.sepH:hover,
+.sepV:hover {
+  background: var(--accent-soft);
+}
+
+.sepH::after,
+.sepV::after {
+  content: '';
+  position: absolute;
+  background: var(--accent);
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.sepH::after {
+  width: 3px;
+  height: 36px;
+}
+.sepV::after {
+  height: 3px;
+  width: 36px;
+}
+.sepH:hover::after,
+.sepV:hover::after,
+.sepH[data-resize-handle-active]::after,
+.sepV[data-resize-handle-active]::after {
+  opacity: 1;
+}
+.sepH:hover::before,
+.sepV:hover::before,
+.sepH[data-resize-handle-active]::before,
+.sepV[data-resize-handle-active]::before {
+  opacity: 0;
+}
+
+/* Clean mode overlays an invisible resize hit area so adjacent panes remain flush. */
+:global([data-visual-style='clean']) .sepH,
+:global([data-visual-style='clean']) .sepV {
+  z-index: 4;
+  touch-action: none;
+}
+
+:global([data-visual-style='clean']) .sepH {
+  width: 8px;
+  margin-inline: -4px;
+}
+
+:global([data-visual-style='clean']) .sepV {
+  height: 8px;
+  margin-block: -4px;
+}
+
+:global([data-visual-style='clean']) .sepH::before,
+:global([data-visual-style='clean']) .sepV::before {
+  content: none;
+}
+
+:global([data-visual-style='clean']) .sepH:hover,
+:global([data-visual-style='clean']) .sepV:hover {
+  background: transparent;
+}
+
+.emptyShell {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  min-height: 0;
+}
+
+.emptyProjectCard {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+.emptyProjectIntro {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 8px 12px 12px;
+  text-align: center;
+}
+
+.emptyProjectIcon {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  border-radius: 15px;
+  background: var(--accent-soft);
+}
+
+.emptyProjectIntro strong {
+  color: var(--fg);
+  font-size: 17px;
+}
+
+.emptyProjectIntro span {
+  max-width: 38ch;
+  color: var(--fg-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.emptyAgentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  width: min(430px, 100%);
+  gap: 6px;
+}
+
+.emptyAgentButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.emptyAgentButton:hover,
+.emptyAgentButtonActive {
+  color: var(--fg);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.emptyFolderRow {
+  display: flex;
+  width: min(430px, 100%);
+  gap: 8px;
+}
+
+.emptyFolderLabel {
+  width: min(430px, 100%);
+  color: var(--fg-muted);
+  font-size: 11px;
+  font-weight: 650;
+  text-align: left;
+}
+
+.emptyFolderButton,
+.emptyFolderAction,
+.emptySecondaryAction {
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  background: var(--bg-elevated);
+  cursor: pointer;
+}
+
+.emptyFolderButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  padding: 0 10px;
+  text-align: left;
+  overflow: hidden;
+}
+
+.emptyFolderButton span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-muted);
+}
+
+.emptyFolderAction {
+  flex: 0 0 auto;
+  padding: 0 12px;
+  background: var(--accent);
+  color: var(--accent-on);
+  border-color: var(--accent);
+}
+
+.emptyFolderAction:disabled {
+  color: var(--fg-muted);
+  background: var(--panel-hover);
+  border-color: var(--border);
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.emptyGraphifyToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(430px, 100%);
+  color: var(--fg-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.emptyGraphifyToggle input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.emptySecondaryAction {
+  padding: 0 12px;
+  color: var(--fg-muted);
+}

@@ -1,0 +1,46 @@
+.summary {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+.notes {
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  white-space: pre-wrap;
+}
+
+.progressTrack {
+  margin-top: 14px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.progressBar {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+                                                                      
+                                                                          
+                                                                      
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+
+.error {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--status-offline);
+}

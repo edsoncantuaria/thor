@@ -1,0 +1,695 @@
+.sidebar {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.sidebarTabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+.sidebarTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 28px;
+  min-width: 28px;
+  height: 26px;
+  flex: 0 0 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  font-size: 0;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.sidebarTab span {
+  display: none;
+}
+
+.sidebarTab:hover {
+  color: var(--fg);
+  background: var(--panel-hover);
+}
+
+.sidebarTabActive {
+  color: var(--fg);
+  background: var(--panel);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.toolbarSpacer {
+  display: block;
+  flex: 1;
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 14px;
+  display: block;
+  margin: 0 5px;
+  background: var(--border);
+}
+
+.toolbarUtility {
+  width: 28px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.toolbarUtility:hover {
+  color: var(--fg);
+  background: var(--panel-hover);
+}
+
+.tabContent {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabContent > :global(aside),
+.tabContent > .markdownPanel,
+.tabContent > .gitPanel {
+  min-height: 0;
+  flex: 1;
+}
+
+.markdownPanel,
+.gitPanel {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.markdownPanel {
+  position: relative;
+}
+
+.emptyMarkdown {
+  position: relative;
+}
+
+.markdownDropActive {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.markdownDropOverlay {
+  position: absolute;
+  inset: 8px;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--fg);
+  background: color-mix(in srgb, var(--bg-elevated) 90%, var(--accent) 10%);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
+}
+
+.panelHeader {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  color: var(--fg);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 650;
+  flex: 0 0 auto;
+}
+
+.gitPanel :global(.sidebar) {
+  height: auto;
+  flex: 1;
+}
+
+.gitEmpty,
+.emptyMarkdown {
+  flex: 1;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.emptyMarkdown {
+  align-content: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.emptyMarkdown strong {
+  color: var(--fg);
+  font-size: 12px;
+}
+
+.emptyMarkdown span {
+  max-width: 240px;
+  line-height: 1.45;
+}
+
+.contentLayout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.contentLayout .content {
+  min-width: 0;
+}
+
+.commentableMarkdown {
+  min-height: 100%;
+}
+
+.commentCount {
+  min-width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  margin-left: -4px;
+  padding: 0 3px;
+  border-radius: 8px;
+  color: var(--accent-on);
+  background: var(--accent);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.commentsPanel {
+  width: 220px;
+  flex: 0 0 220px;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+  border-left: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.commentsHeader,
+.commentMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--fg-muted);
+  font-size: 10px;
+}
+
+.commentsHeader {
+  padding: 2px 2px 8px;
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.commentsEmpty {
+  margin: 12px 2px;
+  color: var(--fg-faint);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.commentsList {
+  display: grid;
+  gap: 7px;
+}
+
+.commentCard {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+.commentQuote {
+  width: 100%;
+  padding: 0;
+  color: var(--accent);
+  text-align: left;
+  font-size: 10px;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.commentCard p {
+  margin: 6px 0;
+  color: var(--fg);
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.commentMeta time {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commentMeta button {
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  color: var(--fg-faint);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.commentMeta button:hover {
+  color: var(--status-offline);
+  background: var(--panel-hover);
+}
+
+.commentPopover {
+  position: fixed;
+  z-index: 20;
+  width: 250px;
+  padding: 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-lg);
+}
+
+.commentPopoverQuote {
+  max-height: 42px;
+  overflow: hidden;
+  color: var(--accent);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.commentPopover textarea {
+  width: 100%;
+  margin-top: 7px;
+  padding: 7px;
+  resize: vertical;
+  color: var(--fg);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: 11px/1.4 var(--font-sans);
+}
+
+.commentPopover textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.commentPopoverActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.commentPopoverActions button {
+  padding: 4px 8px;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.commentPopoverActions button:last-child {
+  color: var(--accent-on);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.commentPopoverActions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.header {
+  height: 38px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.heading span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.headerAction {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+}
+
+.headerAction:hover {
+  color: var(--fg);
+  background: var(--panel-hover);
+}
+
+.path {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  overflow: hidden;
+  color: var(--fg-faint);
+  border-bottom: 1px solid var(--border);
+  font: 10px/1.35 var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.readmeTabs {
+  display: flex;
+  gap: 3px;
+  padding: 5px 8px 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+
+.readmeTab {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 180px;
+  padding: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--fg-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.readmeTabSelect {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 4px 5px 7px;
+  color: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.readmeTabSelect span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.readmeTabClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 6px 5px 3px;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.readmeTabClose:hover {
+  color: var(--danger);
+}
+
+.readmeTab:hover,
+.readmeTabActive {
+  color: var(--fg);
+}
+
+.readmeTabActive {
+  border-bottom-color: var(--accent);
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  scrollbar-gutter: stable;
+}
+
+.empty {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 24px;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.empty strong {
+  color: var(--fg);
+  font-size: 12px;
+}
+
+.empty span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.gsdPanel {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 6px 18px;
+}
+
+.gsdList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gsdRow {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.gsdRow:hover {
+  background: var(--panel-hover);
+  border-color: var(--border);
+}
+
+.gsdRowState {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+}
+
+.gsdIdleDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--status-idle);
+}
+
+.gsdErrorDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--status-offline);
+}
+
+.gsdRowBody {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gsdRowName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.gsdRowMeta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-faint);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cleanRedundantAction {
+  display: none;
+}
+
+/* Clean mode follows the shared compact sidebar standard. */
+:global([data-visual-style='clean']) .sidebarTabs {
+  gap: 1px;
+  min-height: 34px;
+  padding: 4px 6px;
+}
+
+:global([data-visual-style='clean']) :is(.sidebarTab, .toolbarUtility) {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  color: var(--fg-faint);
+  background: transparent;
+  font-size: 0;
+  cursor: pointer;
+}
+
+:global([data-visual-style='clean']) :is(.sidebarTab, .toolbarUtility):hover {
+  color: var(--fg);
+  background: var(--panel-hover);
+}
+
+:global([data-visual-style='clean']) .sidebarTabActive {
+  color: var(--fg);
+  background: var(--clean-active-bg);
+  box-shadow: none;
+}
+
+:global([data-visual-style='clean']) .toolbarSpacer {
+  display: block;
+  flex: 1;
+}
+
+:global([data-visual-style='clean']) .toolbarDivider {
+  width: 1px;
+  height: 14px;
+  display: block;
+  margin: 0 5px;
+  background: var(--border);
+}
+
+:global([data-visual-style='clean']) .cleanRedundantAction {
+  display: none;
+}
+
+:global([data-visual-style='clean']) .panelHeader,
+:global([data-visual-style='clean']) .header {
+  min-height: var(--clean-row-height);
+  height: var(--clean-row-height);
+  padding: 0 10px;
+  color: var(--fg-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+:global([data-visual-style='clean']) .headerAction {
+  width: 22px;
+  height: 22px;
+}
+
+:global([data-visual-style='clean']) .commentCard {
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+:global([data-visual-style='clean']) .commentCard + .commentCard {
+  border-top: var(--clean-border);
+}
+
+:global([data-visual-style='clean']) .readmeTabs {
+  gap: 0;
+  padding: 0 8px;
+}
+
+:global([data-visual-style='clean']) .readmeTab {
+  height: 28px;
+  padding: 0 7px;
+}
+
+:global([data-visual-style='clean']) :is(.commentsPanel, .content) {
+  background: var(--bg);
+}
+
+:global([data-visual-style='clean']) .commentPopover {
+  border-color: var(--border);
+  border-radius: var(--clean-popover-radius);
+  box-shadow: var(--clean-shadow);
+  transform-origin: top center;
+  animation: var(--clean-popover-animation);
+}

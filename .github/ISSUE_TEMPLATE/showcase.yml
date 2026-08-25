@@ -1,0 +1,59 @@
+name: Showcase submission
+description: Add something you built with Alethe to the Built with Alethe page
+labels: [showcase]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Prefer to open a pull request? Edit [`SHOWCASE.md`](https://github.com/Kc1t/alethe-agents/blob/main/SHOWCASE.md)
+        directly — it's one line, and you end up in the contributors list.
+
+        Otherwise fill this in and it will be added for you.
+
+  - type: input
+    id: name
+    attributes:
+      label: Project name
+    validations:
+      required: true
+
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Live site, app store page, or public repo. It has to be something others can open.
+      placeholder: https://
+    validations:
+      required: true
+
+  - type: input
+    id: description
+    attributes:
+      label: One line about it
+      description: What it is. Keep it to a single line.
+    validations:
+      required: true
+
+  - type: input
+    id: author
+    attributes:
+      label: Your GitHub handle
+      placeholder: "@yourhandle"
+    validations:
+      required: true
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: How did Alethe fit into building it?
+      description: Optional, but the interesting part — how many agents, what kind of work, what it replaced.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirm
+      options:
+        - label: The link is public and the project actually exists
+          required: true

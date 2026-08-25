@@ -1,0 +1,40 @@
+import { open, save, type DialogFilter } from '@tauri-apps/plugin-dialog'
+
+export async function pickDirectory(opts?: { defaultPath?: string }): Promise<string | null> {
+  const result = await open({
+    directory: true,
+    multiple: false,
+    defaultPath: opts?.defaultPath,
+  })
+  if (typeof result === 'string') return result
+  return null
+}
+
+export async function pickFile(opts?: {
+  title?: string
+  filters?: DialogFilter[]
+  defaultPath?: string
+}): Promise<string | null> {
+  const result = await open({
+    directory: false,
+    multiple: false,
+    title: opts?.title,
+    filters: opts?.filters,
+    defaultPath: opts?.defaultPath,
+  })
+  if (typeof result === 'string') return result
+  return null
+}
+
+export async function saveFile(opts: {
+  title?: string
+  defaultPath?: string
+  filters?: DialogFilter[]
+}): Promise<string | null> {
+  const result = await save({
+    title: opts.title,
+    defaultPath: opts.defaultPath,
+    filters: opts.filters,
+  })
+  return result ?? null
+}

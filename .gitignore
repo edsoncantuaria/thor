@@ -1,0 +1,46 @@
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.turbo/
+.cache/
+coverage/
+*.local
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# libghostty pré-buildado — não versionado (binário ~39MB). Reconstruído por
+# src-tauri/vendor/fetch-ghostty.sh (URL + checksum pinados).
+src-tauri/vendor/GhosttyKit.xcframework/
+src-tauri/WixTools/
+src-tauri/*.log
+src-tauri/**/*.pdb
+src-tauri/**/*.msi
+src-tauri/**/*.exe
+src-tauri/**/*.dmg
+src-tauri/**/*.app
+src-tauri/**/*.AppImage
+src-tauri/**/*.deb
+src-tauri/**/*.rpm
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Graphify — grafo gerado (cache/AST/graph.json ~80MB). Sempre reconstruível.
+graphify-out/

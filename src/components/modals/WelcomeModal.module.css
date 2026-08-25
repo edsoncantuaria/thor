@@ -1,0 +1,218 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  animation: fadeIn 220ms ease-out;
+}
+
+.content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(520px, calc(100vw - 32px));
+  background: var(--bg-elevated);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  z-index: 101;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  animation: pop 280ms cubic-bezier(0.2, 0.85, 0.2, 1);
+}
+
+.close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 4;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--fg-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+.close:hover {
+  transform: scale(1.05);
+  background: var(--panel-hover);
+  color: var(--fg);
+}
+
+.body {
+  padding: 38px 32px 28px;
+  text-align: center;
+}
+
+.avatarWrap {
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface-card-default);
+  border: 1px solid var(--border);
+  animation: avatarIn 520ms cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+.avatar {
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 4px solid var(--bg-elevated);
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+}
+
+.avatarFallback {
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  border: 4px solid var(--bg-elevated);
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+  display: grid;
+  place-items: center;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -0.04em;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  animation: fadeUp 520ms ease 80ms both;
+}
+
+.title {
+  margin: 0;
+  color: var(--fg);
+  font-size: clamp(28px, 4.6vw, 40px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  animation: fadeUp 560ms ease 130ms both;
+}
+
+.subtitle {
+  max-width: 380px;
+  margin: 14px auto 0;
+  color: var(--fg-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  animation: fadeUp 600ms ease 180ms both;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 10px;
+  width: min(380px, 100%);
+  margin: 24px auto 0;
+  animation: fadeUp 640ms ease 260ms both;
+}
+
+.actions button {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    opacity 140ms ease;
+}
+.actions button:hover {
+  transform: translateY(-1px);
+}
+
+.secondary {
+  background: var(--surface-card-default);
+  color: var(--fg);
+  border-color: var(--border);
+}
+.secondary:hover {
+  background: var(--surface-card-default-strong);
+}
+
+.primary {
+  background: var(--accent);
+  color: var(--accent-on);
+  box-shadow: var(--shadow-sm);
+}
+.primary:hover {
+  background: var(--accent-strong);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes avatarIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 620px) {
+  .body {
+    padding: 30px 20px 22px;
+  }
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}

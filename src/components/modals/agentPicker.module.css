@@ -1,0 +1,93 @@
+                                                                      
+                                                                   
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+  transition: background 0.1s ease;
+}
+
+.row:hover {
+  background: var(--panel-hover);
+}
+
+.rowActive {
+  background: var(--accent-soft);
+  outline: 1px solid var(--accent-border);
+}
+
+.rowIcon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rowLabel {
+  flex: 1;
+  font-weight: 500;
+}
+
+.rowEnd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-faint);
+  flex-shrink: 0;
+}
+
+.cwdBtn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--fg-faint);
+  cursor: pointer;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
+}
+.cwdBtn:hover {
+  background: var(--panel-hover);
+  color: var(--fg);
+}
+.cwdBtn.set {
+  color: var(--status-waiting);
+}
+
+.bolt {
+  color: var(--status-waiting);
+  fill: var(--status-waiting);
+}
+
+.boltActive {
+  background: rgba(251, 191, 36, 0.18);
+  color: var(--status-waiting);
+  outline: 1px solid rgba(251, 191, 36, 0.5);
+}
+.boltActive:hover {
+  background: rgba(251, 191, 36, 0.28);
+}

@@ -1,0 +1,560 @@
+.pane {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  overflow: hidden;
+  position: relative;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* Pane focus (Alethe focus mode): solid layered ring (same pattern as
+   .dropTarget below), no extra bg/lift. Lights up whenever the xterm inside
+   receives focus. Suppressed when .paneFocus (overlay) — there we don't
+   want a blue ring.
+   Only `inset` — no more of the outer `0 0 0 3px` it used to have: that
+   spread went 3px OUTSIDE the pane's own border, bleeding into the
+   decorative strip of whatever sits right next to/below it (e.g. the
+   container's rainbow ring). Inset never leaves the pane's own bounds, so
+   it can't leak into outside decoration. This ring is the ONLY focus
+   indicator for normal-color containers (without it, a lone pane on the
+   grid would have no visual focus feedback at all) — so it stays on by
+   default; it's only suppressed inside a rainbow container (see the rule
+   right below), where the container's own ring already fills that role. */
+.pane:focus-within:not(.paneFocus) {
+  border-color: var(--focus-ring, #38bdf8);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--focus-ring) 70%, transparent);
+  z-index: 2;
+}
+
+/* Container with the "rainbow" theme (`.rainbow-container-border`, global,
+   applied on ProjectContainer's `.box`): the pane's blue focus border
+   (above) sits right on top of the container's animated ring's 2px strip —
+   even with correct `inset`/z-index it can land outside the exact strip the
+   ring paints, or (with 2+ panes side by side) show up on the divider
+   between them — appearing as a straight blue line cutting the circular
+   ring. Decision confirmed with the owner: inside a rainbow container, the
+   CONTAINER's OWN ring is the only focus indicator, always — no exception
+   for pane count. Resets the pane's border/box-shadow so it never competes
+   with it, whether it has siblings or not. */
+:global(.rainbow-container-border) .pane:focus-within:not(.paneFocus) {
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+/* Pane in focus mode: the panel itself goes fixed; the overlay is just backdrop. */
+.paneFocus {
+  position: fixed;
+  inset: 24px 32px;
+  z-index: 91;
+  width: auto;
+  height: auto;
+  background: color-mix(in srgb, var(--bg-sunken) 72%, transparent) !important;
+  border-color: color-mix(in srgb, var(--border) 70%, transparent) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 32px 72px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+  animation: paneFocusIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.paneFocus .header {
+  background: color-mix(in srgb, var(--panel) 78%, transparent);
+}
+
+@keyframes paneFocusIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.disabled {
+  opacity: 0.85;
+}
+
+.gridResize {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  z-index: 5;
+  background: linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 5px,
+    var(--fg-faint) 5px,
+    var(--fg-faint) 6px,
+    transparent 6px,
+    transparent 8px,
+    var(--fg-faint) 8px,
+    var(--fg-faint) 9px,
+    transparent 9px
+  );
+  opacity: 0.42;
+  transition: opacity 0.12s ease;
+}
+.gridResize:hover {
+  opacity: 1;
+}
+
+.dragging {
+  opacity: 0.55;
+  border-color: color-mix(in srgb, var(--focus-ring) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--focus-ring) 30%, transparent);
+}
+
+.dropTarget {
+  border-color: var(--focus-ring, #38bdf8) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--focus-ring) 65%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--focus-ring) 38%, transparent),
+    0 18px 36px color-mix(in srgb, var(--focus-ring) 20%, transparent);
+}
+
+.gripBtn {
+  cursor: grab;
+  opacity: 0.55;
+  transition:
+    opacity 0.12s ease,
+    background 0.12s ease;
+}
+.gripBtn:hover {
+  opacity: 1;
+}
+.gripBtn:active {
+  cursor: grabbing;
+}
+
+.laneGripBtn {
+  width: 24px;
+  height: 24px;
+}
+
+.header {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  z-index: 8;
+  width: auto;
+  height: 26px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.pane:hover .header,
+.header:focus-within {
+  opacity: 1;
+}
+
+.headerPinned {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  width: 100%;
+  height: 32px;
+  flex: 0 0 32px;
+  padding: 0 8px;
+  background: var(--shape-tabs-lane-bg);
+  border-bottom: 1px solid var(--shape-tabs-lane-border);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.headerPinned.headerWithLane {
+  justify-content: space-between;
+}
+
+.headerPinned .headLeft {
+  width: auto;
+  max-width: none;
+  height: 100%;
+  flex: 1 1 auto;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.headerPinned .headRight {
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.headerPinned .action {
+  width: 22px;
+  height: 22px;
+}
+
+.headerWithLane {
+  justify-content: flex-end;
+}
+
+.headLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  width: fit-content;
+  max-width: min(50%, 320px);
+  height: 26px;
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  pointer-events: auto;
+}
+
+.headLeftControlsOnly {
+  flex: 0 0 auto;
+  padding-inline: 3px;
+}
+
+.headRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  height: 26px;
+  padding: 2px 3px;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  pointer-events: auto;
+}
+
+.iconWrap {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--fg);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.name {
+  font: 500 12px var(--font-sans);
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cwdPill {
+  font: 500 10px var(--font-mono);
+  color: var(--fg-faint);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  padding: 1px 7px;
+  border-radius: 999px;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.statusPill {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-stopped);
+  flex-shrink: 0;
+}
+
+.hibernationBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--fg-faint);
+  color: var(--bg);
+  flex-shrink: 0;
+  cursor: help;
+}
+.status_working {
+  background: var(--status-working);
+  animation: glowPulse 2s infinite ease-in-out;
+}
+.status_waiting {
+  background: var(--status-waiting);
+}
+.status_stopped {
+  background: var(--status-stopped);
+}
+.status_disabled {
+  background: var(--status-disabled);
+}
+.status_offline {
+  background: var(--status-offline);
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0px var(--status-working-soft),
+      0 0 4px var(--status-working);
+    opacity: 1;
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgba(16, 185, 129, 0),
+      0 0 8px var(--status-working);
+    opacity: 0.8;
+  }
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.actionActive {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.actionsDivider {
+  width: 1px;
+  height: 14px;
+  background: var(--border-strong);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.action {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: var(--fg-faint);
+  cursor: pointer;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
+}
+.action:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.handoffSuggested {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.action:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.danger:hover:not(:disabled) {
+  color: var(--status-offline);
+  background: var(--status-offline-soft);
+}
+.vscode {
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.terminalArea {
+  flex: 1;
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: var(--fg-faint);
+  font-size: 12px;
+  gap: 8px;
+}
+
+.disabledOverlay {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--fg-muted);
+  background: var(--bg-sunken);
+  padding: 24px;
+}
+
+.disabledIcon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+.disabledIcon img {
+  width: 56px;
+  height: 56px;
+}
+
+.disabledName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fg);
+  text-align: center;
+}
+
+.disabledCwd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-faint);
+  margin-bottom: 12px;
+  text-align: center;
+  max-width: 80%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reactivateBtn {
+  padding: 7px 18px;
+  background: var(--bg-elevated);
+  color: var(--fg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease;
+}
+.reactivateBtn:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
+
+.exitedOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--bg-sunken) 86%, transparent);
+  z-index: 5;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+.exitedLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.exitedCode {
+  font-size: 11px;
+  color: var(--fg-faint);
+}
+
+.restartBtn {
+  padding: 7px 18px;
+  background: var(--bg-elevated);
+  color: var(--fg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease;
+  margin-top: 4px;
+}
+.restartBtn:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
+
+.restartBtn:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+:global([data-visual-style='clean']) .pane:focus-within:not(.paneFocus) {
+  border-color: var(--clean-focus-border);
+  box-shadow: inset 0 0 0 1px var(--clean-focus-border);
+}
+
+:global([data-visual-style='clean']) .paneFocus {
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--clean-shadow);
+  animation: none;
+}
+
+:global([data-visual-style='clean']) :is(.headLeft, .headRight) {
+  border-radius: var(--clean-control-radius);
+}
+
+:global([data-visual-style='clean']) :is(.reactivateBtn, .restartBtn) {
+  border-radius: var(--clean-control-radius);
+}

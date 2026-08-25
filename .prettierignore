@@ -1,0 +1,11 @@
+dist
+node_modules
+src-tauri/target
+graphify-out
+package-lock.json
+*.md
+*.snap
+*.yml
+*.yaml
+.github
+assets

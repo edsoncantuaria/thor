@@ -1,0 +1,118 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg);
+  color: var(--fg-muted);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  height: 36px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fg-muted);
+}
+
+.path {
+  font-size: 11px;
+  color: var(--fg-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--fg-faint);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background-color: var(--bg-sunken);
+  color: var(--fg-muted);
+  opacity: 1;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  position: relative;
+}
+
+.diffText {
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  tab-size: 4;
+}
+
+.added {
+  color: var(--status-working);
+  background-color: var(--status-working-soft);
+  display: block;
+  min-width: fit-content;
+}
+
+.removed {
+  color: var(--status-offline);
+  background-color: var(--status-offline-soft);
+  display: block;
+  min-width: fit-content;
+}
+
+.headerLine {
+  color: var(--fg-faint);
+}
+
+.hunk {
+  color: var(--accent);
+  background-color: var(--accent-bg-soft);
+  display: block;
+  min-width: fit-content;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--fg-faint);
+  font-size: 13px;
+  padding: 24px;
+  text-align: center;
+}

@@ -1,0 +1,418 @@
+.panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--fg);
+}
+.repoHeader {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 7px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.repoContext {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.repoContext strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 650;
+}
+.repoContext span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-faint);
+  font-size: 9px;
+}
+.iconButton,
+.groupActions button,
+.fileActions button {
+  display: grid;
+  place-items: center;
+  color: var(--fg-muted);
+  border-radius: var(--radius-sm);
+}
+.iconButton {
+  width: 24px;
+  height: 24px;
+}
+.iconButton:hover:not(:disabled),
+.groupActions button:hover:not(:disabled),
+.fileActions button:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--panel-hover);
+}
+.iconButton:disabled,
+.groupActions button:disabled,
+.fileActions button:disabled {
+  opacity: 0.4;
+}
+
+.branchRow {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 12px;
+  color: var(--fg-muted);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.branchRow > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg);
+}
+.branchRow small {
+  color: var(--fg-faint);
+  font: inherit;
+}
+
+/* Sync (push/pull) — estilo barra de status do VSCode */
+.syncButton {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 7px;
+  color: var(--fg-muted);
+  border-radius: var(--radius-sm);
+}
+.syncButton:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--panel-hover);
+}
+.syncButton:disabled {
+  opacity: 0.4;
+}
+.syncCounts {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.syncCounts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.commitBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.commitBox textarea {
+  width: 100%;
+  min-height: 48px;
+  resize: vertical;
+  padding: 7px 8px;
+  color: var(--fg);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.commitBox textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+.commitBox textarea::placeholder {
+  color: var(--fg-faint);
+}
+.commitRow {
+  display: flex;
+  gap: 6px;
+}
+.commitButton {
+  flex: 1;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--accent-on);
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 650;
+}
+.commitButton:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.commitButton:disabled {
+  opacity: 0.42;
+}
+.syncWide {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+}
+.syncWide:hover:not(:disabled) {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
+.syncWide:disabled {
+  opacity: 0.42;
+}
+
+.groups {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+.group {
+  border-bottom: 1px solid var(--border);
+}
+.groupHeader {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px 0 4px;
+}
+.groupToggle {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--fg);
+  text-align: left;
+}
+.groupToggle strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.groupToggle span {
+  min-width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  margin-left: 2px;
+  color: var(--fg-muted);
+  background: var(--panel);
+  border-radius: 9px;
+  font-size: 9px;
+}
+.groupActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.groupActions button {
+  width: 22px;
+  height: 22px;
+}
+
+                        
+.tree {
+  padding: 0 4px 4px;
+}
+
+.dir,
+.file {
+  min-width: 0;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+}
+.dir:hover,
+.file:hover {
+  background: var(--panel-hover);
+}
+
+.dirToggle {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--fg-muted);
+  text-align: left;
+}
+.dirToggle svg:first-child {
+  flex: 0 0 auto;
+  color: var(--fg-faint);
+}
+.dirIcon {
+  flex: 0 0 auto;
+  color: var(--fg-muted);
+}
+.dirName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--fg);
+}
+
+.fileName {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.status {
+  width: 14px;
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+                                                    
+.stAdded {
+  color: var(--status-working);
+}
+.stModified {
+  color: var(--status-waiting);
+}
+.stDeleted {
+  color: var(--status-offline);
+}
+.stRenamed {
+  color: var(--agent-codex);
+}
+.stConflict {
+  color: var(--status-offline);
+}
+.stOther {
+  color: var(--fg-muted);
+}
+
+.fileActions {
+  display: none;
+  align-items: center;
+  gap: 1px;
+}
+.dir:hover .fileActions,
+.dir:focus-within .fileActions,
+.file:hover .fileActions,
+.file:focus-within .fileActions {
+  display: flex;
+}
+.fileActions button {
+  width: 20px;
+  height: 20px;
+}
+.file:hover .status,
+.file:focus-within .status {
+  display: none;
+}
+
+.clean,
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+  text-align: center;
+}
+.clean {
+  min-height: 150px;
+  gap: 6px;
+  padding: 24px 16px;
+}
+.clean svg {
+  color: var(--status-working);
+}
+.clean strong,
+.message strong {
+  color: var(--fg);
+  font-size: 12px;
+}
+.clean span,
+.message span {
+  max-width: 240px;
+  color: var(--fg-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.message {
+  flex: 1;
+  min-height: 180px;
+  gap: 8px;
+  padding: 24px 18px;
+}
+.message > svg {
+  color: var(--fg-faint);
+}
+.retry {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 0 10px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+}
+.retry:hover {
+  background: var(--panel-hover);
+}
+.retryPrimary {
+  color: var(--accent-on);
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.retryPrimary:hover {
+  color: var(--accent-on);
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+.spinning {
+  animation: spin 800ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,70 @@
+.hero {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+.icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--accent);
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+}
+.hero strong {
+  color: var(--fg);
+  font-size: 13px;
+}
+.hero p {
+  margin: 4px 0 0;
+  color: var(--fg-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.list,
+.notes {
+  margin: 14px 0 0;
+  padding: 12px 14px 12px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.notes {
+  padding-left: 14px;
+  white-space: pre-wrap;
+  max-height: 240px;
+  overflow: auto;
+}
+.list li + li {
+  margin-top: 7px;
+}
+
+.releases {
+  margin-top: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.release + .release {
+  margin-top: 18px;
+}
+
+.releaseHeading {
+  margin: 0;
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.release .list {
+  margin-top: 8px;
+}
