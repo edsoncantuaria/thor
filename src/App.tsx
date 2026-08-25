@@ -5,7 +5,7 @@ import { type CSSProperties, lazy, Suspense, useEffect, useRef } from 'react'
 import { Group as PanelGroup, Panel, Separator, usePanelRef } from 'react-resizable-panels'
 
 import styles from './App.module.css'
-import homeBackground from './assets/home-bg-right.png'
+import homeBackground from './assets/home-bg-right.gif'
 import { AgentSandbox } from './components/AgentSandbox'
 import { DictationButton } from './components/DictationButton'
 import { ErrorBoundary } from './components/ErrorBoundary'

@@ -19,6 +19,7 @@ Thumbs.db
 
 # Tauri
 src-tauri/target/
+src-tauri/target-e2e/
 src-tauri/gen/
 
 # libghostty pré-buildado — não versionado (binário ~39MB). Reconstruído por

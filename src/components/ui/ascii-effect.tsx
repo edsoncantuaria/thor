@@ -136,7 +136,6 @@ export function AsciiEffect({
     const pointerState = pointer.current
 
     const image = new Image()
-    image.crossOrigin = 'anonymous'
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     const effectColors = colorSignature.split('\u0000')
     const targetFrameMs = 1000 / Math.min(60, Math.max(1, frameRate))
@@ -393,6 +392,9 @@ export function AsciiEffect({
     }
 
     image.onload = start
+    image.onerror = () => {
+      console.error('[Thor][ascii-effect] failed to load background image', imageSrc)
+    }
     image.src = imageSrc
     if (image.complete) start()
 
