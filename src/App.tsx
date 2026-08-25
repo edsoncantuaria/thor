@@ -116,7 +116,7 @@ function LoadingScreen({ reducedMotion = false }: { reducedMotion?: boolean }) {
         />
       </div>
       <div className={styles.loadingInner}>
-        <div className={styles.loadingWordmark}>Alethe</div>
+        <div className={styles.loadingWordmark}>Thor</div>
         <div className={styles.loadingConsole}>
           <span className={styles.loadingPrompt} aria-hidden="true">
             ›

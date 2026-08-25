@@ -10,7 +10,7 @@
 //! | Plataforma      | Caminho                              | PATH                          |
 //! |-----------------|--------------------------------------|-------------------------------|
 
-//! | Windows         | `%LOCALAPPDATA%\Alethe\bin\alethe.cmd` | registrado em `HKCU\Environment` |
+//! | Windows         | `%LOCALAPPDATA%\Thor\bin\thor.cmd` | registrado em `HKCU\Environment` |
 //!
 
 use std::path::{Path, PathBuf};
@@ -18,9 +18,9 @@ use std::path::{Path, PathBuf};
 use serde::Serialize;
 
 #[cfg(windows)]
-const SHIM_FILE_NAME: &str = "alethe.cmd";
+const SHIM_FILE_NAME: &str = "thor.cmd";
 #[cfg(not(windows))]
-const SHIM_FILE_NAME: &str = "alethe";
+const SHIM_FILE_NAME: &str = "thor";
 
 #[derive(Serialize, Default)]
 pub struct CliShimStatus {
@@ -40,7 +40,7 @@ fn shim_bin_dir() -> Result<PathBuf, String> {
     {
         let base = dirs_next::data_local_dir()
             .ok_or_else(|| "não foi possível resolver LOCALAPPDATA".to_string())?;
-        Ok(base.join("Alethe").join("bin"))
+        Ok(base.join("Thor").join("bin"))
     }
     #[cfg(not(windows))]
     {
@@ -91,24 +91,24 @@ fn sh_single_quote(value: &str) -> String {
 fn unix_shim_script(target_marker: &str, launch: &str) -> String {
     format!(
         r#"#!/bin/sh
-# alethe — abre um diretório no Alethe a partir do terminal.
+# thor — abre um diretório no Thor a partir do terminal.
 #
-# Gerado automaticamente pelo Alethe (Configurações ▸ Integrações ▸ Comando de
+# Gerado automaticamente pelo Thor (Configurações ▸ Integrações ▸ Comando de
 # terminal). Não edite à mão: reinstale por lá, principalmente depois de mover
 # ou reinstalar o app.
 #
-# alethe            → abre o diretório atual
-# alethe .          → idem
-# alethe ~/projeto  → abre o diretório informado
+# thor            → abre o diretório atual
+# thor .          → idem
+# thor ~/projeto  → abre o diretório informado
 #
-# ALETHE_TARGET_BIN: {target_marker}
+# THOR_TARGET_BIN: {target_marker}
 
 set -e
 
 target=${{1:-.}}
 
 if [ ! -d "$target" ]; then
-  echo "alethe: diretório não encontrado: $target" >&2
+  echo "thor: diretório não encontrado: $target" >&2
   exit 1
 fi
 
@@ -157,13 +157,13 @@ fn render_shim(binary: &Path) -> Result<String, String> {
         let binary = binary.to_string_lossy().to_string();
         return Ok(format!(
             r#"@echo off
-rem alethe - abre um diretorio no Alethe a partir do terminal.
+rem thor - abre um diretorio no Thor a partir do terminal.
 rem
-rem Gerado automaticamente pelo Alethe (Configuracoes > Integracoes > Comando de
+rem Gerado automaticamente pelo Thor (Configuracoes > Integracoes > Comando de
 rem terminal). Nao edite a mao: reinstale por la, principalmente depois de mover
 rem ou reinstalar o app.
 rem
-rem ALETHE_TARGET_BIN: {binary}
+rem THOR_TARGET_BIN: {binary}
 
 setlocal
 set "target=%~1"
@@ -173,7 +173,7 @@ rem Caminho absoluto: o app compara com o cwd salvo dos projetos.
 for %%I in ("%target%") do set "target=%%~fI"
 
 if not exist "%target%\" (
-  echo alethe: diretorio nao encontrado: %target% 1>&2
+  echo thor: diretorio nao encontrado: %target% 1>&2
   exit /b 1
 )
 
@@ -192,7 +192,7 @@ start "" "{binary}" --open-path "%target%"
 fn shim_targets_binary(contents: &str, binary: &Path) -> bool {
     let Some(line) = contents
         .lines()
-        .find_map(|line| line.split_once("ALETHE_TARGET_BIN:"))
+        .find_map(|line| line.split_once("THOR_TARGET_BIN:"))
         .map(|(_, rest)| rest.trim())
     else {
         return false;

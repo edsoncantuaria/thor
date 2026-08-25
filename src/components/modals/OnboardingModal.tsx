@@ -231,7 +231,7 @@ export function OnboardingModal() {
                   <img
                     className={styles.brandLogo}
                     src={getThemeIcon(preferences.appIconTheme)}
-                    alt="Alethe"
+                    alt="Thor"
                     draggable={false}
                   />
                   <div>

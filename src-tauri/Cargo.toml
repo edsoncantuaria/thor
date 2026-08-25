@@ -1,7 +1,7 @@
 [package]
 name = "alethe"
 version = "1.6.0"
-description = "Alethe — terminal multiplexer GUI"
+description = "Thor — terminal multiplexer GUI for orchestrating coding agents"
 authors = ["Kauã Miguel"]
 license = "AGPL-3.0-or-later"
 edition = "2021"

@@ -1,5 +1,5 @@
 if (import.meta.env.DEV) {
-  document.title = '(DEV) Alethe'
+  document.title = '(DEV) Thor'
 }
 
 // Mark the platform as soon as the bundled entry starts evaluating, before

@@ -73,7 +73,7 @@ function TerminalCommandSection() {
     >
       <div className={styles.integrationFields}>
         <pre className={styles.cliUsage}>
-          <code>{'alethe\nalethe .\nalethe ~/meu-projeto'}</code>
+          <code>{'thor\nthor .\nthor ~/meu-projeto'}</code>
         </pre>
 
         {status?.supported === false ? (

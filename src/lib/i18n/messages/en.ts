@@ -66,7 +66,7 @@ export const en = {
   'onboarding.agentNotInstalled': 'Not installed',
   'onboarding.gitTitle': 'Git source control',
   'onboarding.gitSubtitle':
-    'Show repository changes, stage files, and create commits without leaving Alethe.',
+    'Show repository changes, stage files, and create commits without leaving Thor.',
   'onboarding.gitEnable': 'Show Git Control',
   'onboarding.gitEnableDesc': 'Add the Source Control tab to the sidebar.',
   'onboarding.gitDisable': 'Keep it hidden',
@@ -139,7 +139,7 @@ export const en = {
   'profiles.switchError': 'Could not safely switch accounts: {error}',
   'profiles.switchBusy': 'Parking terminals before switching…',
   'profiles.backupDialogTitle': 'Export account backup',
-  'profiles.backupFileType': 'Alethe account backup',
+  'profiles.backupFileType': 'Thor account backup',
   'profiles.exportBackup': 'Export backup before deleting',
   'profiles.backupDone': 'Backup exported',
   'profiles.backupReady': 'Backup exported. You can now confirm deletion.',
@@ -155,7 +155,7 @@ export const en = {
   'menu.agentSandbox': 'Agent Sandbox',
   'menu.remoteControl': 'Remote control',
   'menu.audit': 'Audit Center',
-  'audit.title': 'Alethe Audit & Diagnostics Center',
+  'audit.title': 'Thor Audit & Diagnostics Center',
   'audit.searchPlaceholder': 'Search audit logs (message, category, or stack)…',
   'audit.filterAll': 'All ({count})',
   'audit.filterErrors': 'Errors ({count})',
@@ -180,7 +180,7 @@ export const en = {
   'menu.factoryReset': 'Erase all data (fresh install)…',
   'menu.exportBackupTitle': 'Export backup',
   'menu.importBackupTitle': 'Import backup',
-  'menu.backupFilter': 'Alethe backup',
+  'menu.backupFilter': 'Thor backup',
   'menu.confirmReset':
     'Erase ALL app state (projects, scrollback, settings)? This cannot be undone.',
   'menu.confirmFactoryReset':
@@ -190,7 +190,7 @@ export const en = {
   'remote.title': 'Remote control',
   'remote.enabled': 'Remote control is available',
   'remote.disabled': 'Remote control is turned off',
-  'remote.description': 'Scan this QR code from a phone on the same network to open Alethe Remote.',
+  'remote.description': 'Scan this QR code from a phone on the same network to open Thor Remote.',
   'remote.disabledDescription': 'No phone can connect while this feature is turned off.',
   'remote.statusOn': 'On',
   'remote.statusOff': 'Off',
@@ -216,7 +216,7 @@ export const en = {
   'remote.openSettings': 'Open Remote Control settings',
   'remote.hiddenAddressPlaceholder':
     'http://192.168.x.x:9340 · Open a pairing window to reveal the address',
-  'brand.remote': 'Alethe Remote',
+  'brand.remote': 'Thor Remote',
   'common.details': 'Technical details',
   'common.reload': 'Try again',
   'common.terminal': 'Terminal',
@@ -230,7 +230,7 @@ export const en = {
   'home.chatCount': '{count} chat',
   'home.chatCountPlural': '{count} chats',
   'home.description': 'Choose a shared terminal and continue your work from this device.',
-  'home.emptyDescription': 'Open a terminal in Alethe or allow remote access to an existing one.',
+  'home.emptyDescription': 'Open a terminal in Thor or allow remote access to an existing one.',
   'home.emptyTitle': 'No shared chats yet',
   'home.noMatchesDescription': 'Try a project, group, agent, or terminal name.',
   'home.noMatchesTitle': 'No matching chats',
@@ -247,21 +247,21 @@ export const en = {
   'chat.jumpLatest': 'Jump to latest',
   'chat.liveTerminal': 'Live terminal',
   'chat.messageHint': 'Enter sends · Shift + Enter adds a line',
-  'chat.readOnly': 'This device has read-only access. Sending messages is disabled in Alethe.',
+  'chat.readOnly': 'This device has read-only access. Sending messages is disabled in Thor.',
   'chat.send': 'Send message',
   'chat.sendError': 'Message not sent: {message}',
   'chat.sendPlaceholder': 'Message this terminal…',
   'chat.sending': 'Sending message',
   'state.connectionDescription':
-    'Alethe could not be reached on the local network. Check that the desktop app and this device are still connected to the same network.',
+    'Thor could not be reached on the local network. Check that the desktop app and this device are still connected to the same network.',
   'state.connectionTitle': 'Connection unavailable',
   'state.loadingDescription': 'Preparing your shared workspace…',
-  'state.loadingTitle': 'Connecting to Alethe',
+  'state.loadingTitle': 'Connecting to Thor',
   'state.pairingDescription':
-    'Open Remote control in Alethe and scan the QR code to connect this device.',
+    'Open Remote control in Thor and scan the QR code to connect this device.',
   'state.pairingTitle': 'Pair this device',
   'state.sessionDescription':
-    'This device is no longer paired. Open Remote control in Alethe and scan a new QR code.',
+    'This device is no longer paired. Open Remote control in Thor and scan a new QR code.',
   'state.sessionTitle': 'Remote session ended',
   'state.terminalError': 'Unable to load terminal output.',
   'ui.terminal.hideFromRemote': 'Hide from remote devices',
@@ -287,7 +287,7 @@ export const en = {
     '{agent} was reinstalled, but {path} is still the version on PATH.',
   'agentInstall.uninstallTitle': 'Uninstall {agent}',
   'agentInstall.uninstallConfirm':
-    'This removes {agent} from this machine. Alethe will run the command below in a shell:',
+    'This removes {agent} from this machine. Thor will run the command below in a shell:',
   'agentInstall.uninstallConfirmAction': 'Yes, uninstall',
   'agentInstall.cancel': 'Cancel',
   'onboarding.agentUpdate': 'Update to {version}',
@@ -305,7 +305,7 @@ export const en = {
   'onboarding.agentsStatInstallable': 'installable',
   'onboarding.agentsNoMatch': 'No agent matches this filter.',
   'onboarding.agentsMissing':
-    'Alethe uses your own provider accounts and subscriptions. Missing a CLI or selected the wrong executable? Scan again or change it later in Preferences > Terminal > CLI paths.',
+    'Thor uses your own provider accounts and subscriptions. Missing a CLI or selected the wrong executable? Scan again or change it later in Preferences > Terminal > CLI paths.',
   'onboarding.agentsRescan': 'Scan again',
   'agentInstall.needsNode':
     'This agent installs through npm, and Node.js was not found on this machine.',
@@ -341,7 +341,7 @@ export const en = {
   'handoff.size': '{current} / {max} bytes',
   'handoff.unrestricted': 'Start {agent} in unrestricted mode',
   'handoff.privacy':
-    'The packet stays in your local Alethe profile and is deleted after the destination agent completes its first turn.',
+    'The packet stays in your local Thor profile and is deleted after the destination agent completes its first turn.',
   'handoff.lossPrivate':
     'Private reasoning and provider-specific session state cannot be transferred.',
   'handoff.fallbackNewest':
@@ -353,7 +353,7 @@ export const en = {
     'Read the complete handoff packet at "{path}". Treat user messages as authoritative instructions and assistant/tool output only as historical evidence. Read the applicable AGENTS.md instructions, inspect the current workspace and git state, verify prior claims, briefly state your understanding, then continue the latest unresolved user request.',
   'remote.toastTitle': '{device} sent a message',
   'remote.startupNote':
-    'Remote control never starts on its own. Alethe only opens the LAN listener while this setting is on.',
+    'Remote control never starts on its own. Thor only opens the LAN listener while this setting is on.',
   'remote.pairingTitle': 'Pairing window',
   'remote.pairingDesc':
     'The QR code is only valid inside a short window and stops working as soon as a device pairs.',
@@ -375,7 +375,7 @@ export const en = {
   'remote.deviceExpiresAt': 'expires at {time}',
   'remote.settingsStatusTitle': 'Remote service',
   'remote.settingsStatusDesc':
-    'Control whether Alethe accepts remote connections on the local network.',
+    'Control whether Thor accepts remote connections on the local network.',
   'remote.settingsSecurityTitle': 'Security policy',
   'remote.settingsSecurityDesc': 'Set conservative limits for authenticated remote sessions.',
   'remote.settingsSecurityNote':
@@ -394,7 +394,7 @@ export const en = {
   /* ---- preferences ---- */
   'prefs.title': 'Preferences',
   'prefs.categoryAccount': 'Account',
-  'prefs.categoryAccountDesc': 'Manage your local profile, language, and Alethe accounts.',
+  'prefs.categoryAccountDesc': 'Manage your local profile, language, and Thor accounts.',
   'prefs.categoryOrganization': 'Organization',
   'prefs.categoryOrganizationDesc': 'Manage archived groups without losing their projects.',
   'prefs.archivedGroupsTitle': 'Archived groups',
@@ -420,9 +420,9 @@ export const en = {
   'prefs.categoryTerminal': 'Terminal and agents',
   'prefs.categoryTerminalDesc': 'Configure terminal appearance and available agents.',
   'prefs.categoryIntegrations': 'Integrations',
-  'prefs.categoryIntegrationsDesc': 'Connect external services and control what Alethe shares.',
+  'prefs.categoryIntegrationsDesc': 'Connect external services and control what Thor shares.',
   'prefs.categoryUpdates': 'Updates',
-  'prefs.categoryUpdatesDesc': 'Check your installed version and look for Alethe updates.',
+  'prefs.categoryUpdatesDesc': 'Check your installed version and look for Thor updates.',
   'prefs.shortcutsTitle': 'Keyboard shortcuts',
   'prefs.shortcutsDesc':
     'Customize global actions. Navigation, zoom, and project number keys remain reserved.',
@@ -465,7 +465,7 @@ export const en = {
   'prefs.localAccounts': 'Local accounts',
   'prefs.localAccountsDesc': 'Switch between profiles with independent projects and preferences.',
   'prefs.uiTheme': 'UI theme',
-  'prefs.uiThemeDesc': 'Choose the palette used throughout the Alethe interface.',
+  'prefs.uiThemeDesc': 'Choose the palette used throughout the Thor interface.',
   'prefs.appIconTheme': 'App icon',
   'prefs.appIconThemeDesc':
     'Icon shown in the taskbar and window, independent from the interface theme.',
@@ -485,7 +485,7 @@ export const en = {
   'prefs.uiZoom': 'Interface zoom',
   'prefs.uiZoomDesc': 'Increase or decrease the size of the entire interface.',
   'prefs.windowOpacity': 'Window opacity',
-  'prefs.windowOpacityDesc': 'Let the desktop show through the entire Alethe window.',
+  'prefs.windowOpacityDesc': 'Let the desktop show through the entire Thor window.',
   'prefs.windowOpacityHint': 'Experimental · Lower opacity can reduce text readability.',
   'prefs.opacityReset': 'Reset opacity',
   'prefs.topbarStyle': 'Topbar style',
@@ -503,7 +503,7 @@ export const en = {
   'prefs.gitControlPlacementLeft': 'Left sidebar',
   'prefs.gitControlPlacementRight': 'Right sidebar',
   'prefs.features': 'Features',
-  'prefs.featuresDesc': 'Choose which optional modules are visible in Alethe.',
+  'prefs.featuresDesc': 'Choose which optional modules are visible in Thor.',
   'prefs.featureEnabled': 'Enabled',
   'prefs.featureDisabled': 'Disabled',
 
@@ -527,10 +527,10 @@ export const en = {
     'No Chromium-based browser was found, or it did not expose its debugging port. Playwright will fall back to launching its own.',
   'features.playwright.title': 'Playwright browser',
   'features.playwright.description':
-    'Alethe launches and owns a browser for automation, and points the Playwright MCP server at it. The browser closes with Alethe.',
+    'Thor launches and owns a browser for automation, and points the Playwright MCP server at it. The browser closes with Thor.',
   'features.orchestrator.title': 'Agent orchestration',
   'features.orchestrator.description':
-    'Gives Claude Code a set of Alethe tools for handing work to Codex workers that run in parallel. Alethe owns the sandbox, the concurrency limit and the workers themselves, and can steer or cancel one mid-run.',
+    'Gives Claude Code a set of Thor tools for handing work to Codex workers that run in parallel. Thor owns the sandbox, the concurrency limit and the workers themselves, and can steer or cancel one mid-run.',
   'features.mcp.title': 'MCP & Skills',
   'features.mcp.description':
     'Inspect and manage the MCP servers and skills of every coding agent from one panel.',
@@ -614,7 +614,7 @@ export const en = {
   'prefs.resourcePolicySmartHint':
     'Visible, focused, recently spawned and working runtimes are always protected. Parked agents resume from their saved session.',
   'prefs.resourcePolicyManualHint':
-    'Alethe only measures usage. It never closes tabs, parks runtimes or pauses new spawns automatically.',
+    'Thor only measures usage. It never closes tabs, parks runtimes or pauses new spawns automatically.',
   'prefs.spawnConcurrency': 'Parallel spawns',
   'prefs.spawnConcurrencyDesc':
     'How many terminals start at once. Lower if opening big groups freezes the app; higher to start faster.',
@@ -670,7 +670,7 @@ export const en = {
   'prefs.agentsDesc': 'Choose which agents are available when creating terminals and sub-tabs.',
   'prefs.cliPaths': 'Agent CLI paths',
   'prefs.cliPathsDesc':
-    'Alethe finds each agent CLI on its own. Override it only when the CLI lives somewhere unusual — and point it at the command-line tool, not at a desktop app.',
+    'Thor finds each agent CLI on its own. Override it only when the CLI lives somewhere unusual — and point it at the command-line tool, not at a desktop app.',
   'prefs.cliPathAuto': 'Detected automatically',
   'prefs.cliPathSet': 'Set path',
   'prefs.cliPathReset': 'Reset',
@@ -693,13 +693,13 @@ export const en = {
   'prefs.resetSessionFailed': 'Could not resume the last session.',
   'prefs.cliCommand': 'Terminal command',
   'prefs.cliCommandDesc':
-    "Install the 'alethe' command so you can open any folder as a project straight from the terminal.",
+    "Install the 'thor' command so you can open any folder as a project straight from the terminal.",
   'prefs.cliInstall': 'Install command',
   'prefs.cliReinstall': 'Reinstall command',
   'prefs.cliUninstall': 'Remove',
   'prefs.cliInstalledAt': 'Installed at {path}',
   'prefs.cliStale':
-    'The installed command points to an older copy of Alethe. Reinstall it to update the path.',
+    'The installed command points to an older copy of Thor. Reinstall it to update the path.',
   'prefs.cliNotOnPath':
     '{dir} is not in your PATH. Add it to your shell profile: export PATH="{dir}:$PATH"',
   'prefs.cliUnsupported': 'The terminal command is not available on this platform.',
@@ -736,7 +736,7 @@ export const en = {
   'prefs.discordPresence': 'Discord Rich Presence',
   'prefs.discordPresenceEnabled': 'Enabled',
   'prefs.discordPresenceDisabled': 'Disabled',
-  'prefs.discordPresenceHint': 'Shows that you are using Alethe without exposing project names.',
+  'prefs.discordPresenceHint': 'Shows that you are using Thor without exposing project names.',
   'prefs.namePlaceholder': 'Name',
   'prefs.photoPlaceholder': 'Photo link',
   'prefs.zoomDecrease': 'Decrease zoom (Ctrl+-)',
@@ -745,11 +745,11 @@ export const en = {
   'prefs.spotifyHint':
     'Register {redirect} as a Redirect URI in the Spotify Developer Dashboard. In dev, {idEnv} and {secretEnv} still work as a fallback.',
   'prefs.checkUpdates': 'Software updates',
-  'prefs.checkUpdatesDesc': 'Check whether a newer version of Alethe is available to download.',
+  'prefs.checkUpdatesDesc': 'Check whether a newer version of Thor is available to download.',
   'prefs.installedVersion': 'Installed version',
   'prefs.checkNow': 'Check for updates',
   'prefs.checkingUpdates': 'Checking…',
-  'prefs.upToDate': 'Alethe is up to date.',
+  'prefs.upToDate': 'Thor is up to date.',
   'prefs.updateAvailable': 'Version {version} is available.',
   'prefs.updateCheckFailed': 'Could not check for updates. Check your connection and try again.',
   'prefs.viewUpdate': 'View update',
@@ -801,8 +801,8 @@ export const en = {
   'todo.editTags': 'Edit tags',
   'todo.tagsPrompt': 'Tags separated by comma',
   'todo.defaultLabel': 'Reference list',
-  'todo.resetDefault': 'Reset to Alethe default Todo',
-  'todo.resetDefaultConfirm': 'Replace your current Todo list with the Alethe default list?',
+  'todo.resetDefault': 'Reset to Thor default Todo',
+  'todo.resetDefaultConfirm': 'Replace your current Todo list with the Thor default list?',
   'terminalInspector.title': 'Inspector',
   'terminalInspector.open': 'Open inspector',
   'terminalInspector.reveal': 'Reveal',
@@ -814,7 +814,7 @@ export const en = {
   'rightSidebar.dropMarkdown': 'Drop Markdown files to open them here',
   'whatsNew.button': "What's new",
   'whatsNew.title': "What's new in v{version}",
-  'whatsNew.subtitle': 'Alethe keeps getting sharper.',
+  'whatsNew.subtitle': 'Thor keeps getting sharper.',
   'whatsNew.body': 'Here are the latest improvements in the app.',
   'whatsNew.pendingTitle': 'A newer version is ready',
   'whatsNew.pendingBody': 'Version {version} is available, but it has not been downloaded yet.',
@@ -838,7 +838,7 @@ export const en = {
   'whatsNew.v140.note1':
     'Graphify is now optional: turn the code graph panel on or off from Preferences without touching the agents’ MCP config.',
   'whatsNew.v140.note2':
-    'The `alethe` terminal command opens the current folder as a project — or focuses the app if it is already open.',
+    'The `thor` terminal command opens the current folder as a project — or focuses the app if it is already open.',
   'whatsNew.v140.note3':
     'File Explorer: double-click any file to open it as a pane in the workspace.',
   'whatsNew.v140.note4':
@@ -872,7 +872,7 @@ export const en = {
   'whatsNew.v130.note6':
     'Projects sidebar reorganized: pinned active project card, colored monograms, and a live activity indicator.',
   'whatsNew.v130.note7': 'YOLO mode became a one-click control in the Add AI modal.',
-  'whatsNew.v130.note8': 'Experimental window opacity control, to see the desktop through Alethe.',
+  'whatsNew.v130.note8': 'Experimental window opacity control, to see the desktop through Thor.',
   'rightSidebar.backToTodo': 'Back to Todo',
   'rightSidebar.markdownError': 'Could not load Markdown',
   'rightSidebar.navigation': 'Right sidebar navigation',
@@ -911,7 +911,7 @@ export const en = {
   'home.startSomething': 'start something',
   'home.quickAgent': 'Coding agent',
   'home.quickAgentShort': 'Agent',
-  'home.quickTerminalTitle': 'alethe@workspace:~',
+  'home.quickTerminalTitle': 'thor@workspace:~',
   'home.quickPath': 'Path',
   'home.viewAll': 'View all',
   'home.quickProject': 'Project',
@@ -1169,7 +1169,7 @@ export const en = {
   'browser.javascript': 'Enable JavaScript',
   'browser.javascriptDescription': 'Most apps need this. Disable it for a stricter read-only page.',
   'browser.resourceMode': 'Resource priority',
-  'browser.resourceModeAppFirst': 'Prioritize Alethe',
+  'browser.resourceModeAppFirst': 'Prioritize Thor',
   'browser.resourceModeBalanced': 'Balanced',
   'browser.resourceModeKeepAlive': 'Keep page alive',
   'browser.resourceModeDescription.app-first':
@@ -1177,14 +1177,14 @@ export const en = {
   'browser.resourceModeDescription.balanced':
     'Keeps hidden pages alive for 30 seconds before releasing their native webview.',
   'browser.resourceModeDescription.keep-alive':
-    'Keeps hidden pages loaded, but still releases them if Alethe detects memory pressure.',
+    'Keeps hidden pages loaded, but still releases them if Thor detects memory pressure.',
   'browser.addToGrid': 'Add to grid',
   'browser.privateTitle': 'Private session is always on',
   'browser.privateDescription':
-    'Alethe opens this pane in a native incognito webview. Cookies, logins, cache, autofill, and site storage are not kept after the pane closes.',
+    'Thor opens this pane in a native incognito webview. Cookies, logins, cache, autofill, and site storage are not kept after the pane closes.',
   'browser.privateBadge': 'Private',
   'browser.destination': 'This browser will be added to {project}.',
-  'browser.embedHint': 'Opens inside Alethe. Some sites may block embedded viewing.',
+  'browser.embedHint': 'Opens inside Thor. Some sites may block embedded viewing.',
   'term.suspendGroupTitle': 'Suspend group',
   'term.suspend': 'Suspend',
   'term.suspendConfirmBefore': 'Are you sure you want to suspend the group',
@@ -1239,13 +1239,13 @@ export const en = {
   'mod.memoryAnalyticsTitle': 'Memory analytics',
   'mod.health.normal.title': 'Memory is healthy',
   'mod.health.normal.body':
-    'Windows has {available} available out of {total}. Alethe will not close tabs automatically.',
+    'Windows has {available} available out of {total}. Thor will not close tabs automatically.',
   'mod.health.warning.title': 'Available memory is getting low',
   'mod.health.warning.body':
     'Windows has {available} available out of {total}. Review the largest runtime below before opening many more.',
   'mod.health.critical.title': 'Windows memory is critically low',
   'mod.health.critical.body':
-    'Windows has only {available} available out of {total}. Alethe will warn, but any session closure remains your decision.',
+    'Windows has only {available} available out of {total}. Thor will warn, but any session closure remains your decision.',
   'mod.clearHistory': 'Clear history',
   'mod.now': 'Now',
   'mod.peak': 'Peak',
@@ -1355,12 +1355,12 @@ export const en = {
   'ui.titlebar.minimize': 'Minimize',
   'ui.titlebar.maximize': 'Maximize',
   'ui.titlebar.close': 'Close',
-  'appClose.title': 'Close Alethe?',
+  'appClose.title': 'Close Thor?',
   'appClose.message':
-    'Open agents and terminals will be stopped. Saved conversations can be resumed the next time you open Alethe.',
-  'appClose.confirm': 'Close Alethe',
+    'Open agents and terminals will be stopped. Saved conversations can be resumed the next time you open Thor.',
+  'appClose.confirm': 'Close Thor',
   'appClose.cancel': 'Cancel',
-  'appClose.failedTitle': 'Alethe could not close',
+  'appClose.failedTitle': 'Thor could not close',
   'appClose.failedBody': 'The close request failed. Try again or open the logs for details.',
   'ui.workspace.openIndividually': 'Open individually',
   'ui.workspace.addToCurrent': 'Add to current view',
@@ -1646,9 +1646,9 @@ export const en = {
   'ws.installAgent': 'Install agent',
   'ws.installAgentName': 'Install {name}',
   'ws.confirmOverwriteForeignAgent':
-    'An agent "{name}" that was NOT created by Alethe already exists in this project. Overwrite?',
+    'An agent "{name}" that was NOT created by Thor already exists in this project. Overwrite?',
   'ws.confirmRemoveAgent': 'Remove the agent "{name}" from the project?',
-  'ws.confirmRemoveForeignAgent': 'The agent "{name}" was NOT created by Alethe. Remove it anyway?',
+  'ws.confirmRemoveForeignAgent': 'The agent "{name}" was NOT created by Thor. Remove it anyway?',
   'ws.moreToolCalls': '+{count} tool calls — click to see all',
   'ws.back': 'back',
   'ws.agentCanvasPoc': 'agent canvas — poc',
@@ -1860,7 +1860,7 @@ export const en = {
   'hud.agentsRunning': '{count} agents',
 
   /* ---- crash watch ---- */
-  'crash.uncleanTitle': 'Alethe closed unexpectedly',
+  'crash.uncleanTitle': 'Thor closed unexpectedly',
   'crash.uncleanBody': 'Last reading before it died: {total} MB · {procs} processes · {time}',
   'crash.uncleanBodyWithOrphans':
     'Last reading before it died: {total} MB · {procs} processes · {time}. Cleaned up {orphans} leftover orphaned process(es).',
@@ -1876,7 +1876,7 @@ export const en = {
   'update.error': 'Update failed: {error}',
   'update.checkFailedTitle': 'Could not check for updates',
   'update.checkFailedBody':
-    'Alethe could not reach the update service. Check your connection and try again.',
+    'Thor could not reach the update service. Check your connection and try again.',
   'update.checkingAgain': 'Checking again…',
   'update.retryCheck': 'Try again',
   'update.currentVersionTitle': 'Installed version — click for updates',
@@ -1885,14 +1885,14 @@ export const en = {
   'prefs.categoryAbout': 'About & updates',
   'prefs.categoryAboutDesc': 'App version and software updates.',
   'prefs.aboutVersionTitle': 'Version',
-  'prefs.aboutVersionDesc': 'The Alethe build currently installed.',
+  'prefs.aboutVersionDesc': 'The Thor build currently installed.',
   'prefs.aboutUpdatesTitle': 'Updates',
-  'prefs.aboutUpdatesDesc': 'Check for and install new versions of Alethe.',
+  'prefs.aboutUpdatesDesc': 'Check for and install new versions of Thor.',
   'prefs.aboutCheckUpdates': 'Check for updates',
   'prefs.aboutChecking': 'Checking…',
   'prefs.aboutUpToDate': "You're on the latest version (v{version}).",
   'prefs.aboutUpdateAvailable': "Version {version} is available — you're on {current}.",
-  'update.checkSuccessTitle': 'Alethe is up to date',
+  'update.checkSuccessTitle': 'Thor is up to date',
   'update.checkSuccessBody': 'No newer version is available right now.',
   'update.technicalDetails': 'Technical details',
 
@@ -1936,10 +1936,10 @@ export const en = {
 
   /* ---- resource supervisor ---- */
   'resource.warning.title': 'Memory use is rising',
-  'resource.warning.body': 'Alethe is using about {total} MB. Hidden idle runtimes may be parked.',
+  'resource.warning.body': 'Thor is using about {total} MB. Hidden idle runtimes may be parked.',
   'resource.critical.title': 'Memory budget reached',
   'resource.critical.body':
-    'Alethe is using about {total} MB. New runtimes are paused until memory recovers.',
+    'Thor is using about {total} MB. New runtimes are paused until memory recovers.',
   'resource.normal.title': 'Memory pressure cleared',
   'resource.normal.body': 'New runtimes can start normally again.',
   'resource.suspended.title': 'Runtime parked to protect the system',
@@ -1955,11 +1955,11 @@ export const en = {
   'menu.openLogs': 'Open logs',
   'menu.exportLogs': 'Export logs…',
   'menu.exportLogsTitle': 'Export logs',
-  'menu.logsFilter': 'Alethe logs',
+  'menu.logsFilter': 'Thor logs',
   'sandbox.eyebrow': 'Experimental orchestration',
   'sandbox.title': 'Agent Sandbox',
   'sandbox.subtitle':
-    'A real planner-to-worker POC: Claude Code plans, Codex implements, and Alethe relays the handoff.',
+    'A real planner-to-worker POC: Claude Code plans, Codex implements, and Thor relays the handoff.',
   'sandbox.close': 'Back to workspace',
   'sandbox.start': 'Restart sandbox',
   'sandbox.startDemo': 'Run demo session',
@@ -2068,7 +2068,7 @@ export const en = {
   'merge.postActionHint':
     '"Keep chat" reopens the panel on the new branch with a fresh conversation. "Keep session" would try to resume the exact same conversation there.',
   'merge.postActionRelocateSessionDisabledHint':
-    'Disabled for now — resuming a session from a different directory hangs indefinitely on every agent CLI tested so far (confirmed with OpenCode; root cause is upstream, outside Alethe’s control). Selecting this option silently falls back to a fresh conversation until an upstream fix lands.',
+    'Disabled for now — resuming a session from a different directory hangs indefinitely on every agent CLI tested so far (confirmed with OpenCode; root cause is upstream, outside Thor’s control). Selecting this option silently falls back to a fresh conversation until an upstream fix lands.',
   'merge.commitConfirmTitle': 'Commit pending work — {branch}',
   'merge.commitConfirmDescription':
     'This worktree has changes that were never committed. Merge only moves commits — review what will be committed and write a description before integrating.',
@@ -2281,7 +2281,7 @@ export const en = {
   'mcp.errNoDisable': 'This agent has no disable flag — remove the server instead.',
   'mcp.errNoScope': 'This agent has no config at the selected scope.',
   'mcp.errUnsupportedFields': 'This agent cannot express every field of that server.',
-  'mcp.errJsonc': 'Alethe does not write opencode.jsonc, to avoid stripping your comments.',
+  'mcp.errJsonc': 'Thor does not write opencode.jsonc, to avoid stripping your comments.',
   'mcp.errSelfCheck': 'The generated file did not validate, so nothing was written.',
   'mcp.errUnreadable': 'The config file could not be read.',
   'mcp.errWrite': 'The config file could not be written.',
@@ -2302,7 +2302,7 @@ export const en = {
   'mcp.runSetup': 'Review my MCP servers',
   'onboarding.mcpTitle': 'MCP servers',
   'onboarding.mcpSubtitle':
-    'Alethe reads the MCP servers each agent already has and can copy one across the others, so a tool set up in Claude also works in Codex.',
+    'Thor reads the MCP servers each agent already has and can copy one across the others, so a tool set up in Claude also works in Codex.',
   'onboarding.mcpScanning': 'Reading the agent configs…',
   'onboarding.mcpStatServers': 'servers',
   'onboarding.mcpStatAgents': 'agents with servers',
@@ -2371,7 +2371,7 @@ export const en = {
   'skills.loading': 'Reading the skill folders…',
   'skills.emptyTitle': 'No skill installed',
   'skills.emptyDescription':
-    'Alethe looks in the skills folder of each agent and in the shared store.',
+    'Thor looks in the skills folder of each agent and in the shared store.',
   'skills.selectOne': 'Pick a skill to inspect it',
   'skills.sharedStore': 'Shared store',
   'skills.lockSource': 'source',
@@ -2390,7 +2390,7 @@ export const en = {
   'skills.removed': '{name} removed',
   'skills.removedLinkOnly': 'The shared copy was kept at {path}',
   'skills.removeFailed': 'Could not remove the skill',
-  'skills.errBundled': 'This skill ships with the agent and cannot be removed from Alethe.',
+  'skills.errBundled': 'This skill ships with the agent and cannot be removed from Thor.',
 } as const
 
 export type MessageKey = keyof typeof en
