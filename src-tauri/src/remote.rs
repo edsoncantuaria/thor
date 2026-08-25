@@ -1217,13 +1217,13 @@ fn appearance_from_document(document: &Value) -> RemoteAppearance {
         .get("uiTheme")
         .and_then(Value::as_str)
         .filter(|theme| is_known_theme(theme))
-        .unwrap_or("elite-indigo")
+        .unwrap_or("elite-gold")
         .to_string();
     let app_icon_theme = preferences
         .get("appIconTheme")
         .and_then(Value::as_str)
         .filter(|theme| is_known_app_icon(theme))
-        .unwrap_or("elite-indigo")
+        .unwrap_or("elite-gold")
         .to_string();
     let language = match preferences.get("language").and_then(Value::as_str) {
         Some("pt-BR") => "pt-BR",
@@ -1256,7 +1256,7 @@ fn is_known_theme(theme: &str) -> bool {
         theme,
         "elite-original"
             | "elite-pure-black"
-            | "elite-indigo"
+            | "elite-gold"
             | "elite-blush"
             | "dark"
             | "light"
@@ -1285,7 +1285,7 @@ fn is_light_theme(theme: &str) -> bool {
 fn is_known_app_icon(theme: &str) -> bool {
     matches!(
         theme,
-        "elite-original" | "elite-pure-black" | "elite-indigo" | "elite-blush"
+        "elite-original" | "elite-pure-black" | "elite-gold" | "elite-blush"
     )
 }
 
@@ -1296,7 +1296,7 @@ fn selected_brand_icon(document: &Value) -> &'static [u8] {
             include_bytes!("../../src/assets/theme-icons/elite-pure-black.png")
         }
         "elite-blush" => include_bytes!("../../src/assets/theme-icons/elite-blush.png"),
-        _ => include_bytes!("../../src/assets/theme-icons/elite-indigo.png"),
+        _ => include_bytes!("../../src/assets/theme-icons/elite-gold.png"),
     }
 }
 
@@ -1613,8 +1613,8 @@ mod tests {
         assert_eq!(
             appearance_from_document(&json!({})),
             RemoteAppearance {
-                ui_theme: "elite-indigo".into(),
-                app_icon_theme: "elite-indigo".into(),
+                ui_theme: "elite-gold".into(),
+                app_icon_theme: "elite-gold".into(),
                 language: "en".into(),
                 motion_preference: "animated".into(),
                 color_scheme: "dark".into(),
@@ -1654,8 +1654,8 @@ mod tests {
             }
         }));
 
-        assert_eq!(appearance.ui_theme, "elite-indigo");
-        assert_eq!(appearance.app_icon_theme, "elite-indigo");
+        assert_eq!(appearance.ui_theme, "elite-gold");
+        assert_eq!(appearance.app_icon_theme, "elite-gold");
         assert_eq!(appearance.language, "en");
         assert_eq!(appearance.motion_preference, "animated");
     }
@@ -1670,7 +1670,7 @@ mod tests {
         assert_ne!(
             icon,
             selected_brand_icon(&json!({
-                "preferences": { "appIconTheme": "elite-indigo" }
+                "preferences": { "appIconTheme": "elite-gold" }
             }))
         );
     }

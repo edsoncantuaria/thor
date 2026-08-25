@@ -9,7 +9,7 @@ export type ThemeOption = {
 export const THEME_OPTIONS: ThemeOption[] = [
   { id: 'elite-original', colors: ['#fbfafd', '#ede8f7', '#6157f0'] },
   { id: 'elite-pure-black', colors: ['#000000', '#171717', '#ffffff'] },
-  { id: 'elite-indigo', colors: ['#0c0c0c', '#1c1c2e', '#7d72ff'] },
+  { id: 'elite-gold', colors: ['#0c0c0c', '#2e281c', '#ffde72'] },
   { id: 'elite-blush', colors: ['#fff7f2', '#f3e2d6', '#7a4a3a'] },
   { id: 'dark', colors: ['#101114', '#2a2d33', '#f3f4f6'] },
   { id: 'light', colors: ['#f6f7fb', '#ffffff', '#18181b'] },

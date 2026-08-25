@@ -15,21 +15,21 @@ const ICON_URLS = import.meta.glob('../assets/theme-icons/*/*.png', {
 const ICON_FILES: Record<AppIconTheme, string> = {
   'elite-original': 'elite-original.png',
   'elite-pure-black': 'elite-pure-black.png',
-  'elite-indigo': 'elite-indigo.png',
+  'elite-gold': 'elite-gold.png',
   'elite-blush': 'elite-blush.png',
 }
 
 export const APP_ICON_OPTIONS: { id: AppIconTheme; label: string }[] = [
   { id: 'elite-original', label: 'Elite Original' },
   { id: 'elite-pure-black', label: 'Elite Pure Black' },
-  { id: 'elite-indigo', label: 'Elite Indigo' },
+  { id: 'elite-gold', label: 'Elite Gold' },
   { id: 'elite-blush', label: 'Elite Blush' },
 ]
 
 export function normalizeAppIconTheme(value: unknown): AppIconTheme {
   return typeof value === 'string' && value in ICON_FILES
     ? (value as AppIconTheme)
-    : 'elite-indigo'
+    : 'elite-gold'
 }
 
 function preferredSize(): number {
@@ -38,7 +38,7 @@ function preferredSize(): number {
 }
 
 export function getThemeIcon(theme: AppIconTheme, size = preferredSize()): string {
-  const file = ICON_FILES[theme] ?? ICON_FILES['elite-indigo']
+  const file = ICON_FILES[theme] ?? ICON_FILES['elite-gold']
   return ICON_URLS[`../assets/theme-icons/${size}/${file}`] ?? ''
 }
 

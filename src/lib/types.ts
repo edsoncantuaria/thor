@@ -73,11 +73,11 @@ export type Theme =
   | 'golden-premium'
   | 'elite-original'
   | 'elite-pure-black'
-  | 'elite-indigo'
+  | 'elite-gold'
   | 'elite-blush'
 
 /** Native desktop icon variants. The UI theme and app icon theme are independent. */
-export type AppIconTheme = 'elite-original' | 'elite-pure-black' | 'elite-indigo' | 'elite-blush'
+export type AppIconTheme = 'elite-original' | 'elite-pure-black' | 'elite-gold' | 'elite-blush'
 
 export type VisualStyle = 'normal' | 'clean'
 
@@ -557,10 +557,10 @@ export type ProjectsFile = {
 
 export const DEFAULT_PREFERENCES: Preferences = {
   language: 'en',
-  uiTheme: 'elite-indigo',
+  uiTheme: 'elite-gold',
   visualStyle: 'normal',
   motionPreference: 'animated',
-  appIconTheme: 'elite-indigo',
+  appIconTheme: 'elite-gold',
   uiZoom: 1,
   windowOpacity: 1,
   terminalTheme: null,

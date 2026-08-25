@@ -250,11 +250,11 @@ const ELITE_PURE_BLACK_THEME = {
   cursor: '#ffffff',
   selectionBackground: '#ffffff33',
 } as const
-const ELITE_INDIGO_THEME = {
+const ELITE_GOLD_THEME = {
   background: '#0c0c0c',
-  foreground: '#f2f0ff',
-  cursor: '#7d72ff',
-  selectionBackground: '#7d72ff44',
+  foreground: '#fffcf0',
+  cursor: '#ffde72',
+  selectionBackground: '#ffde7244',
 } as const
 const ELITE_BLUSH_THEME = {
   background: '#fff7f2',
@@ -283,7 +283,7 @@ const XTERM_THEMES = {
   'golden-premium': GOLDEN_PREMIUM_THEME,
   'elite-original': ELITE_ORIGINAL_THEME,
   'elite-pure-black': ELITE_PURE_BLACK_THEME,
-  'elite-indigo': ELITE_INDIGO_THEME,
+  'elite-gold': ELITE_GOLD_THEME,
   'elite-blush': ELITE_BLUSH_THEME,
 } satisfies Record<Theme, unknown>
 
