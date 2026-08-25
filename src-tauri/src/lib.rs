@@ -44,6 +44,7 @@ mod ollama;
 mod opencode_bridge;
 mod opencode_gsd_plugin;
 mod opencode_sessions;
+mod optimizer;
 pub mod orchestrator;
 pub mod orchestrator_core;
 mod paths;
@@ -258,6 +259,10 @@ pub fn run() {
             activity_stats::record_activity_samples,
             activity_stats::get_activity_summary,
             activity_stats::clear_activity_stats,
+            optimizer::optimizer_install_caveman,
+            optimizer::optimizer_install_rtk,
+            optimizer::optimizer_configure_rtk,
+            optimizer::optimizer_install_headroom,
             ollama::ollama_is_installed,
             ollama::ollama_install,
             ollama::ollama_list_models,

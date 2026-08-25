@@ -6,6 +6,7 @@ import {
   type CliShimStatus,
   cliShimStatus,
   cliShimUninstall,
+  findCliLauncher,
   listenOllamaPullProgress,
   type OllamaInstanceInfo,
   ollamaInstall,
@@ -16,7 +17,12 @@ import {
   ollamaPullModel,
   ollamaStartInstance,
   ollamaStopInstance,
+  optimizerConfigureRtk,
+  optimizerInstallCaveman,
+  optimizerInstallHeadroom,
+  optimizerInstallRtk,
 } from '../../../lib/tauri'
+import type { Preferences } from '../../../lib/types'
 import { useProjectsStore } from '../../../stores/projectsStore'
 import controls from '../controls.module.css'
 import styles from '../PreferencesModal.module.css'
@@ -311,6 +317,120 @@ function OllamaSection() {
   )
 }
 
+function OptimizerSection() {
+  const t = useT()
+  const preferences = useProjectsStore((state) => state.preferences)
+  const setPreferences = useProjectsStore((state) => state.setPreferences)
+  const [cavemanInstalled, setCavemanInstalled] = useState<boolean | null>(null)
+  const [rtkInstalled, setRtkInstalled] = useState<boolean | null>(null)
+  const [headroomInstalled, setHeadroomInstalled] = useState<boolean | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const refreshDetection = () => {
+    void findCliLauncher('caveman').then((path) => setCavemanInstalled(path !== null))
+    void findCliLauncher('rtk').then((path) => setRtkInstalled(path !== null))
+    void findCliLauncher('headroom').then((path) => setHeadroomInstalled(path !== null))
+  }
+
+  useEffect(refreshDetection, [])
+
+  const run = async (key: string, action: () => Promise<void>) => {
+    setBusy(key)
+    setError(null)
+    try {
+      await action()
+      refreshDetection()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const setWrapper = (wrapper: Preferences['optimizerWrapper']) => {
+    setPreferences({ optimizerWrapper: wrapper })
+  }
+
+  return (
+    <SettingsSection id="optimizer" title={t('prefs.optimizer')} description={t('prefs.optimizerDesc')}>
+      <div className={styles.integrationFields}>
+        <div className={styles.segmented}>
+          <button
+            type="button"
+            className={preferences.optimizerWrapper === 'none' ? styles.segmentActive : undefined}
+            onClick={() => setWrapper('none')}
+          >
+            {t('prefs.optimizerNone')}
+          </button>
+          <button
+            type="button"
+            className={preferences.optimizerWrapper === 'caveman' ? styles.segmentActive : undefined}
+            onClick={() => setWrapper('caveman')}
+          >
+            Caveman
+          </button>
+          <button
+            type="button"
+            className={preferences.optimizerWrapper === 'headroom' ? styles.segmentActive : undefined}
+            onClick={() => setWrapper('headroom')}
+          >
+            Headroom
+          </button>
+        </div>
+
+        <div className={styles.cliActions}>
+          <span>Caveman — {cavemanInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}</span>
+          <button
+            type="button"
+            className={`${controls.btn} ${controls.btnPrimary}`}
+            disabled={busy !== null}
+            onClick={() => void run('caveman', optimizerInstallCaveman)}
+          >
+            {busy === 'caveman' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
+          </button>
+        </div>
+
+        <div className={styles.cliActions}>
+          <span>Headroom — {headroomInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}</span>
+          <button
+            type="button"
+            className={`${controls.btn} ${controls.btnPrimary}`}
+            disabled={busy !== null}
+            onClick={() => void run('headroom', optimizerInstallHeadroom)}
+          >
+            {busy === 'headroom' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
+          </button>
+        </div>
+
+        <div className={styles.cliActions}>
+          <span>RTK — {rtkInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}</span>
+          <button
+            type="button"
+            className={`${controls.btn} ${controls.btnPrimary}`}
+            disabled={busy !== null}
+            onClick={() => void run('rtk', optimizerInstallRtk)}
+          >
+            {busy === 'rtk' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
+          </button>
+          {rtkInstalled ? (
+            <button
+              type="button"
+              className={controls.btn}
+              disabled={busy !== null}
+              onClick={() => void run('rtk-configure', optimizerConfigureRtk)}
+            >
+              {busy === 'rtk-configure' ? t('prefs.optimizerRtkConfiguring') : t('prefs.optimizerRtkConfigure')}
+            </button>
+          ) : null}
+        </div>
+
+        {error ? <p className={styles.cliWarning}>{error}</p> : null}
+      </div>
+    </SettingsSection>
+  )
+}
+
 export function IntegrationsPage() {
   const t = useT()
   const preferences = useProjectsStore((state) => state.preferences)
@@ -320,6 +440,8 @@ export function IntegrationsPage() {
       <TerminalCommandSection />
 
       <OllamaSection />
+
+      <OptimizerSection />
 
       <SettingsSection id="spotify" title={t('prefs.spotify')} description={t('prefs.spotifyDesc')}>
         <div className={styles.integrationFields}>

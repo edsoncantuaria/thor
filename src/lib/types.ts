@@ -490,6 +490,8 @@ export type Preferences = {
   notifyOnLimitReset: boolean
   /** Ditado por voz (speech-to-text) escreve no terminal ativo. Default false. */
   dictationEnabled: boolean
+  /** Wrapper de otimização de tokens aplicado ao spawnar um agente conhecido. Mutuamente exclusivo — os dois interceptam o mesmo mecanismo. Default 'none'. */
+  optimizerWrapper: 'none' | 'caveman' | 'headroom'
   /** Quantos PTYs podem ser spawnados em paralelo (fila global). Default 3. */
   spawnConcurrency: number
 
@@ -618,6 +620,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   rightSidebarWidth: 300,
   notifyOnLimitReset: true,
   dictationEnabled: false,
+  optimizerWrapper: 'none',
   spawnConcurrency: 3,
   resourcePolicy: {
     mode: 'manual',

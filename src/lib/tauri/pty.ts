@@ -1,6 +1,33 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
+import { applyOptimizerWrap } from '../optimizerWrap'
+
+/**
+ * Dynamic import to avoid a circular dependency: the projects store imports
+ * from this module's barrel file (`lib/tauri/index.ts`), so importing it back
+ * at the top level here would create a cycle.
+ */
+async function currentOptimizerWrapper() {
+  const { useProjectsStore } = await import('../../stores/projectsStore')
+  return useProjectsStore.getState().preferences.optimizerWrapper
+}
+
+/**
+ * A `launcherOverride` is a user-configured absolute path resolved for the
+ * *original* agent binary (e.g. a custom "claude" path). If wrapping actually
+ * changes the command, that override no longer applies to what's being
+ * exec'd — forwarding it would launch the original binary directly with the
+ * wrapper's args, silently skipping the wrapper. Drop it whenever a wrap
+ * changed the command; let the wrapper binary resolve normally via PATH.
+ */
+async function resolveWrappedSpawn(args: SpawnPtyArgs) {
+  const wrapper = await currentOptimizerWrapper()
+  const wrapped = applyOptimizerWrap(wrapper, args.command, args.extraArgs)
+  const launcherOverride = wrapped.command === args.command ? args.launcherOverride : undefined
+  return { command: wrapped.command, extraArgs: wrapped.extraArgs, launcherOverride }
+}
+
 export type SpawnPtyArgs = {
   cols: number
   rows: number
@@ -15,14 +42,15 @@ export type SpawnPtyArgs = {
 }
 
 export async function spawnPty(args: SpawnPtyArgs): Promise<{ id: string }> {
+  const { command, extraArgs, launcherOverride } = await resolveWrappedSpawn(args)
   return invoke<{ id: string }>('spawn_pty', {
     cols: args.cols,
     rows: args.rows,
     id: args.id,
-    command: args.command,
+    command,
     cwd: args.cwd,
-    extraArgs: args.extraArgs,
-    launcherOverride: args.launcherOverride,
+    extraArgs,
+    launcherOverride,
     env: args.env,
   })
 }
@@ -84,12 +112,13 @@ export async function killPtyTree(ptyId: string): Promise<number[]> {
 }
 
 export async function restartPty(args: SpawnPtyArgs & { id: string }): Promise<{ id: string }> {
+  const { command, extraArgs, launcherOverride } = await resolveWrappedSpawn(args)
   return invoke<{ id: string }>('restart_pty', {
     id: args.id,
-    command: args.command,
+    command,
     cwd: args.cwd,
-    extraArgs: args.extraArgs,
-    launcherOverride: args.launcherOverride,
+    extraArgs,
+    launcherOverride,
     env: args.env,
   })
 }
