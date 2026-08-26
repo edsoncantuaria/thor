@@ -958,7 +958,7 @@ name = "gate"
         static COUNTER: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
         let index = COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let dir = std::env::temp_dir().join(format!(
-            "alethe-mcp-test-{}-{index}-{name}",
+            "thor-mcp-test-{}-{index}-{name}",
             std::process::id()
         ));
         let _ = fs::remove_dir_all(&dir);

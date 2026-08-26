@@ -85,6 +85,8 @@ src-tauri/target/release/bundle/
 
 ## Current Scope
 
-Thor is currently focused on the local desktop app. Windows is the most tested platform, while Linux and macOS builds are supported by the release workflow and need broader real-machine validation.
+Thor is currently focused on the local desktop app. Linux is the day-to-day reference platform;
+Windows and macOS builds are supported by the release workflow and still benefit from broader
+real-machine validation.
 
 Thor does not require an Thor cloud account. Current first-party and third-party network surfaces, their defaults, and local retention/deletion behavior are documented in [`PRIVACY.md`](PRIVACY.md).

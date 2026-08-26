@@ -20,12 +20,12 @@ const PLUGIN_SOURCE: &str = r#"
 // boot do app se o conteudo mudar).
 //
                                                                                 
-// via o endpoint local passado em ALETHE_BRIDGE_ENDPOINT (injetado como env var
+// via o endpoint local passado em THOR_BRIDGE_ENDPOINT (injetado como env var
                                                                           
 // quebrar a sessao do OpenCode se o Thor nao estiver rodando ou a porta tiver
 // mudado.
-export const AletheBridgePlugin = async ({ directory }) => {
-  const endpoint = process.env.ALETHE_BRIDGE_ENDPOINT
+export const ThorBridgePlugin = async ({ directory }) => {
+  const endpoint = process.env.THOR_BRIDGE_ENDPOINT
   if (!endpoint) return {}
 
   const report = async (state) => {
@@ -90,10 +90,10 @@ mod tests {
 
     #[test]
     fn plugin_source_exports_the_expected_hooks() {
-        assert!(PLUGIN_SOURCE.contains("export const AletheBridgePlugin"));
+        assert!(PLUGIN_SOURCE.contains("export const ThorBridgePlugin"));
         assert!(PLUGIN_SOURCE.contains("session.idle"));
         assert!(PLUGIN_SOURCE.contains("tool.execute.before"));
-        assert!(PLUGIN_SOURCE.contains("ALETHE_BRIDGE_ENDPOINT"));
+        assert!(PLUGIN_SOURCE.contains("THOR_BRIDGE_ENDPOINT"));
         assert!(PLUGIN_SOURCE.contains("/opencode-status"));
     }
 }

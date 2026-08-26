@@ -253,10 +253,10 @@ export function getProjectDefaultCwd(
  *  `merge-envs` is the conflict-resolution agent's ephemeral environment
  *  (`conflict_resolution.rs`) — same class of "isolated path that doesn't
  *  represent the project's main folder" as regular worktrees. */
-const ALETHE_WORKTREES_SEGMENT = /[\\/]\.alethe[\\/](?:worktrees|merge-envs)[\\/]/i
+const THOR_WORKTREES_SEGMENT = /[\\/]\.alethe[\\/](?:worktrees|merge-envs)[\\/]/i
 
 function deriveRepoRootFromWorktreeCwd(cwd: string): string {
-  const match = cwd.match(ALETHE_WORKTREES_SEGMENT)
+  const match = cwd.match(THOR_WORKTREES_SEGMENT)
   if (!match || match.index === undefined) return ''
   return cwd.slice(0, match.index)
 }

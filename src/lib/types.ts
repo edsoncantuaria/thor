@@ -510,13 +510,13 @@ export type Preferences = {
 
   gsdSyncModelChain?: string[]
 
-  /** Worker buckets the orchestrator's `alethe_delegate` MCP tool can pick between. Default []. */
+  /** Worker buckets the orchestrator's `thor_delegate` MCP tool can pick between. Default []. */
   orchestratorBuckets: OrchestratorBucketConfig[]
 }
 
 /** One configurable delegation target: any agent CLI, any model, any invocation shape. */
 export type OrchestratorBucketConfig = {
-  /** Stable id the lead passes to `alethe_delegate`'s `bucket` field. */
+  /** Stable id the lead passes to `thor_delegate`'s `bucket` field. */
   id: string
   label: string
   /** Binary resolved on PATH the same way every other agent CLI in Thor is. */

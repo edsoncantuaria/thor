@@ -1764,7 +1764,7 @@ export const en = {
   'term.autoIsolationFailedBody':
     'Could not provision a worktree, opened a regular terminal instead. Error: {error}',
   'mod.orphansReapedAtBoot': 'Cleaned up {count} leftover orphaned process(es) this time.',
-  'mod.jobGuardActive': 'Orphan process protection: active (Windows Job Object).',
+  'mod.jobGuardActive': 'Orphan process protection: active.',
   'mod.jobGuardInactive':
     'Orphan process protection: unavailable on this platform/session. A crash may leave processes running; the next boot still tries to clean up automatically.',
   'ui.terminal.restartFailed': 'Failed to restart terminal',

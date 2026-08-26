@@ -28,7 +28,7 @@ impl OrchestratorState {
 }
 
 /// Resolving launchers lazily keeps a missing CLI install from blocking app start; the failure
-/// then surfaces as a delivery on the job that needed it (or, for `alethe_delegate`, as an
+/// then surfaces as a delivery on the job that needed it (or, for `thor_delegate`, as an
 /// immediate tool error). Resolving them scans PATH, so it happens once rather than on every
 /// request. Codex and OpenCode are independent: either, both, or neither may be installed.
 fn prepare(app: &AppHandle, state: &OrchestratorState) {
@@ -79,11 +79,11 @@ pub fn orchestrator_mcp_config_path(app: AppHandle) -> Result<String, String> {
             "alethe": {
                 "type": "http",
                 "url": format!("{endpoint}/mcp"),
-                "headers": { "X-Alethe-Token": token }
+                "headers": { "X-Thor-Token": token }
             }
         }
     });
-    let path = std::env::temp_dir().join("alethe-orchestrator-mcp.json");
+    let path = std::env::temp_dir().join("thor-orchestrator-mcp.json");
     let body = serde_json::to_string_pretty(&config).map_err(|error| error.to_string())?;
     std::fs::write(&path, body).map_err(|error| format!("write_failed:{error}"))?;
     Ok(path.to_string_lossy().into_owned())

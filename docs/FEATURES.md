@@ -48,6 +48,7 @@ Custom grids support `colSpan`, `rowSpan`, drag-and-drop swapping, and resizable
 
 - CLI launcher resolution before spawning an agent.
 - Windows launcher lookup across PATH, npm, pnpm, Volta, fnm, nvm-windows, Bun, Cargo, Scoop, Chocolatey, and common Node.js paths.
+- Linux launcher lookup across PATH plus user installs: `~/.local/bin`, Cargo, nvm, bun, npm-prefix, pnpm, volta, fnm, asdf, mise, Nix, and VS Code / VSCodium via PATH, Snap, Flatpak, and common system paths.
 - Manual launcher override when a CLI cannot be found.
 - Per-agent unrestricted mode flags:
   - Claude Code: `--dangerously-skip-permissions`

@@ -15,7 +15,7 @@ fn has_owned_marker(content: &str) -> bool {
 pub struct InstalledAgent {
     pub name: String,
     /// Whether the file contains the Thor marker and can be removed safely.
-    pub from_alethe: bool,
+    pub from_thor: bool,
 }
 
 fn agents_dir(folder: &str) -> PathBuf {
@@ -45,10 +45,10 @@ fn list_installed_agents_inner(folder: String) -> Vec<InstalledAgent> {
                 return None;
             }
             let name = path.file_stem()?.to_str()?.to_string();
-            let from_alethe = fs::read_to_string(&path)
+            let from_thor = fs::read_to_string(&path)
                 .map(|c| has_owned_marker(&c))
                 .unwrap_or(false);
-            Some(InstalledAgent { name, from_alethe })
+            Some(InstalledAgent { name, from_thor })
         })
         .collect();
     agents.sort_by(|a, b| a.name.cmp(&b.name));

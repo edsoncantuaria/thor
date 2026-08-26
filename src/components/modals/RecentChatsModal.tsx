@@ -179,7 +179,7 @@ export function RecentChatsModal() {
         extraArgs: launch.args,
       })
       window.dispatchEvent(
-        new CustomEvent('alethe:terminal-resize-request', { detail: { ptyId: tab.ptyId } }),
+        new CustomEvent('thor:terminal-resize-request', { detail: { ptyId: tab.ptyId } }),
       )
       setSubTabSessionId(project.id, targetTerminal.id, tab.id, entry.id)
       closeModal()

@@ -1,5 +1,5 @@
 /**
- * Thin bridge to the app's real e2e hook (`window.__ALETHE_E2E__`,
+ * Thin bridge to the app's real e2e hook (`window.__THOR_E2E__`,
  * see `src/lib/e2eHooks.ts`) — called via WebDriver's STANDARD
  * `browser.execute()` (not `browser.tauri.execute()`).
  *
@@ -13,15 +13,15 @@
  * and it's exactly the frontend where real bugs have already shown up in this session
  * (Part 1: the validation gate lying; terminal sync
  * fixes). The standard `browser.execute()` WAS confirmed to work (it reaches
- * `window.location`, `window.__ALETHE_E2E__` etc. on the real page) — so
+ * `window.location`, `window.__THOR_E2E__` etc. on the real page) — so
  * each helper here calls, via a literal function (WebdriverIO's standard
  * serialization, no manual string reconstruction), the function exposed by
  * the hook — which in turn calls the REAL function from `src/lib/api/*` that the
  * actual UI uses (the same `isTauriEnv()`/`canUseSharedCoreTransport()`
  * decision as always).
  */
-type AletheE2EWindow = {
-  __ALETHE_E2E__?: {
+type ThorE2EWindow = {
+  __THOR_E2E__?: {
     pty: {
       spawn: (cwd: string, command?: string, cols?: number, rows?: number) => Promise<string>
       write: (id: string, data: string) => Promise<void>

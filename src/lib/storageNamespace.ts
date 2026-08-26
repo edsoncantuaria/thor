@@ -1,4 +1,4 @@
-const STORAGE_PREFIX = 'alethe'
+const STORAGE_PREFIX = 'thor'
 const LEGACY_PREFIX = 'ensemble'
 
 let activeNamespace = 'default'

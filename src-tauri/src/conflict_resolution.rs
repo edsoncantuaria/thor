@@ -4,7 +4,7 @@
 //! there's integration work to do; this module provisions an **ephemeral
 //! environment** (worktree `alethe/merge-<id>`) with the real merge applied —
 //! including the conflict markers — and the **minimal context**
-//! (`ALETHE_CONFLICT.md`) for the Conflict Resolution Agent to work with:
+//! (`THOR_CONFLICT.md`) for the Conflict Resolution Agent to work with:
 //!
 //! - the agent is ephemeral and provider-agnostic: the FRONTEND spawns the
 //!   configured CLI (Claude/Codex/OpenCode) with `cwd = env.path`; it's born,
@@ -31,7 +31,7 @@ use crate::merge_analyzer::{
 };
 use crate::worktrees::git_arg;
 
-const PROMPT_FILE: &str = "ALETHE_CONFLICT.md";
+const PROMPT_FILE: &str = "THOR_CONFLICT.md";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -319,7 +319,7 @@ fn validate_and_stage(
     // it AFTER staging doesn't help: `git add -A` already captured its
     // content in the index, and deleting it from disk afterward doesn't undo
     // that stage on its own (it would need another `add -A`/`rm` to reflect
-    // the removal) — confirmed live: `ALETHE_CONFLICT.md` leaked into the
+    // the removal) — confirmed live: `THOR_CONFLICT.md` leaked into the
     // final commit because of exactly this wrong ordering, in an earlier
     // version of this same code in this session. It also can't be removed
     // any earlier than this, unconditionally (as it was before this gate
@@ -477,7 +477,7 @@ pub(crate) fn merge_finalize_inner(
         .map(|output| !output.status.success())
         .unwrap_or(true);
     if has_staged_changes {
-        // `ALETHE_CONFLICT.md` sits on disk (untracked) from BEFORE the agent
+        // `THOR_CONFLICT.md` sits on disk (untracked) from BEFORE the agent
         // even starts working (written in `merge_prepare`, above) — if the
         // agent finishes the resolution with the common "stage everything and
         // commit" pattern, this file unintentionally leaks into ITS commit
@@ -661,7 +661,7 @@ pub(crate) fn merge_preflight_abort_inner(repo: String, env_id: String) -> Resul
 ///
 /// - Clean reconciliation → `stage: "rebase_ok"`, ready for the frontend to
 ///   call `merge_finalize` again.
-/// - Conflicts → rewrites `ALETHE_CONFLICT.md`/metadata with the new
+/// - Conflicts → rewrites `THOR_CONFLICT.md`/metadata with the new
 ///   conflicted files and returns `stage: "rebase_conflict"` — same
 ///   "resolve" surface as before, frontend goes back to `resolving`.
 /// - Hard failure (not a conflict) → aborts and returns `stage: "rebase_failed"`.
@@ -911,12 +911,12 @@ mod tests {
         // other.rs came along from branch B in the merge.
         let other = fs::read_to_string(root.join("other.rs")).unwrap();
         assert!(other.contains("from_b"));
-        // ALETHE_CONFLICT.md (the ephemeral prompt) must never leak into the
+        // THOR_CONFLICT.md (the ephemeral prompt) must never leak into the
         // final commit — real regression: `git add -A` staged the file
         // BEFORE it was removed from disk, so deleting it afterward didn't
         // undo the stage and it still ended up in the commit (fixed: removal
         // now happens before `add -A`).
-        assert!(!root.join("ALETHE_CONFLICT.md").exists());
+        assert!(!root.join("THOR_CONFLICT.md").exists());
         // Temporary branch removed.
         let branches = checked_output(&root, &["branch", "--list", "alethe/merge-*"]).unwrap();
         assert!(String::from_utf8_lossy(&branches.stdout).trim().is_empty());

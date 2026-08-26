@@ -330,7 +330,7 @@ export default function App() {
         /* Browser tests may not expose the Tauri permission. */
       })
       .finally(() => {
-        window.dispatchEvent(new CustomEvent('alethe:zoom-changed', { detail: { zoom: uiZoom } }))
+        window.dispatchEvent(new CustomEvent('thor:zoom-changed', { detail: { zoom: uiZoom } }))
       })
   }, [hydrated, uiZoom])
 
@@ -533,7 +533,7 @@ export default function App() {
           resizeTargetMinimumSize={{ coarse: 28, fine: 18 }}
         >
           <Panel
-            id="alethe-left-sidebar"
+            id="thor-left-sidebar"
             panelRef={leftPanelRef}
             elementRef={leftPanelElementRef}
             defaultSize={leftSidebarVisible ? `${leftSidebarDefaultRef.current}px` : '0px'}
@@ -602,7 +602,7 @@ export default function App() {
             }}
           />
 
-          <Panel id="alethe-main" minSize="360px">
+          <Panel id="thor-main" minSize="360px">
             <main className={styles.mainView}>
               <ErrorBoundary label="view">
                 <Suspense
@@ -649,7 +649,7 @@ export default function App() {
                 }}
               />
               <Panel
-                id="alethe-todo-sidebar"
+                id="thor-todo-sidebar"
                 panelRef={rightPanelRef}
                 elementRef={rightPanelElementRef}
                 defaultSize={rightSidebarVisible ? `${rightSidebarDefaultRef.current}px` : '0px'}

@@ -84,7 +84,7 @@ mod imp {
         last_scale: f64,
 
         #[cfg(ghostty_linked)]
-        surface: crate::ghostty_ffi::AletheSurface,
+        surface: crate::ghostty_ffi::ThorSurface,
 
         #[cfg(not(ghostty_linked))]
         view: Retained<NSView>,
@@ -196,7 +196,7 @@ mod imp {
 
             // estabilizar, digitamos um echo e lemos o grid de volta — provando o
 
-            if std::env::var("ALETHE_GHOSTTY_PROBE").as_deref() == Ok("1")
+            if std::env::var("THOR_GHOSTTY_PROBE").as_deref() == Ok("1")
                 && !PROBE_STARTED.swap(true, std::sync::atomic::Ordering::SeqCst)
             {
                 let app_thread = app.clone();
@@ -242,7 +242,7 @@ mod imp {
                 });
             }
 
-            if std::env::var("ALETHE_GHOSTTY_WATCH").as_deref() == Ok("1")
+            if std::env::var("THOR_GHOSTTY_WATCH").as_deref() == Ok("1")
                 && !WATCH_STARTED.swap(true, std::sync::atomic::Ordering::SeqCst)
             {
                 let app_w = app.clone();

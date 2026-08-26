@@ -247,10 +247,10 @@ impl McpAdapter for CodexAdapter {
     }
 }
 
-/// `ALETHE_MCP_HOME` redirects every global config lookup to a scratch copy, so the
+/// `THOR_MCP_HOME` redirects every global config lookup to a scratch copy, so the
 /// write paths can be exercised without touching the real agent configuration.
 fn mcp_home(segments: &[&str]) -> Option<PathBuf> {
-    if let Some(root) = std::env::var_os("ALETHE_MCP_HOME") {
+    if let Some(root) = std::env::var_os("THOR_MCP_HOME") {
         let base = PathBuf::from(root);
         if !base.as_os_str().is_empty() {
             return Some(segments.iter().fold(base, |acc, seg| acc.join(seg)));
@@ -260,7 +260,7 @@ fn mcp_home(segments: &[&str]) -> Option<PathBuf> {
 }
 
 fn opencode_config_dir() -> Option<PathBuf> {
-    if std::env::var_os("ALETHE_MCP_HOME").is_none() {
+    if std::env::var_os("THOR_MCP_HOME").is_none() {
         if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
             let base = PathBuf::from(xdg);
             if !base.as_os_str().is_empty() {

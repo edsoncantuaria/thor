@@ -34,7 +34,7 @@ const useGsdSyncSessionsStore = create<{ sessions: GsdSyncSession[] }>(() => ({ 
  *
  * Creates no terminal/PTY — the child session runs inside the MAIN
  * terminal's OpenCode process (OpenCode's own internal multi-session
- * mechanism, via the `alethe-gsd-state.ts` plugin), so it doesn't depend on
+ * mechanism, via the `thor-gsd-state.ts` plugin), so it doesn't depend on
  * any "viewer" terminal existing. The view (GSD Sync drawer) reads the
  * content directly via `opencode export <childId>` (`GsdSyncActivityView`) —
  * a read-only HTML `<div>`, with no PTY terminal in the path.

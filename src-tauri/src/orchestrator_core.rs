@@ -50,7 +50,7 @@ pub enum LauncherKind {
 #[derive(Clone, Debug)]
 pub struct Launcher {
     pub kind: LauncherKind,
-    /// Display name only (surfaced to the lead via `alethe_status` so it can pick sensibly).
+    /// Display name only (surfaced to the lead via `thor_status` so it can pick sensibly).
     pub label: String,
     pub program: PathBuf,
     /// Base args before the model flag / task text. Fixed to `["app-server","--stdio"]` for
@@ -60,7 +60,7 @@ pub struct Launcher {
     /// (the CLI has nothing to configure, or the model is already baked into `args`/the CLI's own
     /// config).
     pub model_flag: Option<String>,
-    /// Used when `alethe_delegate` doesn't override the model for a task.
+    /// Used when `thor_delegate` doesn't override the model for a task.
     pub default_model: Option<String>,
     /// Bucket id to retry the same task on, automatically, if this one fails with what looks
     /// like a quota/rate-limit error (see `looks_like_quota_exhaustion`). User-configured, so
@@ -161,7 +161,7 @@ struct Job {
     /// Bounds automatic failover to a finite chain and stops a fallback cycle from looping.
     bucket_chain_tried: Vec<String>,
     /// Which protocol the currently (or most recently) running worker actually used. `None` while
-    /// still queued. Set once at spawn time so `alethe_steer`/`alethe_send` can give an accurate
+    /// still queued. Set once at spawn time so `thor_steer`/`thor_send` can give an accurate
     /// answer even if the bucket's config changes after the job started.
     protocol_hint: Option<LauncherKind>,
     status: String,
@@ -363,7 +363,7 @@ impl Core {
         guard(&self.auto_buckets).get(id).cloned()
     }
 
-    /// Every configured bucket, for `alethe_status` (so the lead can discover real options
+    /// Every configured bucket, for `thor_status` (so the lead can discover real options
     /// instead of guessing an id) and for the Preferences UI's live status list.
     pub fn list_buckets(&self) -> Value {
         let auto = guard(&self.auto_buckets);
@@ -440,7 +440,7 @@ impl Core {
                 STATUS_FAILED,
                 "failed",
                 &format!(
-                    "no worker bucket configured with id \"{bucket}\" — check alethe_status or add it in Preferences → Orchestrator"
+                    "no worker bucket configured with id \"{bucket}\" — check thor_status or add it in Preferences → Orchestrator"
                 ),
             );
             return;
@@ -528,7 +528,7 @@ impl Core {
             &json!({
                 "id": 1,
                 "method": "initialize",
-                "params": { "clientInfo": { "name": "alethe-orchestrator", "title": "Thor", "version": "1" } }
+                "params": { "clientInfo": { "name": "thor-orchestrator", "title": "Thor", "version": "1" } }
             }),
         );
         let _ = send_rpc(&stdin, &json!({ "method": "initialized" }));
@@ -572,7 +572,7 @@ impl Core {
 
     /// OpenCode (and anything else one-shot) has no persistent RPC thread to steer or send more
     /// work to: the whole task is the initial prompt, and the whole reply is whatever it printed
-    /// before exiting. `alethe_steer`/`alethe_send` reject jobs of this kind for that reason.
+    /// before exiting. `thor_steer`/`thor_send` reject jobs of this kind for that reason.
     fn spawn_one_shot_worker(
         &self,
         job_id: &str,
@@ -845,7 +845,7 @@ impl Core {
     }
 
     /// `terminal` decides whether the worker process dies with the turn. A completed turn keeps
-    /// it alive so `alethe_send` can hand it more work on the same thread; cancelling kills it.
+    /// it alive so `thor_send` can hand it more work on the same thread; cancelling kills it.
     fn finish(
         &self,
         job_id: &str,
@@ -902,8 +902,8 @@ impl Core {
 pub fn tools() -> Value {
     json!([
         {
-            "name": "alethe_delegate",
-            "description": "Hand independent units of work to worker agents that Thor runs for you. Returns job ids immediately; the workers run in parallel. Delegate any unit that would make you read more than 5 files or that you estimate at over 2 minutes of your own work, and send every qualifying unit in ONE call so they run at the same time. Each task must be self contained. All tasks in one call share the same bucket and model — make a separate call to mix them. Call alethe_status first if you don't already know which buckets are configured.",
+            "name": "thor_delegate",
+            "description": "Hand independent units of work to worker agents that Thor runs for you. Returns job ids immediately; the workers run in parallel. Delegate any unit that would make you read more than 5 files or that you estimate at over 2 minutes of your own work, and send every qualifying unit in ONE call so they run at the same time. Each task must be self contained. All tasks in one call share the same bucket and model — make a separate call to mix them. Call thor_status first if you don't already know which buckets are configured.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -915,7 +915,7 @@ pub fn tools() -> Value {
                     "cwd": { "type": "string", "description": "Working directory. Defaults to the lead's directory." },
                     "bucket": {
                         "type": "string",
-                        "description": "Which configured worker bucket runs the tasks — see alethe_status for the live list. \"codex\" (default) keeps a live thread you can steer or send more work to. Every other bucket is one-shot: fire the task, get the final answer, no steer/send afterwards — pick a cheap one-shot bucket (e.g. a local Ollama-backed OpenCode) for simple, well-scoped work."
+                        "description": "Which configured worker bucket runs the tasks — see thor_status for the live list. \"codex\" (default) keeps a live thread you can steer or send more work to. Every other bucket is one-shot: fire the task, get the final answer, no steer/send afterwards — pick a cheap one-shot bucket (e.g. a local Ollama-backed OpenCode) for simple, well-scoped work."
                     },
                     "model": {
                         "type": "string",
@@ -926,7 +926,7 @@ pub fn tools() -> Value {
             }
         },
         {
-            "name": "alethe_check",
+            "name": "thor_check",
             "description": "Collect what workers reported. With wait set it blocks until they settle. Process every delivery it returns before calling it again. A \"failover\" delivery means the job hit an automatic bucket failover and is still running (not settled) — its final \"worker_done\" delivery comes later, so don't treat a failover as the job finishing.",
             "inputSchema": {
                 "type": "object",
@@ -941,12 +941,12 @@ pub fn tools() -> Value {
             }
         },
         {
-            "name": "alethe_status",
-            "description": "Snapshot without blocking: every worker's status, elapsed time, current plan and token usage, plus the list of configured buckets (id, label, protocol, default model, fallback) you can pass to alethe_delegate. If a bucket has a fallback and a worker fails with what looks like a quota/rate-limit error, Thor automatically retries the same task on the fallback bucket — watch for a \"failover\" delivery in alethe_check, the job keeps its id but its bucket changes.",
+            "name": "thor_status",
+            "description": "Snapshot without blocking: every worker's status, elapsed time, current plan and token usage, plus the list of configured buckets (id, label, protocol, default model, fallback) you can pass to thor_delegate. If a bucket has a fallback and a worker fails with what looks like a quota/rate-limit error, Thor automatically retries the same task on the fallback bucket — watch for a \"failover\" delivery in thor_check, the job keeps its id but its bucket changes.",
             "inputSchema": { "type": "object", "properties": {} }
         },
         {
-            "name": "alethe_steer",
+            "name": "thor_steer",
             "description": "Correct a worker while its turn is still running, without killing it or losing its context. Use this instead of cancelling when the worker is heading the wrong way.",
             "inputSchema": {
                 "type": "object",
@@ -958,7 +958,7 @@ pub fn tools() -> Value {
             }
         },
         {
-            "name": "alethe_send",
+            "name": "thor_send",
             "description": "Give a settled worker more work on its existing thread, keeping everything it already learned.",
             "inputSchema": {
                 "type": "object",
@@ -970,7 +970,7 @@ pub fn tools() -> Value {
             }
         },
         {
-            "name": "alethe_cancel",
+            "name": "thor_cancel",
             "description": "Interrupt running workers.",
             "inputSchema": {
                 "type": "object",
@@ -979,7 +979,7 @@ pub fn tools() -> Value {
             }
         },
         {
-            "name": "alethe_release",
+            "name": "thor_release",
             "description": "Let go of settled workers you have no more work for. Account for every worker you started: either send it more work or release it.",
             "inputSchema": {
                 "type": "object",
@@ -988,7 +988,7 @@ pub fn tools() -> Value {
             }
         },
         {
-            "name": "alethe_diff",
+            "name": "thor_diff",
             "description": "Read the unified diff a worker has produced so far.",
             "inputSchema": {
                 "type": "object",
@@ -1027,7 +1027,7 @@ pub fn call_tool(
     arguments: &Map<String, Value>,
 ) -> Result<Value, String> {
     match name {
-        "alethe_delegate" => {
+        "thor_delegate" => {
             let tasks = string_list(arguments, "tasks");
             if tasks.is_empty() {
                 return Err("tasks must contain at least one instruction".into());
@@ -1100,11 +1100,11 @@ pub fn call_tool(
                 "concurrencyLimit": limit,
                 "bucket": bucket,
                 "jobs": created,
-                "next": "call alethe_check with wait true"
+                "next": "call thor_check with wait true"
             }))
         }
 
-        "alethe_check" => {
+        "thor_check" => {
             let wait = arguments.get("wait").and_then(Value::as_bool).unwrap_or(false);
             let until_all_settled = arguments
                 .get("untilAllSettled")
@@ -1150,14 +1150,14 @@ pub fn call_tool(
                 "deliveries": deliveries,
                 "workersStillBusy": pending,
                 "note": if pending > 0 {
-                    "timed out with workers still running: call alethe_check again"
+                    "timed out with workers still running: call thor_check again"
                 } else {
                     "every worker settled"
                 }
             }))
         }
 
-        "alethe_status" => {
+        "thor_status" => {
             let mut snapshot = core.snapshot();
             if let Value::Object(map) = &mut snapshot {
                 map.insert("buckets".into(), core.list_buckets()["buckets"].clone());
@@ -1165,7 +1165,7 @@ pub fn call_tool(
             Ok(snapshot)
         }
 
-        "alethe_steer" => {
+        "thor_steer" => {
             let job_id = required_str(arguments, "jobId")?;
             let message = required_str(arguments, "message")?;
             let mut inner = guard(&core.inner);
@@ -1200,7 +1200,7 @@ pub fn call_tool(
             Ok(json!({ "steered": job_id, "turnId": turn_id }))
         }
 
-        "alethe_send" => {
+        "thor_send" => {
             let job_id = required_str(arguments, "jobId")?;
             let message = required_str(arguments, "message")?;
             let mut inner = guard(&core.inner);
@@ -1223,7 +1223,7 @@ pub fn call_tool(
             }
             if inner.running >= inner.max_concurrent {
                 return Err(format!(
-                    "concurrency limit {} reached, call alethe_check first",
+                    "concurrency limit {} reached, call thor_check first",
                     inner.max_concurrent
                 ));
             }
@@ -1248,7 +1248,7 @@ pub fn call_tool(
             Ok(json!({ "sent": job_id }))
         }
 
-        "alethe_cancel" => {
+        "thor_cancel" => {
             let ids = string_list(arguments, "jobIds");
             let mut cancelled = Vec::new();
             for job_id in ids {
@@ -1279,7 +1279,7 @@ pub fn call_tool(
             Ok(json!({ "cancelled": cancelled }))
         }
 
-        "alethe_release" => {
+        "thor_release" => {
             let ids = string_list(arguments, "jobIds");
             let mut released = Vec::new();
             {
@@ -1300,7 +1300,7 @@ pub fn call_tool(
             Ok(json!({ "released": released }))
         }
 
-        "alethe_diff" => {
+        "thor_diff" => {
             let job_id = required_str(arguments, "jobId")?;
             let inner = guard(&core.inner);
             let job = inner
@@ -1334,7 +1334,7 @@ pub fn handle_mcp_body(core: &Core, body: &str) -> Option<String> {
                     .and_then(Value::as_str)
                     .unwrap_or("2025-06-18"),
                 "capabilities": { "tools": { "listChanged": false } },
-                "serverInfo": { "name": "alethe", "title": "Thor", "version": "1" }
+                "serverInfo": { "name": "thor", "title": "Thor", "version": "1" }
             }
         }),
         "tools/list" => json!({ "jsonrpc": "2.0", "id": id, "result": { "tools": tools() } }),

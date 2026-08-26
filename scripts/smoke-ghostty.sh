@@ -70,9 +70,9 @@ if [[ -f "$PROFILE_JSON" ]]; then
 fi
 
 echo "smoke: subindo o app (tauri dev) com auto-probe de input..."
-# ALETHE_GHOSTTY_PROBE=1: após a surface estabilizar, o backend digita um echo
+# THOR_GHOSTTY_PROBE=1: após a surface estabilizar, o backend digita um echo
 # e lê o grid de volta — prova o fluxo input→shell→render no app REAL.
-ALETHE_GHOSTTY_PROBE=1 ./node_modules/.bin/tauri dev >"$LOG" 2>&1 &
+THOR_GHOSTTY_PROBE=1 ./node_modules/.bin/tauri dev >"$LOG" 2>&1 &
 APP_PID=$!
 
 deadline=$((SECONDS + TIMEOUT))

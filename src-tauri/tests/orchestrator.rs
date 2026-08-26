@@ -1,6 +1,6 @@
 //! Drives the delegation core through the same MCP entry point Claude Code uses.
 //!
-//! The core is compiled directly rather than linked from `alethe_lib`: a Rust test binary carries
+//! The core is compiled directly rather than linked from `thor_lib`: a Rust test binary carries
 //! no application manifest, so linking the GUI stack makes it fail to start on Windows.
 //!
 //! Worker tests spawn real Codex processes and are ignored by default:
@@ -118,14 +118,14 @@ fn the_handshake_advertises_every_tool() {
         .collect();
 
     for expected in [
-        "alethe_delegate",
-        "alethe_check",
-        "alethe_status",
-        "alethe_steer",
-        "alethe_send",
-        "alethe_cancel",
-        "alethe_release",
-        "alethe_diff",
+        "thor_delegate",
+        "thor_check",
+        "thor_status",
+        "thor_steer",
+        "thor_send",
+        "thor_cancel",
+        "thor_release",
+        "thor_diff",
     ] {
         assert!(names.contains(&expected), "missing {expected} in {names:?}");
     }
@@ -141,7 +141,7 @@ fn a_notification_gets_no_response_body() {
 #[test]
 fn delegating_nothing_is_an_error() {
     let core = Core::default();
-    let result = call(&core, "alethe_delegate", json!({ "tasks": [] }));
+    let result = call(&core, "thor_delegate", json!({ "tasks": [] }));
     assert!(
         result["error"]
             .as_str()
@@ -156,7 +156,7 @@ fn steering_an_unknown_job_is_refused() {
     let core = Core::default();
     let result = call(
         &core,
-        "alethe_steer",
+        "thor_steer",
         json!({ "jobId": "job-99", "message": "turn left" }),
     );
     assert!(
@@ -171,7 +171,7 @@ fn steering_an_unknown_job_is_refused() {
 #[test]
 fn checking_with_no_work_returns_at_once() {
     let core = Core::default();
-    let result = call(&core, "alethe_check", json!({ "wait": true }));
+    let result = call(&core, "thor_check", json!({ "wait": true }));
     assert_eq!(result["workersStillBusy"], json!(0), "{result}");
     assert_eq!(result["deliveries"].as_array().expect("deliveries").len(), 0);
 }
@@ -182,12 +182,12 @@ fn a_job_fails_cleanly_when_no_launcher_is_configured() {
     let dir = workspace("nolauncher");
     let delegated = call(
         &core,
-        "alethe_delegate",
+        "thor_delegate",
         json!({ "cwd": dir.to_string_lossy(), "tasks": ["anything"] }),
     );
     assert_eq!(delegated["accepted"], json!(1), "{delegated}");
 
-    let checked = call(&core, "alethe_check", json!({ "wait": true, "timeoutMs": 5000 }));
+    let checked = call(&core, "thor_check", json!({ "wait": true, "timeoutMs": 5000 }));
     let deliveries = checked["deliveries"].as_array().expect("deliveries");
     assert_eq!(deliveries.len(), 1, "{checked}");
     assert_eq!(deliveries[0]["outcome"], json!("failed"));
@@ -214,7 +214,7 @@ fn the_observer_sees_every_state_change() {
     let dir = workspace("observer");
     call(
         &core,
-        "alethe_delegate",
+        "thor_delegate",
         json!({ "cwd": dir.to_string_lossy(), "tasks": ["anything"] }),
     );
 
@@ -235,7 +235,7 @@ fn two_workers_overlap_and_check_waits_for_both() {
 
     let delegated = call(
         &core,
-        "alethe_delegate",
+        "thor_delegate",
         json!({
             "cwd": dir.to_string_lossy(),
             "tasks": [
@@ -248,7 +248,7 @@ fn two_workers_overlap_and_check_waits_for_both() {
 
     let checked = call(
         &core,
-        "alethe_check",
+        "thor_check",
         json!({ "wait": true, "timeoutMs": 540000 }),
     );
     let peak = watcher.finish();
@@ -286,7 +286,7 @@ fn the_queue_never_breaches_the_concurrency_limit() {
         .collect();
     let delegated = call(
         &core,
-        "alethe_delegate",
+        "thor_delegate",
         json!({ "cwd": dir.to_string_lossy(), "tasks": tasks }),
     );
     assert_eq!(delegated["accepted"], json!(4), "{delegated}");
@@ -297,7 +297,7 @@ fn the_queue_never_breaches_the_concurrency_limit() {
 
     let checked = call(
         &core,
-        "alethe_check",
+        "thor_check",
         json!({ "wait": true, "timeoutMs": 600000 }),
     );
     let peak = watcher.finish();

@@ -87,7 +87,7 @@ async fn verify_alethe_terminal(client: &reqwest::Client, base_url: &str) -> Opt
     // early and get lost.
     tokio::time::sleep(Duration::from_millis(800)).await;
 
-    let marker = format!("ALETHE_HEALTH_PROBE_{}", nanoid::nanoid!(8));
+    let marker = format!("THOR_HEALTH_PROBE_{}", nanoid::nanoid!(8));
     let echo_line = if cfg!(windows) {
         format!("echo {marker}\r\n")
     } else {

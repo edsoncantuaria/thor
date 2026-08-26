@@ -8,7 +8,7 @@ import { captureScreenshot, markScreenshotAndClick } from '../support/screenshot
  * Tests the onboarding flow (creating the first profile) by REALLY
  * interacting with the UI — typing in the name field, clicking the
  * language and "Next"/"Finish setup" buttons via real WebDriver selectors — instead
- * of bypassing it via `window.__ALETHE_E2E__` (which only calls store
+ * of bypassing it via `window.__THOR_E2E__` (which only calls store
  * actions directly, without proving the SCREEN itself works).
  *
  * Why it exists as a separate spec: the owner observed live the onboarding
@@ -24,14 +24,14 @@ async function readPreferences(): Promise<{
   const result = await browser.execute(() => {
     const store = (
       window as unknown as {
-        __ALETHE_E2E_STORE_DEBUG__?: () => {
+        __THOR_E2E_STORE_DEBUG__?: () => {
           displayName: string
           language: string
           onboardingDone: boolean
         }
       }
-    ).__ALETHE_E2E_STORE_DEBUG__
-    if (!store) throw new Error('__ALETHE_E2E_STORE_DEBUG__ is not ready yet')
+    ).__THOR_E2E_STORE_DEBUG__
+    if (!store) throw new Error('__THOR_E2E_STORE_DEBUG__ is not ready yet')
     return store()
   })
   return result as unknown as { displayName: string; language: string; onboardingDone: boolean }

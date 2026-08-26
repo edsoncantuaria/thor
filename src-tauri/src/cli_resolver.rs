@@ -84,26 +84,34 @@ pub fn command_builder_for_terminal(
         }
     };
 
-    if cfg!(windows) {
-        let existing = builder
-            .get_env("Path")
-            .or_else(|| builder.get_env("PATH"))
-            .map(|value| value.to_string_lossy().to_string())
-            .unwrap_or_default();
-        let mut combined = existing;
-        for extra in agent_search_dirs() {
-            let extra = extra.to_string_lossy().to_string();
-            if !combined
-                .split(';')
+    let path_sep = if cfg!(windows) { ';' } else { ':' };
+    let path_key = if cfg!(windows) { "Path" } else { "PATH" };
+    let existing = builder
+        .get_env("Path")
+        .or_else(|| builder.get_env("PATH"))
+        .map(|value| value.to_string_lossy().to_string())
+        .or_else(|| env::var("PATH").ok())
+        .unwrap_or_default();
+    let mut combined = existing;
+    for extra in pty_path_extras() {
+        let extra = extra.to_string_lossy().to_string();
+        let already = if cfg!(windows) {
+            combined
+                .split(path_sep)
                 .any(|part| part.eq_ignore_ascii_case(&extra))
-            {
-                if !combined.is_empty() && !combined.ends_with(';') {
-                    combined.push(';');
-                }
-                combined.push_str(&extra);
-            }
+        } else {
+            combined.split(path_sep).any(|part| part == extra)
+        };
+        if already {
+            continue;
         }
-        builder.env("Path", combined);
+        if !combined.is_empty() && !combined.ends_with(path_sep) {
+            combined.push(path_sep);
+        }
+        combined.push_str(&extra);
+    }
+    if !combined.is_empty() {
+        builder.env(path_key, combined);
     }
     builder.env("TERM", "xterm-256color");
     builder.env("COLORTERM", "truecolor");
@@ -319,6 +327,35 @@ fn homebrew_dirs() -> Vec<PathBuf> {
     ]
 }
 
+/// Dirs prepended onto the PTY shell PATH so child tools stay visible when the
+/// app was launched from a desktop menu (minimal PATH).
+fn pty_path_extras() -> Vec<PathBuf> {
+    #[cfg(windows)]
+    {
+        agent_search_dirs()
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let mut dirs = Vec::<PathBuf>::new();
+        if let Some(home) = env::var_os("HOME").map(PathBuf::from) {
+            dirs.push(home.join(".local").join("bin"));
+            dirs.push(home.join(".cargo").join("bin"));
+        }
+        dirs.extend(linux_user_bin_dirs());
+        dirs
+    }
+    #[cfg(all(not(windows), not(target_os = "linux")))]
+    {
+        let mut dirs = Vec::<PathBuf>::new();
+        if let Some(home) = env::var_os("HOME").map(PathBuf::from) {
+            dirs.push(home.join(".local").join("bin"));
+            dirs.push(home.join(".cargo").join("bin"));
+        }
+        dirs.extend(homebrew_dirs());
+        dirs
+    }
+}
+
 /// Standard user bin dirs for Linux package managers. Desktop menus launch the
 /// app with a minimal PATH, so agents installed via `npm --prefix`, bun, pnpm,
 /// volta or nvm are invisible to `which`; these are the default install roots
@@ -332,6 +369,9 @@ fn linux_user_bin_dirs() -> Vec<PathBuf> {
         dirs.push(home.join(".bun").join("bin"));
         dirs.push(home.join(".volta").join("bin"));
         dirs.push(home.join(".local").join("share").join("pnpm"));
+        dirs.push(home.join(".asdf").join("shims"));
+        dirs.push(home.join(".local").join("share").join("mise").join("shims"));
+        dirs.push(home.join(".nix-profile").join("bin"));
     }
     if let Some(pnpm_home) = env::var_os("PNPM_HOME").map(PathBuf::from) {
         dirs.push(pnpm_home);
@@ -366,7 +406,41 @@ fn linux_user_bin_dirs() -> Vec<PathBuf> {
             }
         }
     }
+    // fnm: $FNM_DIR or ~/.local/share/fnm / ~/.fnm — version bins newest first.
+    dirs.extend(linux_fnm_version_dirs());
     dirs
+}
+
+#[cfg(target_os = "linux")]
+fn linux_fnm_version_dirs() -> Vec<PathBuf> {
+    let fnm_root = env::var_os("FNM_DIR")
+        .map(PathBuf::from)
+        .or_else(|| {
+            env::var_os("HOME").map(|h| PathBuf::from(h).join(".local").join("share").join("fnm"))
+        })
+        .filter(|p| p.is_dir())
+        .or_else(|| env::var_os("HOME").map(|h| PathBuf::from(h).join(".fnm")));
+    let Some(root) = fnm_root else {
+        return Vec::new();
+    };
+    let versions_dir = root.join("node-versions");
+    let Ok(entries) = fs::read_dir(&versions_dir) else {
+        return Vec::new();
+    };
+    let mut versions: Vec<(PathBuf, SystemTime)> = entries
+        .filter_map(|entry| entry.ok())
+        .filter_map(|entry| {
+            let path = entry.path();
+            let bin = path.join("installation").join("bin");
+            if !bin.is_dir() {
+                return None;
+            }
+            let modified = entry.metadata().and_then(|m| m.modified()).ok()?;
+            Some((bin, modified))
+        })
+        .collect();
+    versions.sort_by(|a, b| b.1.cmp(&a.1));
+    versions.into_iter().map(|(path, _)| path).collect()
 }
 
 /// Looks for the VS Code launcher (`code`) in common locations plus PATH.
@@ -374,7 +448,34 @@ fn linux_user_bin_dirs() -> Vec<PathBuf> {
 pub fn find_vscode_launcher() -> Option<PathBuf> {
     #[cfg(not(windows))]
     {
-        which::which("code").ok()
+        for name in ["code", "code-insiders", "codium"] {
+            if let Ok(path) = which::which(name) {
+                return Some(path);
+            }
+        }
+        let mut candidates = Vec::<PathBuf>::new();
+        candidates.push(PathBuf::from("/usr/share/code/bin/code"));
+        candidates.push(PathBuf::from("/usr/bin/code"));
+        candidates.push(PathBuf::from("/snap/bin/code"));
+        if let Some(home) = env::var_os("HOME").map(PathBuf::from) {
+            candidates.push(
+                home.join(".local")
+                    .join("share")
+                    .join("flatpak")
+                    .join("exports")
+                    .join("bin")
+                    .join("com.visualstudio.code"),
+            );
+        }
+        candidates.push(PathBuf::from(
+            "/var/lib/flatpak/exports/bin/com.visualstudio.code",
+        ));
+        for candidate in candidates {
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
+        None
     }
 
     #[cfg(windows)]
@@ -923,6 +1024,15 @@ pub async fn discover_provider_models(provider: String) -> Result<Vec<ModelOptio
 mod tests {
     use super::*;
     use std::path::PathBuf;
+    use std::sync::{Mutex, MutexGuard};
+
+    /// Env-mutating tests share process-global HOME/PATH; serialize them.
+    fn lock_env() -> MutexGuard<'static, ()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
 
     #[test]
     fn accepts_model_ids_and_rejects_cli_prose() {
@@ -968,15 +1078,15 @@ mod tests {
     #[cfg(windows)]
     #[test]
     fn expands_windows_environment_variables_case_insensitively() {
-        std::env::set_var("alethe_test_path", r"C:\Tools");
+        std::env::set_var("thor_test_path", r"C:\Tools");
 
         assert_eq!(
-            expand_windows_env_vars(r"%ALETHE_TEST_PATH%\bin;%alethe_test_path%"),
+            expand_windows_env_vars(r"%THOR_TEST_PATH%\bin;%thor_test_path%"),
             r"C:\Tools\bin;C:\Tools"
         );
         assert_eq!(expand_windows_env_vars(r"%NOPE%"), r"%NOPE%");
 
-        std::env::remove_var("alethe_test_path");
+        std::env::remove_var("thor_test_path");
     }
 
     #[cfg(windows)]
@@ -991,6 +1101,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn resolves_cli_launcher_on_unix() {
+        let _guard = lock_env();
         assert!(find_windows_cli_launcher("sh").is_some());
         assert!(find_windows_cli_launcher("non_existent_binary_xyz_123").is_none());
     }
@@ -1001,7 +1112,8 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn linux_user_bin_dirs_finds_npm_global_agents() {
-        let home = std::env::temp_dir().join("alethe-audit-home");
+        let _guard = lock_env();
+        let home = std::env::temp_dir().join("thor-audit-home");
         let npm_global = home.join(".npm-global").join("bin");
         std::fs::create_dir_all(&npm_global).expect("create npm-global dir");
         std::fs::write(npm_global.join("fake-agent-audit"), "#!/bin/sh\necho hi\n")
@@ -1013,11 +1125,152 @@ mod tests {
             "PATH",
             "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
         );
+        // Drop any stale cache entry from a prior HOME.
+        if let Some(cache) = LAUNCHER_CACHE.get() {
+            if let Ok(mut map) = cache.lock() {
+                map.remove("fake-agent-audit");
+            }
+        }
         let found = find_windows_cli_launcher("fake-agent-audit");
         assert!(
             found.is_some(),
             "linux_user_bin_dirs should find npm-global installs: {found:?}"
         );
+        if let Some(h) = original_home {
+            std::env::set_var("HOME", h);
+        } else {
+            std::env::remove_var("HOME");
+        }
+        if let Some(p) = original_path {
+            std::env::set_var("PATH", p);
+        } else {
+            std::env::remove_var("PATH");
+        }
+        let _ = std::fs::remove_dir_all(&home);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pty_path_extras_include_linux_user_bins() {
+        let _guard = lock_env();
+        let home = std::env::temp_dir().join("alethe-pty-path-home");
+        let npm_global = home.join(".npm-global").join("bin");
+        let asdf = home.join(".asdf").join("shims");
+        let mise = home.join(".local").join("share").join("mise").join("shims");
+        let nix = home.join(".nix-profile").join("bin");
+        let fnm_bin = home
+            .join(".local")
+            .join("share")
+            .join("fnm")
+            .join("node-versions")
+            .join("v22.0.0")
+            .join("installation")
+            .join("bin");
+        for dir in [&npm_global, &asdf, &mise, &nix, &fnm_bin] {
+            std::fs::create_dir_all(dir).expect("create dir");
+        }
+        let original_home = std::env::var_os("HOME");
+        let original_fnm = std::env::var_os("FNM_DIR");
+        std::env::set_var("HOME", &home);
+        std::env::remove_var("FNM_DIR");
+
+        let extras = pty_path_extras();
+        assert!(
+            extras.iter().any(|p| p == &npm_global),
+            "missing npm-global: {extras:?}"
+        );
+        assert!(
+            extras.iter().any(|p| p == &asdf),
+            "missing asdf: {extras:?}"
+        );
+        assert!(
+            extras.iter().any(|p| p == &mise),
+            "missing mise: {extras:?}"
+        );
+        assert!(extras.iter().any(|p| p == &nix), "missing nix: {extras:?}");
+        assert!(
+            extras.iter().any(|p| p == &fnm_bin),
+            "missing fnm: {extras:?}"
+        );
+        assert!(
+            extras
+                .iter()
+                .any(|p| p == &home.join(".local").join("bin")),
+            "missing ~/.local/bin: {extras:?}"
+        );
+
+        if let Some(h) = original_home {
+            std::env::set_var("HOME", h);
+        } else {
+            std::env::remove_var("HOME");
+        }
+        if let Some(v) = original_fnm {
+            std::env::set_var("FNM_DIR", v);
+        }
+        let _ = std::fs::remove_dir_all(&home);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn command_builder_injects_linux_pty_path_extras() {
+        let _guard = lock_env();
+        let home = std::env::temp_dir().join("alethe-builder-path-home");
+        let npm_global = home.join(".npm-global").join("bin");
+        std::fs::create_dir_all(&npm_global).expect("create npm-global");
+        let original_home = std::env::var_os("HOME");
+        let original_path = std::env::var_os("PATH");
+        std::env::set_var("HOME", &home);
+        std::env::set_var("PATH", "/usr/bin:/bin");
+
+        let builder = command_builder_for_terminal(None, None, &[]);
+        let path = builder
+            .get_env("PATH")
+            .or_else(|| builder.get_env("Path"))
+            .expect("PATH should be set on the builder")
+            .to_string_lossy()
+            .into_owned();
+        assert!(
+            path.split(':')
+                .any(|part| part == npm_global.to_string_lossy()),
+            "PTY PATH should include linux user bins: {path}"
+        );
+
+        if let Some(h) = original_home {
+            std::env::set_var("HOME", h);
+        } else {
+            std::env::remove_var("HOME");
+        }
+        if let Some(p) = original_path {
+            std::env::set_var("PATH", p);
+        } else {
+            std::env::remove_var("PATH");
+        }
+        let _ = std::fs::remove_dir_all(&home);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn find_vscode_launcher_checks_flatpak_export_path() {
+        let _guard = lock_env();
+        let home = std::env::temp_dir().join("alethe-vscode-home");
+        let flatpak_bin = home
+            .join(".local")
+            .join("share")
+            .join("flatpak")
+            .join("exports")
+            .join("bin");
+        std::fs::create_dir_all(&flatpak_bin).expect("create flatpak bin");
+        let launcher = flatpak_bin.join("com.visualstudio.code");
+        std::fs::write(&launcher, "#!/bin/sh\necho code\n").expect("write launcher");
+        let original_home = std::env::var_os("HOME");
+        let original_path = std::env::var_os("PATH");
+        std::env::set_var("HOME", &home);
+        // Keep PATH free of a real `code` so the flatpak export is the hit.
+        std::env::set_var("PATH", "/usr/sbin:/sbin");
+
+        let found = find_vscode_launcher();
+        assert_eq!(found.as_deref(), Some(launcher.as_path()));
+
         if let Some(h) = original_home {
             std::env::set_var("HOME", h);
         } else {

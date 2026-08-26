@@ -651,7 +651,7 @@ pub struct DiffSummaryEntry {
 
 /// `opencode.json` (MCP do Graphify + plugin GSD, escritos automaticamente a
 
-/// `.opencode/alethe-gsd-config.json`, `.planning/goal.md` etc. como se
+/// `.opencode/thor-gsd-config.json`, `.planning/goal.md` etc. como se
 
 /// Thor escrevendo essa infraestrutura na worktree.
 fn is_alethe_infra_path(path: &str) -> bool {
@@ -1451,7 +1451,7 @@ mod tests {
         fs::write(
             root.join(".opencode")
                 .join("plugins")
-                .join("alethe-gsd-state.ts"),
+                .join("thor-gsd-state.ts"),
             "",
         )
         .unwrap();

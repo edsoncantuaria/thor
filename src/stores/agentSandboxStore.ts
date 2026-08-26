@@ -65,7 +65,7 @@ type AgentSandboxState = {
   ungroupNodes: (groupId: string) => void
 }
 
-const SPAWN_BRIDGE_PROMPT = `You are the Planner Claude inside Thor. You are the parent orchestrator. When the user asks you to delegate work, create a real Codex worker through Thor's local bridge instead of doing the work yourself. Use a short self-contained task and include parent_id='lead'. Example: $body=@{agent='codex';task='Create worker-proof.txt containing READY';cwd=(pwd).Path;parent_id='lead'}|ConvertTo-Json -Compress; Invoke-RestMethod "$env:ALETHE_AGENT_HOOKS_ENDPOINT/spawn" -Method Post -Headers @{'X-Alethe-Token'=$env:ALETHE_AGENT_HOOKS_TOKEN} -ContentType 'application/json' -Body $body. Keep task under 300 characters. Thor injects the worker's completed response back into your terminal, so review it and send follow-up work through the same bridge or composer. Never claim a worker completed work until its response arrives. If a worker exists, do not perform its delegated task yourself or edit its files.`
+const SPAWN_BRIDGE_PROMPT = `You are the Planner Claude inside Thor. You are the parent orchestrator. When the user asks you to delegate work, create a real Codex worker through Thor's local bridge instead of doing the work yourself. Use a short self-contained task and include parent_id='lead'. Example: $body=@{agent='codex';task='Create worker-proof.txt containing READY';cwd=(pwd).Path;parent_id='lead'}|ConvertTo-Json -Compress; Invoke-RestMethod "$env:THOR_AGENT_HOOKS_ENDPOINT/spawn" -Method Post -Headers @{'X-Thor-Token'=$env:THOR_AGENT_HOOKS_TOKEN} -ContentType 'application/json' -Body $body. Keep task under 300 characters. Thor injects the worker's completed response back into your terminal, so review it and send follow-up work through the same bridge or composer. Never claim a worker completed work until its response arrives. If a worker exists, do not perform its delegated task yourself or edit its files.`
 
 type SpawnPayload = {
   agent?: string
@@ -218,7 +218,7 @@ export const useAgentSandboxStore = create<AgentSandboxState>((set, get) => ({
                 ...(automatedTaskArgs ?? (payload.agent === 'claude' ? ['--model', 'haiku', '--dangerously-skip-permissions'] : [])),
                 ...(payload.agent === 'claude' ? ['--settings', settingsPath] : []),
               ],
-              env: { ALETHE_AGENT_HOOKS_ENDPOINT: endpoint, ALETHE_AGENT_HOOKS_TOKEN: token },
+              env: { THOR_AGENT_HOOKS_ENDPOINT: endpoint, THOR_AGENT_HOOKS_TOKEN: token },
             })
           }
           if (generation !== sandboxGeneration) {
@@ -365,7 +365,7 @@ export const useAgentSandboxStore = create<AgentSandboxState>((set, get) => ({
           cwd,
           command: node.command === 'shell' ? undefined : node.command,
           extraArgs: [...(node.extraArgs ?? []), '--settings', settingsPath],
-          env: { ALETHE_AGENT_HOOKS_ENDPOINT: endpoint, ALETHE_AGENT_HOOKS_TOKEN: token },
+          env: { THOR_AGENT_HOOKS_ENDPOINT: endpoint, THOR_AGENT_HOOKS_TOKEN: token },
         })
         if (generation !== sandboxGeneration) {
           await killPty(ptyId).catch(() => {})

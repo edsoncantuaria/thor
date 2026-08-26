@@ -24,46 +24,113 @@ pub fn open_in_file_explorer(path: String) -> Result<(), String> {
     let target = existing_path_from_user_input(&path)?;
 
     #[cfg(target_os = "windows")]
-    let result = if target.is_file() {
-        Command::new("explorer")
-            .arg("/select,")
-            .arg(target.as_os_str())
-            .spawn()
-    } else {
-        Command::new("explorer").arg(target.as_os_str()).spawn()
-    };
+    {
+        let result = if target.is_file() {
+            Command::new("explorer")
+                .arg("/select,")
+                .arg(target.as_os_str())
+                .spawn()
+        } else {
+            Command::new("explorer").arg(target.as_os_str()).spawn()
+        };
+        return result.map(|_| ()).map_err(|e| e.to_string());
+    }
 
     #[cfg(target_os = "macos")]
-    let result = if target.is_file() {
-        Command::new("open")
-            .arg("-R")
-            .arg(target.as_os_str())
-            .spawn()
-    } else {
-        Command::new("open").arg(target.as_os_str()).spawn()
-    };
+    {
+        let result = if target.is_file() {
+            Command::new("open")
+                .arg("-R")
+                .arg(target.as_os_str())
+                .spawn()
+        } else {
+            Command::new("open").arg(target.as_os_str()).spawn()
+        };
+        return result.map(|_| ()).map_err(|e| e.to_string());
+    }
 
     #[cfg(all(unix, not(target_os = "macos")))]
-    let result = {
-        let dir = if target.is_file() {
-            target
+    {
+        if target.is_file() {
+            if linux_show_items(&target).is_ok() {
+                return Ok(());
+            }
+            let dir = target
                 .parent()
                 .map(|p| p.to_path_buf())
-                .unwrap_or_else(|| target.clone())
-        } else {
-            target.clone()
-        };
-        Command::new("xdg-open").arg(dir.as_os_str()).spawn()
-    };
+                .unwrap_or_else(|| target.clone());
+            return Command::new("xdg-open")
+                .arg(dir.as_os_str())
+                .spawn()
+                .map(|_| ())
+                .map_err(|e| e.to_string());
+        }
+        return Command::new("xdg-open")
+            .arg(target.as_os_str())
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| e.to_string());
+    }
 
-    result.map(|_| ()).map_err(|e| e.to_string())
+    #[cfg(not(any(windows, unix)))]
+    {
+        let _ = target;
+        Err("open in file explorer is not supported on this platform".into())
+    }
+}
+
+/// Build a `file://` URI with each path segment percent-encoded (spaces, `#`, non-ASCII).
+#[cfg(all(unix, not(target_os = "macos")))]
+pub(crate) fn file_uri_for_path(path: &std::path::Path) -> Result<String, String> {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        path.canonicalize()
+            .map_err(|e| e.to_string())?
+    };
+    let raw = absolute.to_string_lossy();
+    let encoded = raw
+        .split('/')
+        .map(|segment| {
+            if segment.is_empty() {
+                String::new()
+            } else {
+                urlencoding::encode(segment).into_owned()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("/");
+    Ok(format!("file://{encoded}"))
+}
+
+/// FreeDesktop FileManager1.ShowItems — selects the file in the file manager.
+#[cfg(all(unix, not(target_os = "macos")))]
+fn linux_show_items(path: &std::path::Path) -> Result<(), String> {
+    let uri = file_uri_for_path(path)?;
+    let status = Command::new("dbus-send")
+        .args([
+            "--session",
+            "--dest=org.freedesktop.FileManager1",
+            "--type=method_call",
+            "/org/freedesktop/FileManager1",
+            "org.freedesktop.FileManager1.ShowItems",
+            &format!("array:string:{uri}"),
+            "string:",
+        ])
+        .status()
+        .map_err(|e| e.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("FileManager1.ShowItems failed".into())
+    }
 }
 
 #[tauri::command]
 pub fn open_in_vscode(path: String) -> Result<(), String> {
     let target = existing_path_from_user_input(&path)?;
     let launcher = find_vscode_launcher().ok_or_else(|| {
-        "VS Code não encontrado (procurado em PATH, LOCALAPPDATA, ProgramFiles)".to_string()
+        "VS Code not found (searched PATH, Snap, Flatpak, and common install locations)".to_string()
     })?;
     let is_cmd = launcher
         .extension()
@@ -432,9 +499,9 @@ mod windows_clipboard {
     }
 }
 
-/// Backend de clipboard pra Linux/BSD via ferramentas de linha de comando
-/// (`wl-paste`/`wl-copy` no Wayland, `xclip` no X11) — sem essas ferramentas
-/// instaladas, os comandos de clipboard retornam erro em vez de panicar.
+/// Clipboard backend for Linux/BSD via CLI tools (`wl-paste`/`wl-copy` on
+/// Wayland, `xclip` on X11). Tries the preferred tool first, then the other,
+/// so XWayland sessions still work when only `xclip` is installed.
 #[cfg(all(unix, not(target_os = "macos")))]
 mod unix_clipboard {
     use std::io::Write;
@@ -447,29 +514,40 @@ mod unix_clipboard {
     }
 
     fn paste_tool() -> Result<&'static str, String> {
-        let (tool, package) = if wayland() {
-            ("wl-paste", "wl-clipboard")
+        let preferred = if wayland() {
+            [("wl-paste", "wl-clipboard"), ("xclip", "xclip")]
         } else {
-            ("xclip", "xclip")
+            [("xclip", "xclip"), ("wl-paste", "wl-clipboard")]
         };
-        which::which(tool)
-            .map(|_| tool)
-            .map_err(|_| format!("{tool} não encontrado no PATH (pacote `{package}`)"))
+        for (tool, _) in preferred {
+            if which::which(tool).is_ok() {
+                return Ok(tool);
+            }
+        }
+        Err(
+            "neither wl-paste nor xclip found on PATH (install `wl-clipboard` or `xclip`)"
+                .into(),
+        )
     }
 
     fn copy_tool() -> Result<&'static str, String> {
-        let (tool, package) = if wayland() {
-            ("wl-copy", "wl-clipboard")
+        let preferred = if wayland() {
+            [("wl-copy", "wl-clipboard"), ("xclip", "xclip")]
         } else {
-            ("xclip", "xclip")
+            [("xclip", "xclip"), ("wl-copy", "wl-clipboard")]
         };
-        which::which(tool)
-            .map(|_| tool)
-            .map_err(|_| format!("{tool} não encontrado no PATH (pacote `{package}`)"))
+        for (tool, _) in preferred {
+            if which::which(tool).is_ok() {
+                return Ok(tool);
+            }
+        }
+        Err(
+            "neither wl-copy nor xclip found on PATH (install `wl-clipboard` or `xclip`)"
+                .into(),
+        )
     }
 
-    /// Lista os mimetypes disponíveis no clipboard (equivalente a
-    /// IsClipboardFormatAvailable, mas descobrindo tudo de uma vez).
+    /// List available clipboard MIME types (equivalent to IsClipboardFormatAvailable).
     fn list_types() -> Vec<String> {
         let Ok(tool) = paste_tool() else {
             return Vec::new();
@@ -508,16 +586,15 @@ mod unix_clipboard {
         }
         .map_err(|e| e.to_string())?;
         if !output.status.success() {
-            return Err(format!("falha ao ler clipboard ({mime})"));
+            return Err(format!("failed to read clipboard ({mime})"));
         }
         Ok(output.stdout)
     }
 
-    /// `text/uri-list` é o mimetype padrão que gerenciadores de arquivo
-    /// (Nautilus, Dolphin, Thunar, ...) usam ao copiar arquivos: uma lista de
-    /// URIs `file://` separadas por linha, com comentários opcionais em `#`.
-    /// GNOME/Nautilus às vezes só expõe `x-special/gnome-copied-files`
-    /// (mesmo formato, com uma linha extra "copy"/"cut" no início).
+    /// `text/uri-list` is the MIME type file managers (Nautilus, Dolphin, Thunar)
+    /// use when copying files: `file://` URIs, one per line, optional `#` comments.
+    /// GNOME/Nautilus sometimes only exposes `x-special/gnome-copied-files`
+    /// (same format, with an extra "copy"/"cut" line at the top).
     fn parse_uri_list(raw: &str) -> Vec<String> {
         raw.lines()
             .map(str::trim)
@@ -544,7 +621,7 @@ mod unix_clipboard {
             return Ok(ClipboardPayload::Empty);
         }
 
-        // Mesma ordem de prioridade do backend Windows: arquivos > imagem > texto.
+        // Same priority order as the Windows backend: files > image > text.
         let uri_mime = ["text/uri-list", "x-special/gnome-copied-files"]
             .into_iter()
             .find(|mime| types.iter().any(|t| t == mime));
@@ -556,10 +633,10 @@ mod unix_clipboard {
             }
         }
 
-        // image/png cobre a esmagadora maioria dos casos reais (screenshots,
-        // "copiar imagem" no navegador). Formatos crus como image/bmp ou
-        // image/jpeg não são reencodados aqui de propósito, pra não exigir
-        // features extras da crate `image` só pra esse caminho.
+        // image/png covers the vast majority of real cases (screenshots,
+        // "copy image" in the browser). Raw formats like image/bmp or
+        // image/jpeg are intentionally not re-encoded here, to avoid pulling
+        // extra `image` crate features just for this path.
         if types.iter().any(|t| t == "image/png") {
             let bytes = read_type("image/png")?;
             if !bytes.is_empty() {
@@ -601,13 +678,13 @@ mod unix_clipboard {
         child
             .stdin
             .take()
-            .ok_or_else(|| "stdin do clipboard indisponível".to_string())?
+            .ok_or_else(|| "clipboard stdin unavailable".to_string())?
             .write_all(text.as_bytes())
             .map_err(|e| e.to_string())?;
 
         let status = child.wait().map_err(|e| e.to_string())?;
         if !status.success() {
-            return Err(format!("{tool} retornou erro"));
+            return Err(format!("{tool} returned an error"));
         }
         Ok(())
     }
@@ -840,5 +917,28 @@ mod macos_clipboard {
         } else {
             Ok(ClipboardPayload::Text { text })
         }
+    }
+}
+
+#[cfg(all(test, unix, not(target_os = "macos")))]
+mod file_uri_tests {
+    use super::file_uri_for_path;
+    use std::path::Path;
+
+    #[test]
+    fn file_uri_encodes_spaces_hash_and_non_ascii() {
+        let uri = file_uri_for_path(Path::new("/home/user/My Screenshot #1 café.png"))
+            .expect("uri");
+        assert!(uri.starts_with("file:///"));
+        assert!(uri.contains("My%20Screenshot"));
+        assert!(uri.contains("%231"));
+        assert!(!uri.contains(' '));
+        assert!(!uri.contains('#'));
+    }
+
+    #[test]
+    fn file_uri_keeps_path_separators() {
+        let uri = file_uri_for_path(Path::new("/tmp/plain.txt")).expect("uri");
+        assert_eq!(uri, "file:///tmp/plain.txt");
     }
 }

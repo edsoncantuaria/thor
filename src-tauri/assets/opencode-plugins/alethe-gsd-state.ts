@@ -44,7 +44,7 @@
 // Modelo: cada ciclo tenta primeiro o MESMO modelo que a sessão principal
 // acabou de usar (espelhado, sempre automático) e, se isso falhar, tenta em
 // ordem a cadeia de fallback configurada globalmente no app (lida em
-// runtime de `.opencode/alethe-gsd-config.json`, escrito pelo Thor a cada
+// runtime de `.opencode/thor-gsd-config.json`, escrito pelo Thor a cada
 // spawn). Falha é detectada via `session.error` (evento dedicado,
 // confirmado empiricamente — não é uma promise rejeitada) seguido de
 // `session.idle`; só escreve `.planning/.gsd-child-error` se TODA a cadeia
@@ -82,7 +82,7 @@ const CHILD_SESSION_SENTINEL = '.gsd-child-session'
 const CHILD_BUSY_SENTINEL = '.gsd-child-busy'
 const CHILD_ERROR_SENTINEL = '.gsd-child-error'
 const PROCEDURE_FILE = 'procedure.json'
-const MODEL_CHAIN_CONFIG_PATH = '.opencode/alethe-gsd-config.json'
+const MODEL_CHAIN_CONFIG_PATH = '.opencode/thor-gsd-config.json'
 // Tools que indicam trabalho real feito (não só leitura/investigação) — além
 // de `todowrite`, qualquer uma dessas também marca a sessão como "dirty" pra
 // disparar um ciclo GSD Sync novo, mesmo sem lista de tarefas envolvida.
@@ -193,7 +193,7 @@ function extractMirroredModel(messages: any[]): ModelRef | null {
   return typeof providerID === 'string' && typeof modelID === 'string' ? { providerID, modelID } : null
 }
 
-export const AletheGsdStatePlugin: Plugin = async ({ directory, worktree, client }) => {
+export const ThorGsdStatePlugin: Plugin = async ({ directory, worktree, client }) => {
   const root = (worktree as string | undefined) ?? directory
   const planningDir = join(root, PLANNING_DIR)
   let lastTask = ''

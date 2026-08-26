@@ -45,8 +45,9 @@ cmd /c '"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxil
 ```
 
 When returning the path of a generated installer, always report the **full absolute path on the PC**
-(for example, `D:\project\src-tauri\target\release\bundle\nsis\Thor_setup.exe`), never just the
-path relative to the repository.
+(for example, `/home/user/Projetos/thor/src-tauri/target/release/bundle/appimage/Thor_….AppImage` on
+Linux, or `D:\project\src-tauri\target\release\bundle\nsis\Thor_setup.exe` on Windows), never just
+the path relative to the repository.
 
 ## 5. Non-negotiable rules
 
@@ -84,7 +85,7 @@ path relative to the repository.
 - `lib.rs` — `invoke_handler` (registration of every `#[tauri::command]`).
 - `pty.rs` — spawn/attach/write/resize/restart/kill of PTYs + on-disk scrollback.
 - `projects.rs` — atomic load/save of `projects.json`. `profiles` — isolated multi-profile support.
-- `cli_resolver.rs` — discovers CLIs (pwsh/powershell, Node managers, VS Code) on Windows.
+- `cli_resolver.rs` — discovers CLIs (shells, Node managers, VS Code) across Windows, Linux, and macOS.
 - `claude_sessions.rs` / `codex_sessions.rs` / `claude_usage.rs` — session and usage reading.
 - `spotify.rs`, `backup.rs`, `diagnostics.rs`, `agent_library.rs`, `agent_events.rs`, `stats.rs`.
 

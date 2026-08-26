@@ -12,7 +12,7 @@ import { join } from 'node:path'
  * premise of "always starts empty, with no `.git`".
  */
 export function createEmptyFixtureProject(): { path: string; cleanup: () => void } {
-  const path = mkdtempSync(join(tmpdir(), 'alethe-e2e-fixture-'))
+  const path = mkdtempSync(join(tmpdir(), 'thor-e2e-fixture-'))
   return {
     path,
     cleanup: () => {

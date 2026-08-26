@@ -73,7 +73,7 @@ fn derive_item_task_id(project_id: &str, text: &str) -> String {
     format!("{project_id}-gsd-{:x}", hasher.finish())
 }
 
-/// formato real (escrito por `alethe-gsd-state.ts` a partir de `todowrite`)
+/// formato real (escrito por `thor-gsd-state.ts` a partir de `todowrite`)
 
 pub fn load_gsd_tasks(project_id: &str, repo_path: &str) -> Result<(), String> {
     let repo_root = crate::git_control::repository_root(repo_path)?;

@@ -2,12 +2,12 @@
 //!
 //! Runs the same core the desktop app hosts over HTTP, so any MCP client can delegate to Codex
 //! workers without Thor being open. The core is compiled in directly rather than linked from
-//! `alethe_lib`, which keeps this binary free of the GUI stack.
+//! `thor_lib`, which keeps this binary free of the GUI stack.
 //!
 //! Environment:
-//!   ALETHE_CODEX      path to the codex launcher, otherwise resolved from PATH
-//!   ALETHE_OPENCODE   path to the opencode launcher, otherwise resolved from PATH
-//!   ALETHE_MAX_WORKERS  how many workers may run at once, default 4
+//!   THOR_CODEX      path to the codex launcher, otherwise resolved from PATH
+//!   THOR_OPENCODE   path to the opencode launcher, otherwise resolved from PATH
+//!   THOR_MAX_WORKERS  how many workers may run at once, default 4
 
 #[path = "../orchestrator_core.rs"]
 mod orchestrator_core;
@@ -43,17 +43,17 @@ fn resolve_cli(env_var: &str, command: &str) -> Option<PathBuf> {
 fn main() {
     let core = Core::default();
 
-    match resolve_cli("ALETHE_CODEX", "codex") {
+    match resolve_cli("THOR_CODEX", "codex") {
         Some(program) => core.set_launcher(AGENT_CODEX, Launcher::codex_app_server(program)),
-        None => eprintln!("[alethe-orchestrator] codex not found on PATH; codex delegation will fail"),
+        None => eprintln!("[thor-orchestrator] codex not found on PATH; codex delegation will fail"),
     }
 
-    match resolve_cli("ALETHE_OPENCODE", "opencode") {
+    match resolve_cli("THOR_OPENCODE", "opencode") {
         Some(program) => core.set_launcher(AGENT_OPENCODE, Launcher::opencode_run(program)),
-        None => eprintln!("[alethe-orchestrator] opencode not found on PATH; opencode delegation will fail"),
+        None => eprintln!("[thor-orchestrator] opencode not found on PATH; opencode delegation will fail"),
     }
 
-    if let Some(limit) = std::env::var("ALETHE_MAX_WORKERS")
+    if let Some(limit) = std::env::var("THOR_MAX_WORKERS")
         .ok()
         .and_then(|value| value.parse::<usize>().ok())
     {

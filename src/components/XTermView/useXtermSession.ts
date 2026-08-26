@@ -402,7 +402,7 @@ export function useXtermSession(params: {
       if (disposed || writeRecoveryPending || id !== ptyIdRef.current) return
       writeRecoveryPending = true
       window.dispatchEvent(
-        new CustomEvent('alethe:terminal-restart-request', { detail: { ptyId: id } }),
+        new CustomEvent('thor:terminal-restart-request', { detail: { ptyId: id } }),
       )
       window.setTimeout(() => {
         writeRecoveryPending = false
@@ -676,8 +676,8 @@ export function useXtermSession(params: {
       terminal.options.fontSize = currentFontSize
       scheduleResize(true)
     }
-    window.addEventListener('alethe:zoom-changed', onZoomChanged)
-    window.addEventListener('alethe:terminal-resize-request', onResizeRequest)
+    window.addEventListener('thor:zoom-changed', onZoomChanged)
+    window.addEventListener('thor:terminal-resize-request', onResizeRequest)
 
     const initialFitTimer = window.setTimeout(() => {
       scheduleResize()
@@ -1405,8 +1405,8 @@ export function useXtermSession(params: {
       window.removeEventListener('focus', restoreLastTerminalFocus)
       document.removeEventListener('visibilitychange', restoreLastTerminalFocus)
       container.removeEventListener('contextmenu', onContextMenu)
-      window.removeEventListener('alethe:zoom-changed', onZoomChanged)
-      window.removeEventListener('alethe:terminal-resize-request', onResizeRequest)
+      window.removeEventListener('thor:zoom-changed', onZoomChanged)
+      window.removeEventListener('thor:terminal-resize-request', onResizeRequest)
       ro.disconnect()
       if (resizeTimer !== null) window.clearTimeout(resizeTimer)
       if (writeFrame !== null) window.cancelAnimationFrame(writeFrame)

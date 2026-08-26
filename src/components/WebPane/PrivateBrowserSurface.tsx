@@ -286,7 +286,7 @@ export function PrivateBrowserSurface({
     const unsubscribeOverlayPresence = subscribeOverlayPresence(scheduleSync)
     window.addEventListener('resize', scheduleSync)
     window.addEventListener('scroll', scheduleSync, true)
-    window.addEventListener('alethe:zoom-changed', scheduleSync)
+    window.addEventListener('thor:zoom-changed', scheduleSync)
     // Moving to a monitor with a different scale changes physical pixels without moving the DOM.
     void getCurrentWindow()
       .onScaleChanged(scheduleSync)
@@ -305,7 +305,7 @@ export function PrivateBrowserSurface({
       unsubscribeOverlayPresence()
       window.removeEventListener('resize', scheduleSync)
       window.removeEventListener('scroll', scheduleSync, true)
-      window.removeEventListener('alethe:zoom-changed', scheduleSync)
+      window.removeEventListener('thor:zoom-changed', scheduleSync)
       reevaluateRef.current = null
       if (frame !== null) window.cancelAnimationFrame(frame)
       unlistenCreated?.()

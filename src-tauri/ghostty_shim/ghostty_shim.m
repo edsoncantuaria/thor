@@ -20,11 +20,11 @@ static bool g_last_key_composing = false;
 // Registro simples de surfaces vivas, para redesenhá-las após cada tick (o
 // terminal precisa de um draw quando há output/cursor; o Ghostty sinaliza via
 // wakeup, e nós desenhamos no tick). Capacidade fixa pequena é suficiente.
-@class AletheGhosttyView;
+@class ThorGhosttyView;
 
-#define ALETHE_MAX_SURFACES 256
-static ghostty_surface_t g_surfaces[ALETHE_MAX_SURFACES];
-static AletheGhosttyView *g_views[ALETHE_MAX_SURFACES];
+#define THOR_MAX_SURFACES 256
+static ghostty_surface_t g_surfaces[THOR_MAX_SURFACES];
+static ThorGhosttyView *g_views[THOR_MAX_SURFACES];
 static int g_surface_count = 0;
 
 // Contador de draws emitidos — instrumentação para o teste de render contínuo
@@ -40,8 +40,8 @@ static void alethe_draw_surface(ghostty_surface_t s) {
 static void alethe_display_link_start(void);
 static void alethe_display_link_stop(void);
 
-static void alethe_register_surface(ghostty_surface_t s, AletheGhosttyView *v) {
-    if (g_surface_count < ALETHE_MAX_SURFACES) {
+static void alethe_register_surface(ghostty_surface_t s, ThorGhosttyView *v) {
+    if (g_surface_count < THOR_MAX_SURFACES) {
         g_surfaces[g_surface_count] = s;
         g_views[g_surface_count] = v;
         g_surface_count++;
@@ -154,7 +154,7 @@ static void shim_write_clipboard_cb(void *userdata,
     [pb setString:s forType:NSPasteboardTypeString];
 }
 
-// O userdata da surface é a AletheGhosttyView dona dela (setado em cfg.userdata
+// O userdata da surface é a ThorGhosttyView dona dela (setado em cfg.userdata
 // no surface_new). Este helper (definido após a classe) resolve view -> surface.
 // Antes, cfg.userdata era NULL e o guard abaixo abortava TODO paste (Cmd+V
 // silenciosamente morto) — o Ghostty pedia o clipboard e ninguém respondia.
@@ -201,7 +201,7 @@ static ghostty_input_mods_e alethe_mods(NSEventModifierFlags f) {
 // WebView do Tauri, roteava o input pra a WKWebView e o texto sumia). Assim a
 // tecla de acento morto (ABNT2: ´ ` ~ ^) compõe com a vogal seguinte sem
 // depender do roteamento de input-context do AppKit.
-@interface AletheGhosttyView : NSView <NSTextInputClient>
+@interface ThorGhosttyView : NSView <NSTextInputClient>
 @property (nonatomic, assign) ghostty_surface_t surface;
 // Estado de dead-key do UCKeyTranslate (memória de composição). PER-VIEW, nunca
 // global: guarda o acento morto pendente entre um keyDown e o próximo.
@@ -213,7 +213,7 @@ static ghostty_input_mods_e alethe_mods(NSEventModifierFlags f) {
 @property (nonatomic, assign) SEL lastCommand;
 @end
 
-@implementation AletheGhosttyView
+@implementation ThorGhosttyView
 - (BOOL)acceptsFirstResponder { return YES; }
 - (BOOL)becomeFirstResponder {
     if (self.surface) ghostty_surface_set_focus(self.surface, true);
@@ -540,8 +540,8 @@ static void alethe_install_cmd_monitor(void) {
         if (!(event.modifierFlags & NSEventModifierFlagCommand)) return event;
         NSWindow *win = event.window ?: NSApp.keyWindow;
         NSResponder *fr = win.firstResponder;
-        if (![fr isKindOfClass:[AletheGhosttyView class]]) return event;
-        AletheGhosttyView *v = (AletheGhosttyView *)fr;
+        if (![fr isKindOfClass:[ThorGhosttyView class]]) return event;
+        ThorGhosttyView *v = (ThorGhosttyView *)fr;
         if (!v.surface) return event;
 
         ghostty_input_key_s key;
@@ -567,7 +567,7 @@ static void alethe_install_cmd_monitor(void) {
     }];
 }
 
-alethe_surface_t alethe_ghostty_surface_new(void *superview,
+thor_surface_t alethe_ghostty_surface_new(void *superview,
                                             const char *cwd,
                                             const char *command,
                                             double scale_factor) {
@@ -577,7 +577,7 @@ alethe_surface_t alethe_ghostty_surface_new(void *superview,
     // Cria a NSView customizada que recebe input e hospeda a surface, e a anexa
     // à superview (content view da janela do Tauri) fornecida pelo Rust.
     NSView *parent = (__bridge NSView *)superview;
-    AletheGhosttyView *view = [[AletheGhosttyView alloc] initWithFrame:parent.bounds];
+    ThorGhosttyView *view = [[ThorGhosttyView alloc] initWithFrame:parent.bounds];
     view.wantsLayer = YES;
     [parent addSubview:view];
     alethe_install_cmd_monitor();
@@ -607,19 +607,19 @@ alethe_surface_t alethe_ghostty_surface_new(void *superview,
     // de projeto) engoliria todo o teclado, enquanto a surface visível não
     // receberia input — exatamente o bug "digito e nada aparece". O foco passa a
     // vir do clique (mouseDown) ou de um focus explícito do app.
-    return (alethe_surface_t)surface;
+    return (thor_surface_t)surface;
 }
 
-// Resolve o userdata da surface (a AletheGhosttyView dona) de volta pra
+// Resolve o userdata da surface (a ThorGhosttyView dona) de volta pra
 // surface. Usado pelos callbacks de clipboard — ver forward declaration.
 static ghostty_surface_t alethe_surface_for_userdata(void *userdata) {
     if (userdata == NULL) return NULL;
-    AletheGhosttyView *v = (__bridge AletheGhosttyView *)userdata;
+    ThorGhosttyView *v = (__bridge ThorGhosttyView *)userdata;
     return v.surface;
 }
 
-// Recupera a AletheGhosttyView associada a uma surface (busca no registro).
-static AletheGhosttyView *alethe_view_for_surface(ghostty_surface_t s) {
+// Recupera a ThorGhosttyView associada a uma surface (busca no registro).
+static ThorGhosttyView *alethe_view_for_surface(ghostty_surface_t s) {
     for (int i = 0; i < g_surface_count; i++) {
         if (g_surfaces[i] == s) return g_views[i];
     }
@@ -628,21 +628,21 @@ static AletheGhosttyView *alethe_view_for_surface(ghostty_surface_t s) {
 
 // Posiciona a NSView (em pontos AppKit, origem inferior-esquerda) — chamado pelo
 // Rust no sync_frame. Mantém a view alinhada ao placeholder do DOM.
-void alethe_ghostty_surface_set_frame(alethe_surface_t surface,
+void alethe_ghostty_surface_set_frame(thor_surface_t surface,
                                       double x, double y,
                                       double w, double h) {
     if (surface == NULL) return;
-    AletheGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
+    ThorGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
     if (v) v.frame = NSMakeRect(x, y, w < 1 ? 1 : w, h < 1 ? 1 : h);
 }
 
-void alethe_ghostty_surface_set_hidden(alethe_surface_t surface, bool hidden) {
+void alethe_ghostty_surface_set_hidden(thor_surface_t surface, bool hidden) {
     if (surface == NULL) return;
-    AletheGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
+    ThorGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
     if (v) v.hidden = hidden;
 }
 
-void alethe_ghostty_surface_set_size(alethe_surface_t surface,
+void alethe_ghostty_surface_set_size(thor_surface_t surface,
                                      unsigned int width_px,
                                      unsigned int height_px) {
     if (surface == NULL) return;
@@ -650,18 +650,18 @@ void alethe_ghostty_surface_set_size(alethe_surface_t surface,
                              (uint32_t)width_px, (uint32_t)height_px);
 }
 
-void alethe_ghostty_surface_set_content_scale(alethe_surface_t surface,
+void alethe_ghostty_surface_set_content_scale(thor_surface_t surface,
                                               double x, double y) {
     if (surface == NULL) return;
     ghostty_surface_set_content_scale((ghostty_surface_t)surface, x, y);
 }
 
-void alethe_ghostty_surface_set_focus(alethe_surface_t surface, bool focused) {
+void alethe_ghostty_surface_set_focus(thor_surface_t surface, bool focused) {
     if (surface == NULL) return;
     ghostty_surface_set_focus((ghostty_surface_t)surface, focused);
 }
 
-void alethe_ghostty_surface_draw(alethe_surface_t surface) {
+void alethe_ghostty_surface_draw(thor_surface_t surface) {
     if (surface == NULL) return;
     alethe_draw_surface((ghostty_surface_t)surface);
 }
@@ -669,7 +669,7 @@ void alethe_ghostty_surface_draw(alethe_surface_t surface) {
 // true quando o processo do terminal (shell/agente) já terminou — o Ghostty
 // mostra "Press any key to close", mas cabe ao app fechar o pane. Consultado por
 // polling do frontend (ghostty_surface_exited) para reajustar o layout.
-bool alethe_ghostty_surface_process_exited(alethe_surface_t surface) {
+bool alethe_ghostty_surface_process_exited(thor_surface_t surface) {
     if (surface == NULL) return false;
     return ghostty_surface_process_exited((ghostty_surface_t)surface);
 }
@@ -678,11 +678,11 @@ unsigned long long alethe_ghostty_draw_count(void) {
     return g_draw_count;
 }
 
-bool alethe_ghostty_test_type_key(alethe_surface_t surface,
+bool alethe_ghostty_test_type_key(thor_surface_t surface,
                                   const char *characters,
                                   unsigned short keycode) {
     if (surface == NULL || characters == NULL) return false;
-    AletheGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
+    ThorGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
     if (v == nil) return false;
     NSString *chars = [NSString stringWithUTF8String:characters];
     NSEvent *e = [NSEvent keyEventWithType:NSEventTypeKeyDown
@@ -707,11 +707,11 @@ bool alethe_ghostty_test_last_key_composing(void) {
     return g_last_key_composing;
 }
 
-bool alethe_ghostty_test_ime_compose(alethe_surface_t surface,
+bool alethe_ghostty_test_ime_compose(thor_surface_t surface,
                                      const char *marked,
                                      const char *final) {
     if (surface == NULL) return false;
-    AletheGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
+    ThorGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
     if (v == nil) return false;
     // Simula a composição como o macOS faz: primeiro marca o acento morto, depois
     // insere o caractere composto final — passando pelo MESMO NSTextInputClient
@@ -727,9 +727,9 @@ bool alethe_ghostty_test_ime_compose(alethe_surface_t surface,
     return true;
 }
 
-void alethe_ghostty_surface_free(alethe_surface_t surface) {
+void alethe_ghostty_surface_free(thor_surface_t surface) {
     if (surface == NULL) return;
-    AletheGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
+    ThorGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
     alethe_unregister_surface((ghostty_surface_t)surface);
     ghostty_surface_free((ghostty_surface_t)surface);
     [v removeFromSuperview];
@@ -742,7 +742,7 @@ void alethe_ghostty_surface_free(alethe_surface_t surface) {
 void alethe_ghostty_kill_all(void) {
     while (g_surface_count > 0) {
         ghostty_surface_t s = g_surfaces[0];
-        AletheGhosttyView *v = g_views[0];
+        ThorGhosttyView *v = g_views[0];
         alethe_unregister_surface(s);
         if (s) ghostty_surface_free(s);
         [v removeFromSuperview];
@@ -754,14 +754,14 @@ void alethe_ghostty_app_tick(void) {
     if (g_app) ghostty_app_tick(g_app);
 }
 
-void alethe_ghostty_surface_send_text(alethe_surface_t surface,
+void alethe_ghostty_surface_send_text(thor_surface_t surface,
                                       const char *utf8,
                                       size_t len) {
     if (surface == NULL || utf8 == NULL || len == 0) return;
     ghostty_surface_text((ghostty_surface_t)surface, utf8, (uintptr_t)len);
 }
 
-size_t alethe_ghostty_surface_read_screen(alethe_surface_t surface,
+size_t alethe_ghostty_surface_read_screen(thor_surface_t surface,
                                           char *out,
                                           size_t cap) {
     if (surface == NULL || out == NULL || cap == 0) return 0;

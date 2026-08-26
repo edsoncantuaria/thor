@@ -78,7 +78,12 @@ fn dir_on_path(dir: &Path) -> bool {
         return windows_path::user_path_contains(dir);
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "linux")]
+    {
+        return linux_path::user_path_contains(dir);
+    }
+
+    #[cfg(all(not(windows), not(target_os = "linux")))]
     false
 }
 
@@ -252,6 +257,12 @@ pub fn cli_shim_install() -> Result<CliShimStatus, String> {
         windows_path::add_to_process_path(&bin_dir);
     }
 
+    #[cfg(target_os = "linux")]
+    {
+        linux_path::add_to_user_path(&bin_dir)?;
+        linux_path::add_to_process_path(&bin_dir);
+    }
+
     build_status()
 }
 
@@ -267,13 +278,101 @@ pub fn cli_shim_uninstall() -> Result<CliShimStatus, String> {
     #[cfg(windows)]
     windows_path::remove_from_user_path(&shim_bin_dir()?)?;
 
+    #[cfg(target_os = "linux")]
+    linux_path::remove_from_user_path(&shim_bin_dir()?)?;
+
     build_status()
+}
+
+/// Linux user-PATH via systemd `environment.d` (picked up by new graphical
+/// sessions). Mirrors the Windows HKCU Path registration.
+#[cfg(target_os = "linux")]
+mod linux_path {
+    use std::path::{Path, PathBuf};
+
+    const MARKER: &str = "# THOR_CLI_SHIM_PATH";
+    const FILE_NAME: &str = "90-thor-bin.conf";
+
+    fn config_path() -> Result<PathBuf, String> {
+        let home =
+            dirs_next::home_dir().ok_or_else(|| "could not resolve HOME".to_string())?;
+        Ok(home.join(".config").join("environment.d").join(FILE_NAME))
+    }
+
+    pub(super) fn render_conf(bin_dir: &Path) -> String {
+        let dir = bin_dir.to_string_lossy();
+        format!(
+            "{MARKER}\n\
+             # Managed by Thor (Settings ▸ Integrations ▸ Terminal command).\n\
+             # Do not edit by hand — reinstall or uninstall from there.\n\
+             PATH=\"{dir}:$PATH\"\n"
+        )
+    }
+
+    pub(super) fn is_ours(contents: &str) -> bool {
+        contents.lines().any(|line| line.trim() == MARKER)
+    }
+
+    pub(super) fn conf_lists_dir(contents: &str, dir: &Path) -> bool {
+        let needle = dir.to_string_lossy();
+        contents.lines().any(|line| {
+            let trimmed = line.trim();
+            trimmed.starts_with("PATH=") && trimmed.contains(needle.as_ref())
+        })
+    }
+
+    pub fn user_path_contains(dir: &Path) -> bool {
+        let Ok(path) = config_path() else {
+            return false;
+        };
+        let Ok(contents) = std::fs::read_to_string(&path) else {
+            return false;
+        };
+        is_ours(&contents) && conf_lists_dir(&contents, dir)
+    }
+
+    pub fn add_to_user_path(dir: &Path) -> Result<(), String> {
+        if user_path_contains(dir) {
+            return Ok(());
+        }
+        let path = config_path()?;
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        std::fs::write(&path, render_conf(dir)).map_err(|error| error.to_string())
+    }
+
+    pub fn add_to_process_path(dir: &Path) {
+        let Some(current) = std::env::var_os("PATH") else {
+            std::env::set_var("PATH", dir);
+            return;
+        };
+        if std::env::split_paths(&current).any(|entry| entry == dir) {
+            return;
+        }
+        let mut paths = vec![dir.to_path_buf()];
+        paths.extend(std::env::split_paths(&current));
+        if let Ok(joined) = std::env::join_paths(paths) {
+            std::env::set_var("PATH", joined);
+        }
+    }
+
+    pub fn remove_from_user_path(_dir: &Path) -> Result<(), String> {
+        let path = config_path()?;
+        match std::fs::read_to_string(&path) {
+            Ok(contents) if is_ours(&contents) => {
+                std::fs::remove_file(&path).map_err(|error| error.to_string())
+            }
+            Ok(_) => Ok(()), // foreign file — leave it alone
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(error.to_string()),
+        }
+    }
 }
 
 ///
 
-/// `REG_EXPAND_SZ` (comum, com entradas tipo `%USERPROFILE%\bin`) e a gente
-
+/// `REG_EXPAND_SZ` (comum, with entries like `%USERPROFILE%\bin`)
 #[cfg(windows)]
 mod windows_path {
     use std::path::Path;
@@ -490,5 +589,22 @@ mod tests {
         let script = render_shim(Path::new("/opt/alethe's app/alethe")).expect("script");
 
         assert!(script.contains(r"'\''"));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn environment_d_conf_has_marker_and_path() {
+        let dir = Path::new("/home/user/.local/bin");
+        let conf = linux_path::render_conf(dir);
+        assert!(linux_path::is_ours(&conf));
+        assert!(linux_path::conf_lists_dir(&conf, dir));
+        assert!(conf.contains("PATH=\"/home/user/.local/bin:$PATH\""));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn environment_d_uninstall_only_removes_ours() {
+        assert!(linux_path::is_ours("# THOR_CLI_SHIM_PATH\nPATH=\"/x:$PATH\"\n"));
+        assert!(!linux_path::is_ours("PATH=\"/home/user/.local/bin:$PATH\"\n"));
     }
 }

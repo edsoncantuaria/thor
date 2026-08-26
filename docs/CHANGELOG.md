@@ -12,14 +12,24 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ### Added
 
+- On Linux, agent terminals now inherit the same expanded PATH used for launcher discovery
+  (nvm, bun, npm-prefix, pnpm, volta, fnm, asdf, mise, Nix, `~/.local/bin`, Cargo), so child
+  tools stay visible when Thor is started from a desktop menu with a minimal PATH.
+- Linux CLI discovery also covers fnm, asdf, mise, and Nix profile bins, and VS Code / VSCodium
+  via PATH, Snap, Flatpak, and common system install paths.
+- Installing the `thor` terminal command on Linux writes
+  `~/.config/environment.d/90-thor-bin.conf` so `~/.local/bin` is on the user PATH for new
+  graphical sessions (mirroring the Windows user-PATH registration).
+- Revealing a file in the file manager on Linux uses FreeDesktop `ShowItems` when available, so
+  the file is selected instead of only opening its parent folder.
 - The orchestrator's worker launcher is no longer hardcoded to Codex. A new Preferences →
   Orchestrator settings page lets you configure any number of worker "buckets" — any agent CLI
   (Claude in print mode, Cursor, a second OpenCode pointed at a local Ollama model, etc.), with
   its own protocol (Codex's steerable app-server mode, or a generic one-shot `command [args]
   [model flag] task` invocation), default model, and extra args. Codex and OpenCode still work
-  out of the box when installed. `alethe_delegate` picks a bucket by id (`bucket` field) and can
-  override its model per call; `alethe_status` lists every configured bucket so the lead agent
-  can discover what's available instead of guessing. `alethe_steer`/`alethe_send` correctly
+  out of the box when installed. `thor_delegate` picks a bucket by id (`bucket` field) and can
+  override its model per call; `thor_status` lists every configured bucket so the lead agent
+  can discover what's available instead of guessing. `thor_steer`/`thor_send` correctly
   refuse one-shot buckets, since they have no live thread to steer.
 - Agent CLIs installed via nvm, bun, `npm --prefix`, pnpm or volta are now detected on Linux
   even when Thor is launched from the desktop menu — which inherits a minimal PATH — matching
@@ -68,11 +78,17 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ### Changed
 
+- Window opacity controls appear only on Windows, where the native API exists. The preference is
+  still stored so a Windows value round-trips if you switch machines.
+- Orphan-process protection status copy is platform-neutral (no longer mentions Windows Job Object
+  on every OS).
+- Linux clipboard helpers try both `wl-clipboard` and `xclip` before failing, so XWayland sessions
+  still work when only one of the two tools is installed.
 - The default profile photo, every themed app icon, and the README logo now use the
   Thor portrait instead of the previous knight avatar.
 - Docs, skills, and remaining user-visible copy now use Thor throughout. Internal
   identifiers that would break existing worktrees, merge flows, or agent hooks
-  (`.alethe/`, `alethe/agent-*` branches, `ALETHE_*` env vars, `X-Alethe-Token`,
+  (`.alethe/`, `alethe/agent-*` branches, `ALETHE_*` env vars, `X-Thor-Token`,
   crate/binary names) are unchanged. The README keeps a license attribution to
   the original project at https://github.com/Kc1t/alethe-agents.
 - Thor Remote now mirrors the selected desktop theme, app icon, motion preference, and language
@@ -833,7 +849,7 @@ memory controls, and Linux/macOS parity for Antigravity and OpenCode.
 
 ### Fixed
 
-- Secured the AgentCanvas local HTTP listener with a per-launch `X-Alethe-Token` and limited request
+- Secured the AgentCanvas local HTTP listener with a per-launch `X-Thor-Token` and limited request
   bodies to 1 MB.
 - Closed sidebars no longer reserve width in the main content area; only top-bar control space remains.
 - Stabilized the pane-area Zustand fallback to prevent React #185 during project hydration.

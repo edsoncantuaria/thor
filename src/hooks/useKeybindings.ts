@@ -68,7 +68,7 @@ export function useKeybindings() {
         }
         e.preventDefault()
         window.dispatchEvent(
-          new CustomEvent('alethe:terminal-restart-request', {
+          new CustomEvent('thor:terminal-restart-request', {
             detail: { terminalId: selected.terminalId },
           }),
         )

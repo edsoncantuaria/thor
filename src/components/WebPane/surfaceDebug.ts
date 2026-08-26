@@ -11,11 +11,11 @@ export type SurfaceDebugInfo = {
   failure: string
 }
 
-const STORAGE_KEY = 'alethe:surface-debug'
+const STORAGE_KEY = 'thor:surface-debug'
 
 /**
  * Native surface placement can only be judged on the machine that misplaces it, and a screenshot of
- * the running app carries no numbers. Setting `localStorage['alethe:surface-debug'] = '1'` overlays
+ * the running app carries no numbers. Setting `localStorage['thor:surface-debug'] = '1'` overlays
  * the measurements the driver is actually using.
  */
 export function isSurfaceDebugEnabled(): boolean {

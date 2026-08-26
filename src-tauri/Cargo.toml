@@ -1,14 +1,14 @@
 [package]
-name = "alethe"
+name = "thor"
 version = "1.6.0"
 description = "Thor — terminal multiplexer GUI for orchestrating coding agents"
 authors = ["Kauã Miguel"]
 license = "AGPL-3.0-or-later"
 edition = "2021"
-default-run = "alethe"
+default-run = "thor"
 
 [lib]
-name = "alethe_lib"
+name = "thor_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [lints.rust]

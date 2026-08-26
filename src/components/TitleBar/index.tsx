@@ -139,7 +139,7 @@ export function TitleBar() {
   const closeAgentPlanning = () => {
     if (!agentCanvasSession) return
     if (activeView === 'agentCanvas') {
-      window.dispatchEvent(new CustomEvent('alethe:agent-canvas-exit'))
+      window.dispatchEvent(new CustomEvent('thor:agent-canvas-exit'))
       return
     }
     void killPty(agentCanvasSession.ptyId).catch(() => {

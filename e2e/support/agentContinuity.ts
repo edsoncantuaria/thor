@@ -52,8 +52,8 @@ export async function verifyAgentSessionContinuity(
   await ensureAgentReady(ptyId, { timeoutMs: 60_000 })
 
   const tag = Math.random().toString(36).slice(2, 8)
-  const file1Name = `alethe-e2e-file1-${tag}.txt`
-  const file2Name = `alethe-e2e-file2-${tag}.txt`
+  const file1Name = `thor-e2e-file1-${tag}.txt`
+  const file2Name = `thor-e2e-file2-${tag}.txt`
   const file1Path = join(worktreePath, file1Name)
   const file2Path = join(worktreePath, file2Name)
 

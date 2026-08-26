@@ -3,14 +3,14 @@
 //!
 
 //!
-//! Estrutura de `.planning/` (ver `assets/opencode-plugins/alethe-gsd-state.ts`):
+//! Estrutura de `.planning/` (ver `assets/opencode-plugins/thor-gsd-state.ts`):
 
 //! sobrescrever o outro.
 
 use serde::Serialize;
 use std::path::Path;
 
-/// dedicada (`gsd_record_step`, em `alethe-gsd-state.ts`) — nunca por parsing
+/// dedicada (`gsd_record_step`, em `thor-gsd-state.ts`) — nunca por parsing
 
 #[derive(Debug, Clone, Serialize, serde::Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +36,7 @@ pub struct PlanningStatus {
     pub roadmap_pending_count: Option<usize>,
     pub roadmap_total_count: Option<usize>,
 
-    /// (`alethe-gsd-state.ts`) com o plano passo a passo, incluindo o
+    /// (`thor-gsd-state.ts`) com o plano passo a passo, incluindo o
 
     /// exibir (ex.: dividir em linhas pro checklist do Briefing de Testes).
     pub notes: Option<String>,

@@ -16,7 +16,7 @@ Use this skill whenever you need to:
 - Run or write unit tests for frontend stores, hooks, parsers, or components.
 - Run or write Rust backend unit tests, contract checks, or PTY tests.
 - Execute full desktop E2E flows (onboarding, project creation, Git pipelines, conflict resolution).
-- Test multi-client synchronization between desktop and `alethe-server`.
+- Test multi-client synchronization between desktop and `thor-server`.
 - Investigate test failures, race conditions, or UI interaction bugs.
 
 **When NOT to use:**
@@ -36,7 +36,7 @@ Use this skill whenever you need to:
 | **3b. Ghostty Bridge** | `npm run test:ghostty` | Terminal emulator & bridge tests | Ghostty/PTY changes |
 | **4. E2E UI Suite** | `npm run test:e2e` | Real WebdriverIO clicks & typing on Tauri app | Feature/UI verification |
 | **4b. Git Pipeline E2E**| `npm run test:e2e:git-pipeline` | Git init, worktrees, multi-agent merge flows | Git/agent workflow changes |
-| **5. Web Sync E2E** | `npm run test:e2e:sync` | Desktop + `alethe-server` grid convergence | Sync & WebSocket changes |
+| **5. Web Sync E2E** | `npm run test:e2e:sync` | Desktop + `thor-server` grid convergence | Sync & WebSocket changes |
 
 ---
 
@@ -110,13 +110,13 @@ WebdriverIO interacts directly with the compiled desktop application through `@w
 ### 1. Golden Rules for E2E Tests
 1. **Real Clicks, Never Action Hooks:**
    - Interacting with UI MUST happen via real WebDriver clicks (`clickByText`, `clickBySelector`) and typing (`typeIntoByPlaceholder`, `typePath`).
-   - `window.__ALETHE_E2E__` / `window.__ALETHE_E2E_QUERY__` / `window.__ALETHE_E2E_STORE_DEBUG__` are strictly **read-only** for state verification, NEVER for triggering actions (opening modals, creating projects, dispatching events).
+   - `window.__THOR_E2E__` / `window.__THOR_E2E_QUERY__` / `window.__THOR_E2E_STORE_DEBUG__` are strictly **read-only** for state verification, NEVER for triggering actions (opening modals, creating projects, dispatching events).
 2. **Strict Profile Isolation:**
-   - E2E runs use `ALETHE_APP_DATA_DIR` pointing to a clean temporary directory (`mkdtempSync`).
+   - E2E runs use `THOR_APP_DATA_DIR` pointing to a clean temporary directory (`mkdtempSync`).
    - NEVER touch or rely on `%LOCALAPPDATA%\Thor` (user's real profile).
 3. **Build Target Separation:**
-   - E2E tests compile into `src-tauri/target-e2e/debug/alethe.exe` using `CARGO_TARGET_DIR=target-e2e`.
-   - Never kill or interfere with `target\debug\alethe.exe` (user's active `tauri dev` instance).
+   - E2E tests compile into `src-tauri/target-e2e/debug/thor.exe` using `CARGO_TARGET_DIR=target-e2e`.
+   - Never kill or interfere with `target\debug\thor.exe` (user's active `tauri dev` instance).
 
 ### 2. Building for E2E
 Before running E2E tests, rebuild if frontend or backend code changed:
@@ -175,7 +175,7 @@ npx wdio run e2e/wdio.conf.ts --spec e2e/specs/_sandbox.spec.ts
 
 ## Layer 5: Sync Server & Multi-Client E2E
 
-Tests real-time state synchronization between the desktop app and the headless `alethe-server` web daemon sharing the same data root.
+Tests real-time state synchronization between the desktop app and the headless `thor-server` web daemon sharing the same data root.
 
 ```powershell
 # Build both binaries and run sync E2E
@@ -192,7 +192,7 @@ Validates terminal grid resize convergence (`cols`/`rows`) across desktop and we
 | Symptom / Gotcha | Root Cause | Solution |
 |---|---|---|
 | **WebDriver freezes when picking folder** | Native Windows folder dialog opened | Never click "Procurar" in E2E. Use `typePath(placeholder, path)` to type directly into the input. |
-| **`target-e2e\debug\alethe.exe` locked / permission denied** | Zombie process from previous failed E2E run | Check `Get-Process alethe`. Kill ONLY processes residing in `target-e2e\debug\alethe.exe`. Never kill `target\debug\alethe.exe`. |
+| **`target-e2e\debug\thor.exe` locked / permission denied** | Zombie process from previous failed E2E run | Check `Get-Process thor`. Kill ONLY processes residing in `target-e2e\debug\thor.exe`. Never kill `target\debug\thor.exe`. |
 | **E2E tests passing against stale code** | Frontend or Tauri binary was not rebuilt | Run `npm run build` and `CARGO_TARGET_DIR=target-e2e tauri build --debug --no-bundle` before testing. |
 | **`Dropdown.tsx` click intercepted** | Portal rendered at `document.body` with DPI/zoom mismatch | Use `window.visualViewport` coordinates or verify state changes via store/query hooks. |
 | **`browser.execute()` hangs ~30s** | Passing a DOM element reference into `browser.execute()` | Bug in `@wdio/tauri-service`. Use native `getLocation()`/`getSize()` and pass only numeric coordinates to `execute()`. |
@@ -205,7 +205,7 @@ Validates terminal grid resize convergence (`cols`/`rows`) across desktop and we
 | Rationalization | Reality | Counter-Action |
 |---|---|---|
 | *"TypeScript compiled cleanly, so E2E isn't needed."* | Type safety does not test CSS layouts, IPC races, or button click handlers. | Run `npm test` and the relevant E2E spec. |
-| *"I can trigger the action hook in `window.__ALETHE_E2E__` to make the test faster."* | Action hooks bypass real UI event listeners and mask broken buttons. | Use `clickByText` or `projectUi.ts` helpers. |
+| *"I can trigger the action hook in `window.__THOR_E2E__` to make the test faster."* | Action hooks bypass real UI event listeners and mask broken buttons. | Use `clickByText` or `projectUi.ts` helpers. |
 | *"I will test all flows manually in the dev server."* | Manual testing is non-repeatable and doesn't verify isolated profile creation. | Automate exploratory steps in `e2e/specs/_sandbox.spec.ts`. |
 | *"Rust unit tests don't matter if Tauri compiles."* | Rust commands manage low-level PTY spawns and atomic file writes. | Run `npm run test:rust` whenever modifying `src-tauri/src/`. |
 
@@ -213,8 +213,8 @@ Validates terminal grid resize convergence (`cols`/`rows`) across desktop and we
 
 ## Red Flags - STOP and Fix
 
-- Calling `window.__ALETHE_E2E__` to perform state mutation or click actions.
+- Calling `window.__THOR_E2E__` to perform state mutation or click actions.
 - Modifying or deleting `%LOCALAPPDATA%\Thor` directly during test runs.
-- Killing all `alethe.exe` processes without filtering by executable path.
+- Killing all `thor.exe` processes without filtering by executable path.
 - Committing frontend changes without verifying `npm run build` (i18n parity check).
 - Hardcoding file paths or assuming `D:\` drives in tests (use `fixtureProject.ts` and `tmpdir()`).

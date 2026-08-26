@@ -4,7 +4,7 @@
  * explore/click something in the UI. The usual rules still apply:
  * NEVER click "Browse" (triggers Windows' native folder picker,
  * which hangs WebDriver); every click takes a screenshot with a red marker
- * BEFORE clicking (`markScreenshotAndClick`); never use `window.__ALETHE_E2E__`
+ * BEFORE clicking (`markScreenshotAndClick`); never use `window.__THOR_E2E__`
  * to trigger an action — hooks are only for READING state (see `projectUi.ts`).
  *
  * Difference from `projectUi.ts`: those helpers are SPECIFIC to already

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 
 function realBinaryPath(): string {
-  const name = process.platform === 'win32' ? 'alethe.exe' : 'alethe'
+  const name = process.platform === 'win32' ? 'thor.exe' : 'alethe'
   // target-e2e, not target/: an isolated build that never shares the binary or the
   // build lock with the owner's interactive `tauri dev` session (see
   // CARGO_TARGET_DIR in the `test:e2e:build` script in package.json).
@@ -27,9 +27,9 @@ function realBinaryPath(): string {
  * empirically (`%APPDATA%\Thor` doesn't even exist; `%LOCALAPPDATA%\Thor` is
  * where the real data lives).
  *
- * Fix: uses `ALETHE_APP_DATA_DIR`, the explicit override that BOTH
+ * Fix: uses `THOR_APP_DATA_DIR`, the explicit override that BOTH
  * `resolve_tauri_data_root` (desktop) AND `resolve_standalone_data_root`
- * (`alethe-server`) check BEFORE any OS-specific resolution
+ * (`thor-server`) check BEFORE any OS-specific resolution
  * (`src-tauri/src/profiles.rs`) — doesn't depend on guessing which environment
  * variable the OS/Tauri actually consults on each platform. Keeps
  * `HOME`/`APPDATA`/`XDG_DATA_HOME` as reinforcement isolation (they never do
@@ -45,7 +45,7 @@ function realBinaryPath(): string {
  * arrives intact at the final spawn — `mergeOptions` does a simple spread, with no
  * whitelist), not through a wrapper.
  */
-export function prepareIsolatedLaunch(dataDir = mkdtempSync(join(tmpdir(), 'alethe-e2e-'))): {
+export function prepareIsolatedLaunch(dataDir = mkdtempSync(join(tmpdir(), 'thor-e2e-'))): {
   applicationPath: string
   dataDir: string
   env: Record<string, string>
@@ -53,7 +53,7 @@ export function prepareIsolatedLaunch(dataDir = mkdtempSync(join(tmpdir(), 'alet
 } {
   const env: Record<string, string> = {
     ALETHE_E2E: '1',
-    ALETHE_APP_DATA_DIR: dataDir,
+    THOR_APP_DATA_DIR: dataDir,
     ...(process.platform === 'win32'
       ? { APPDATA: dataDir, LOCALAPPDATA: dataDir }
       : { HOME: dataDir, XDG_DATA_HOME: join(dataDir, '.local', 'share') }),

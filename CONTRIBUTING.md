@@ -37,8 +37,9 @@ Roughly ordered from "you can do this today" to "talk to us first":
    don't need to understand the whole app to finish one.
 2. **Report a bug** with steps to reproduce, your OS, and the app version. A good bug report is
    a real contribution — several fixes here started as one.
-3. **Validate a platform.** Thor is Windows-first and still under-tested on Linux and macOS.
-   Running it on your machine and reporting exactly what broke is genuinely useful.
+3. **Validate a platform.** Linux is the reference platform; Windows and macOS builds ship from
+   the same release workflow and still need real-machine reports. Running Thor on your machine and
+   reporting exactly what broke is genuinely useful.
 4. **Improve docs, screenshots, or setup notes.** If something confused you during setup, you're
    the best-positioned person in the world to fix it. See the [theme guide](docs/THEMES.md) for adding or documenting themes.
 5. **Pick a `help wanted` issue.**

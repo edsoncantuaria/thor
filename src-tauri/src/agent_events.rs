@@ -24,7 +24,7 @@ fn check_token(request: &tiny_http::Request) -> bool {
     request
         .headers()
         .iter()
-        .any(|h| h.field.as_str() == "X-Alethe-Token" && h.value.as_str() == expected)
+        .any(|h| h.field.as_str() == "X-Thor-Token" && h.value.as_str() == expected)
 }
 
 fn listener_addr(port: u16) -> String {
@@ -72,14 +72,14 @@ pub fn agent_hooks_settings_path() -> Result<String, String> {
     let endpoint = listener_endpoint(port);
     // Namespaced by port so a second instance cannot overwrite the first one's endpoint and
     // silently redirect its agents.
-    let path = std::env::temp_dir().join(format!("alethe-agent-hooks-{port}.json"));
+    let path = std::env::temp_dir().join(format!("thor-agent-hooks-{port}.json"));
     let token = init_token();
     let hook = serde_json::json!([
         { "hooks": [ {
             "type": "http",
             "url": format!("{endpoint}/hook"),
             "timeout": 5,
-            "headers": { "X-Alethe-Token": token }
+            "headers": { "X-Thor-Token": token }
         } ] }
     ]);
     let settings = serde_json::json!({

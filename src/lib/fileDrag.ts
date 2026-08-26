@@ -1,24 +1,24 @@
-export const ALETHE_FILE_DRAG_TYPE = 'application/x-alethe-file'
+export const THOR_FILE_DRAG_TYPE = 'application/x-thor-file'
 
-export type AletheFileDragPayload = {
+export type ThorFileDragPayload = {
   projectId: string
   path: string
 }
 
 export function writeFileDragPayload(
   dataTransfer: DataTransfer,
-  payload: AletheFileDragPayload,
+  payload: ThorFileDragPayload,
 ): void {
   dataTransfer.effectAllowed = 'copy'
-  dataTransfer.setData(ALETHE_FILE_DRAG_TYPE, JSON.stringify(payload))
+  dataTransfer.setData(THOR_FILE_DRAG_TYPE, JSON.stringify(payload))
   dataTransfer.setData('text/plain', payload.path)
 }
 
-export function readFileDragPayload(dataTransfer: DataTransfer): AletheFileDragPayload | null {
-  const raw = dataTransfer.getData(ALETHE_FILE_DRAG_TYPE)
+export function readFileDragPayload(dataTransfer: DataTransfer): ThorFileDragPayload | null {
+  const raw = dataTransfer.getData(THOR_FILE_DRAG_TYPE)
   if (!raw) return null
   try {
-    const value = JSON.parse(raw) as Partial<AletheFileDragPayload>
+    const value = JSON.parse(raw) as Partial<ThorFileDragPayload>
     if (typeof value.projectId !== 'string' || typeof value.path !== 'string') return null
     const projectId = value.projectId.trim()
     const path = value.path.trim()
@@ -29,5 +29,5 @@ export function readFileDragPayload(dataTransfer: DataTransfer): AletheFileDragP
 }
 
 export function hasFileDragPayload(dataTransfer: DataTransfer): boolean {
-  return Array.from(dataTransfer.types).includes(ALETHE_FILE_DRAG_TYPE)
+  return Array.from(dataTransfer.types).includes(THOR_FILE_DRAG_TYPE)
 }

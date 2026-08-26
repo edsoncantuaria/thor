@@ -1,6 +1,7 @@
 import { Check, Minus, Pause, Plus, RotateCcw, Waves } from 'lucide-react'
 
 import { useT } from '../../../lib/i18n'
+import { isWindows } from '../../../lib/platform'
 import { APP_ICON_OPTIONS, getThemeIcon } from '../../../lib/themeIcons'
 import { THEME_OPTIONS, themeDescription, themeLabel } from '../../../lib/themes'
 import type { MotionPreference, VisualStyle } from '../../../lib/types'
@@ -270,35 +271,37 @@ export function AppearancePage() {
         />
       </SettingsSection>
 
-      <SettingsSection
-        id="window-opacity"
-        title={t('prefs.windowOpacity')}
-        description={t('prefs.windowOpacityDesc')}
-      >
-        <div className={styles.opacityControl}>
-          <input
-            type="range"
-            min="60"
-            max="100"
-            step="5"
-            value={Math.round(preferences.windowOpacity * 100)}
-            onChange={(event) =>
-              setPreferences({ windowOpacity: Number(event.target.value) / 100 })
-            }
-            aria-label={t('prefs.windowOpacity')}
-          />
-          <strong>{Math.round(preferences.windowOpacity * 100)}%</strong>
-          <button
-            type="button"
-            onClick={() => setPreferences({ windowOpacity: 1 })}
-            disabled={preferences.windowOpacity === 1}
-            aria-label={t('prefs.opacityReset')}
-          >
-            <RotateCcw size={15} />
-          </button>
-        </div>
-        <p className={styles.experimentalHint}>{t('prefs.windowOpacityHint')}</p>
-      </SettingsSection>
+      {isWindows() ? (
+        <SettingsSection
+          id="window-opacity"
+          title={t('prefs.windowOpacity')}
+          description={t('prefs.windowOpacityDesc')}
+        >
+          <div className={styles.opacityControl}>
+            <input
+              type="range"
+              min="60"
+              max="100"
+              step="5"
+              value={Math.round(preferences.windowOpacity * 100)}
+              onChange={(event) =>
+                setPreferences({ windowOpacity: Number(event.target.value) / 100 })
+              }
+              aria-label={t('prefs.windowOpacity')}
+            />
+            <strong>{Math.round(preferences.windowOpacity * 100)}%</strong>
+            <button
+              type="button"
+              onClick={() => setPreferences({ windowOpacity: 1 })}
+              disabled={preferences.windowOpacity === 1}
+              aria-label={t('prefs.opacityReset')}
+            >
+              <RotateCcw size={15} />
+            </button>
+          </div>
+          <p className={styles.experimentalHint}>{t('prefs.windowOpacityHint')}</p>
+        </SettingsSection>
+      ) : null}
     </>
   )
 }

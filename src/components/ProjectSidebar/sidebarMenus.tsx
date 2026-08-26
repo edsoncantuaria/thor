@@ -398,7 +398,7 @@ export function createSidebarMenus(deps: SidebarMenuDeps) {
         env: runtime.env,
       })
       window.dispatchEvent(
-        new CustomEvent('alethe:terminal-resize-request', { detail: { ptyId: activeTab.ptyId } }),
+        new CustomEvent('thor:terminal-resize-request', { detail: { ptyId: activeTab.ptyId } }),
       )
     } catch (err) {
       window.alert(

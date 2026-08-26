@@ -345,7 +345,7 @@ fn resolve_worktree_env(repo: &str, agent_id: &str) -> Result<PathBuf, String> {
     Ok(env)
 }
 
-/// Mirrors `isRealWork()` in `assets/opencode-plugins/alethe-gsd-state.ts` —
+/// Mirrors `isRealWork()` in `assets/opencode-plugins/thor-gsd-state.ts` —
 /// Thor's own infrastructure (GSD plugin in `.opencode/`, GSD Sync state in
 /// `.planning/`, the `opencode.json` Thor writes on every spawn) is never
 /// real agent work in this worktree and must not be auto-committed/merged.
@@ -652,7 +652,7 @@ mod tests {
         fs::write(
             env.join(".opencode")
                 .join("plugins")
-                .join("alethe-gsd-state.ts"),
+                .join("thor-gsd-state.ts"),
             "// alethe-managed: v1\n",
         )
         .unwrap();

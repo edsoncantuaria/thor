@@ -532,7 +532,7 @@ export function createProjectsSlice({ set, get, update, updateProject }: SliceCt
               env: runtime.env,
             })
             window.dispatchEvent(
-              new CustomEvent('alethe:terminal-resize-request', { detail: { ptyId: tab.ptyId } }),
+              new CustomEvent('thor:terminal-resize-request', { detail: { ptyId: tab.ptyId } }),
             )
           } catch (restartErr) {
             console.warn(
@@ -673,7 +673,7 @@ export function createProjectsSlice({ set, get, update, updateProject }: SliceCt
                   env: runtime.env,
                 })
                 window.dispatchEvent(
-                  new CustomEvent('alethe:terminal-resize-request', {
+                  new CustomEvent('thor:terminal-resize-request', {
                     detail: { ptyId: tab.ptyId },
                   }),
                 )

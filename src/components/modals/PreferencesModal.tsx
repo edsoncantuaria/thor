@@ -17,6 +17,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useT } from '../../lib/i18n'
+import { isWindows } from '../../lib/platform'
 import { getProfileImageUrl, getProfileInitial } from '../../lib/profile'
 import { useProjectsStore } from '../../stores/projectsStore'
 import { useUiStore } from '../../stores/uiStore'
@@ -184,13 +185,17 @@ export function PreferencesModal() {
         description: t('prefs.uiZoomDesc'),
         keywords: 'zoom scale escala tamanho interface',
       },
-      {
-        category: 'appearance',
-        target: 'window-opacity',
-        label: t('prefs.windowOpacity'),
-        description: t('prefs.windowOpacityDesc'),
-        keywords: 'opacity opacidade transparency transparência desktop window janela',
-      },
+      ...(isWindows()
+        ? [
+            {
+              category: 'appearance' as const,
+              target: 'window-opacity',
+              label: t('prefs.windowOpacity'),
+              description: t('prefs.windowOpacityDesc'),
+              keywords: 'opacity opacidade transparency transparência desktop window janela',
+            },
+          ]
+        : []),
       {
         category: 'appearance',
         target: 'topbar-style',

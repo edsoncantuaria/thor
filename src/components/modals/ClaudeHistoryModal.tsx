@@ -98,7 +98,7 @@ export function ClaudeHistoryModal({
         cwd,
         extraArgs: newExtraArgs,
       })
-      window.dispatchEvent(new CustomEvent('alethe:terminal-resize-request', { detail: { ptyId } }))
+      window.dispatchEvent(new CustomEvent('thor:terminal-resize-request', { detail: { ptyId } }))
 
                                                                                        
       useProjectsStore.getState().setSubTabSessionId(projectId, terminalId, tabId, sessionId)

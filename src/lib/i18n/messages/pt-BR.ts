@@ -1783,7 +1783,7 @@ export const ptBR: Record<MessageKey, string> = {
   'term.autoIsolationFailedBody':
     'Não foi possível provisionar a worktree, abriu um terminal normal. Erro: {error}',
   'mod.orphansReapedAtBoot': 'Limpamos {count} processo(s) órfão(s) que ficaram rodando dessa vez.',
-  'mod.jobGuardActive': 'Proteção contra processos órfãos: ativa (Windows Job Object).',
+  'mod.jobGuardActive': 'Proteção contra processos órfãos: ativa.',
   'mod.jobGuardInactive':
     'Proteção contra processos órfãos: indisponível nesta plataforma/sessão. Um crash pode deixar processos rodando; o próximo boot ainda tenta limpar automaticamente.',
   'ui.terminal.restartFailed': 'Falha ao reiniciar o terminal',

@@ -14,5 +14,5 @@ export function panelLayoutStorageId(
   screenId: string,
   persistenceId: string,
 ): string {
-  return `alethe-panels:${profileId}:${screenId}:${persistenceId}`
+  return `thor-panels:${profileId}:${screenId}:${persistenceId}`
 }

@@ -16,6 +16,6 @@ export const E2E_LOCALE: 'en' | 'pt-BR' = process.env.ALETHE_E2E_LOCALE === 'pt-
 
 export async function applyE2eLocale(): Promise<void> {
   await browser.execute((locale) => {
-    window.__ALETHE_E2E__?.setLanguage(locale as 'en' | 'pt-BR')
+    window.__THOR_E2E__?.setLanguage(locale as 'en' | 'pt-BR')
   }, E2E_LOCALE)
 }

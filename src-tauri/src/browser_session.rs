@@ -439,7 +439,7 @@ mod tests {
             "cmd.exe",
             "node.exe",
             "claude.exe",
-            "alethe.exe",
+            "thor.exe",
             "code.exe",
         ] {
             assert!(

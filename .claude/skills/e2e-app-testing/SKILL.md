@@ -13,16 +13,16 @@ in the comments of each file cited below — this is just the map of "what exist
 ## Golden rule: real clicks, never hooks for actions
 
 Every test in this suite interacts with the real UI via WebDriver click/typing — **never** via
-`window.__ALETHE_E2E__` to trigger an action (create project, open terminal, etc.). That hook
-exists only to **read** state the UI already created (`window.__ALETHE_E2E_QUERY__`,
-`window.__ALETHE_E2E_STORE_DEBUG__`) — never for actions. Reason: a hook can "work" even with
+`window.__THOR_E2E__` to trigger an action (create project, open terminal, etc.). That hook
+exists only to **read** state the UI already created (`window.__THOR_E2E_QUERY__`,
+`window.__THOR_E2E_STORE_DEBUG__`) — never for actions. Reason: a hook can "work" even with
 the real on-screen button broken, masking real UI bugs (it has already happened in this suite more
 than once — see CHANGELOG).
 
 ## Before running anything
 
 1. **Never run any test without isolation** — `e2e/support/launch.ts` already takes care of this via
-   `ALETHE_APP_DATA_DIR` (a fully isolated profile from the user's real profile, created from scratch
+   `THOR_APP_DATA_DIR` (a fully isolated profile from the user's real profile, created from scratch
    on every run). Never bypass this.
 2. **If anything in `src/**` changed since the last build**, rebuild both stages before running
    e2e, otherwise the test silently runs against stale code:
@@ -30,8 +30,8 @@ than once — see CHANGELOG).
    npm_config_script_shell=cmd npm run build
    CARGO_TARGET_DIR=target-e2e npm_config_script_shell=cmd npx tauri build --debug --no-bundle
    ```
-3. **Check for stuck processes** before rebuilding (`Get-Process alethe`) — only kill whatever is
-   at `target-e2e\debug\alethe.exe`; the process at `target\debug\alethe.exe` is the user's real
+3. **Check for stuck processes** before rebuilding (`Get-Process thor`) — only kill whatever is
+   at `target-e2e\debug\thor.exe`; the process at `target\debug\thor.exe` is the user's real
    app (`npm run app`), NEVER touch it.
 4. Running a spec: `npx wdio run e2e/wdio.conf.ts --spec e2e/specs/<file>.spec.ts`. Run it in the
    FOREGROUND (without redirecting to background) if the user wants to watch the window
