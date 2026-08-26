@@ -2,7 +2,7 @@
 
 <br />
 <div align="center">
-  <img src="./src/assets/theme-icons/elite-gold.png" alt="Thor Logo" width="160">
+  <img src="./src/assets/default-profile.png" alt="Thor Logo" width="160">
 
   <h1 align="center">Thor</h1>
 

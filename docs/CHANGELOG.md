@@ -68,8 +68,8 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ### Changed
 
-- The default profile photo is now the Thor portrait (arms crossed, sunset background)
-  instead of the previous dark knight avatar.
+- The default profile photo, every themed app icon, and the README logo now use the
+  Thor portrait instead of the previous knight avatar.
 - Docs, skills, and remaining user-visible copy now use Thor throughout. Internal
   identifiers that would break existing worktrees, merge flows, or agent hooks
   (`.alethe/`, `alethe/agent-*` branches, `ALETHE_*` env vars, `X-Alethe-Token`,
