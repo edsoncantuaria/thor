@@ -1,4 +1,4 @@
-import { Cloud, Download, Github, Heart, Loader2, LogOut, Upload } from 'lucide-react'
+import { Cloud, Download, Github, Loader2, LogOut, Upload } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { intlLocale, type MessageKey, useT } from '../../lib/i18n'
@@ -16,7 +16,6 @@ import { useUiStore } from '../../stores/uiStore'
 import { Modal } from './Modal'
 import styles from './SyncModal.module.css'
 
-const SPONSOR_URL = 'https://github.com/sponsors/Kc1t'
 const CREATE_TOKEN_URL =
   'https://github.com/settings/tokens/new?scopes=gist&description=Thor%20Sync'
 
@@ -306,17 +305,6 @@ export function SyncModal() {
 
       {error ? <p className={styles.error}>{error}</p> : null}
       {notice ? <p className={styles.notice}>{notice}</p> : null}
-
-      <div className={styles.sponsorRow}>
-        <button
-          type="button"
-          className={styles.sponsor}
-          onClick={() => void openInBrowser(SPONSOR_URL)}
-        >
-          <Heart size={15} />
-          {t('sync.sponsor')}
-        </button>
-      </div>
     </Modal>
   )
 }

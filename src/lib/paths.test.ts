@@ -56,7 +56,7 @@ describe('sameCwd', () => {
   })
 
   it('normaliza caixa apenas para caminhos Windows', () => {
-    expect(sameCwd('C:\\Dev\\Alethe', 'c:\\dev\\alethe')).toBe(true)
+    expect(sameCwd('C:\\Dev\\Thor', 'c:\\dev\\thor')).toBe(true)
     expect(sameCwd('/home/User/Project', '/home/user/project')).toBe(false)
   })
 

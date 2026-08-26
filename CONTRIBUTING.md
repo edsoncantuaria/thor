@@ -1,12 +1,12 @@
-# Contributing to Alethe
+# Contributing to Thor
 
-Thanks for being here. Alethe is a small project with a real user base, and outside
+Thanks for being here. Thor is a small project with a real user base, and outside
 contributions have shipped some of its best features — the in-app updater, mouse scroll inside
 TUIs, Linux CLI detection, the Git diff explorer. Yours can be next.
 
 This guide is written so you can go from `git clone` to an open pull request without having to
 ask anyone anything. If a step here doesn't work, that's a bug in this document — please
-[open an issue](https://github.com/Kc1t/alethe-agents/issues/new?labels=documentation) and say so.
+open an issue and say so.
 
 **Language:** the codebase, docs, and commit messages are in English. Issues and pull request
 descriptions in **English or Portuguese are both fine** — write in whichever you think clearly.
@@ -32,16 +32,16 @@ Nobody will be turned away over language.
 
 Roughly ordered from "you can do this today" to "talk to us first":
 
-1. **Pick a [`good first issue`](https://github.com/Kc1t/alethe-agents/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).**
+1. **Pick a `good first issue`.**
    These are scoped on purpose: the file is named, the expected result is described, and you
    don't need to understand the whole app to finish one.
 2. **Report a bug** with steps to reproduce, your OS, and the app version. A good bug report is
    a real contribution — several fixes here started as one.
-3. **Validate a platform.** Alethe is Windows-first and still under-tested on Linux and macOS.
+3. **Validate a platform.** Thor is Windows-first and still under-tested on Linux and macOS.
    Running it on your machine and reporting exactly what broke is genuinely useful.
 4. **Improve docs, screenshots, or setup notes.** If something confused you during setup, you're
    the best-positioned person in the world to fix it. See the [theme guide](docs/THEMES.md) for adding or documenting themes.
-5. **Pick a [`help wanted`](https://github.com/Kc1t/alethe-agents/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) issue.**
+5. **Pick a `help wanted` issue.**
    Bigger, less hand-held, still well-defined.
 6. **Propose a feature.** Open an issue describing the *workflow* it would improve before writing
    code — it's the cheapest way to avoid building something that won't be merged.
@@ -83,8 +83,8 @@ sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patc
 ### Clone and run
 
 ```sh
-git clone https://github.com/Kc1t/alethe-agents.git
-cd alethe-agents
+git clone <this-repository>
+cd thor
 npm install
 npm run app
 ```
@@ -191,7 +191,7 @@ fails `npm run build`. Never hardcode user-facing text in a component.
 
 **2. Colors and spacing come from tokens — never literals.**
 Use the CSS custom properties in `src/styles/theme.css` (`--bg`, `--fg`, `--accent`, `--border`,
-`--status-working`, …). Alethe ships 12 themes; a hardcoded `#10b981` looks right in dark mode and
+`--status-working`, …). Thor ships 12 themes; a hardcoded `#10b981` looks right in dark mode and
 wrong in the other eleven. No gradients.
 
 **3. One `.module.css` per component.**
@@ -199,7 +199,7 @@ CSS Modules + custom properties. No Tailwind, no styled-components, no global st
 
 **4. Feature changes update the changelog.**
 Any feature added, changed, or removed gets a short, user-facing line in
-[`docs/CHANGELOG.md`](docs/CHANGELOG.md) under the `[Não lançado]` section at the top. Release
+[`docs/CHANGELOG.md`](docs/CHANGELOG.md) under the `[Unreleased]` section at the top. Release
 notes are generated from it. Pure bug fixes and refactors don't need an entry.
 
 **5. Reuse the domain types.**
@@ -234,7 +234,7 @@ resource in this project.
 
 - What changed and why, in a couple of sentences.
 - `Closes #123` if it resolves an issue.
-- **Before/after screenshots or a GIF for any UI change.** Not optional — Alethe is a visual app
+- **Before/after screenshots or a GIF for any UI change.** Not optional — Thor is a visual app
   and this is often the fastest way to get a yes.
 - Which OS you tested on. "Windows only, untested on macOS" is a perfectly good thing to write,
   and far better than silence.
@@ -246,9 +246,8 @@ Run `npm run format` before pushing.
 CI runs the frontend build and tests plus `cargo check`/`cargo test` on all three platforms. Get
 it green — a red PR usually just waits.
 
-Review is done by the maintainer ([@Kc1t](https://github.com/Kc1t)), who works on this alongside a
-full-time job. Expect a first response within a few days. If a week goes by with nothing, a polite
-bump on the PR is welcome and not annoying.
+Review is done by the maintainer. Expect a first response within a few days. If a week goes by
+with nothing, a polite bump on the PR is welcome and not annoying.
 
 Review comments are about the code, never about you. Feel free to push back if you disagree —
 you may well be right, and "I did it this way because X" is a valid answer.
@@ -259,7 +258,7 @@ for it — you don't have to do anything).
 ## Troubleshooting
 
 **Windows Defender deletes the binary you just built.**
-Alethe spawns processes and creates PTYs from an unsigned binary, which trips Defender's ML
+Thor spawns processes and creates PTYs from an unsigned binary, which trips Defender's ML
 heuristic (`Trojan:Win32/Bearfoos.A!ml`). It's a false positive. Add an exclusion for
 `src-tauri/target` — otherwise your dev builds get quarantined mid-work. See the README for
 details.
@@ -282,6 +281,6 @@ The Rust backend compiles from scratch the first time. Grab a coffee; it's cache
 
 ## License
 
-Alethe is licensed under **AGPL-3.0-or-later**. By contributing, you agree that your contribution
-is licensed under the same terms. The **Alethe** name, logo, and branding are reserved for
+Thor is licensed under **AGPL-3.0-or-later**. By contributing, you agree that your contribution
+is licensed under the same terms. The **Thor** name, logo, and branding are reserved for
 official builds — see [`TRADEMARK.md`](TRADEMARK.md).

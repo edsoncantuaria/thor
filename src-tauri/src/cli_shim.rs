@@ -458,7 +458,7 @@ mod tests {
 
         for binary in [
             "/opt/alethe/alethe",
-            "/Applications/Alethe.app/Contents/MacOS/Alethe",
+            "/Applications/Thor.app/Contents/MacOS/Thor",
         ] {
             let script = render_shim(Path::new(binary)).expect("script");
             let file = std::env::temp_dir().join(format!(

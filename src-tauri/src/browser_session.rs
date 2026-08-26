@@ -2,8 +2,8 @@
 //!
 //! Playwright MCP can either launch its own browser or attach to one that is already running via
 //! `--cdp-endpoint`. Launching it here means the browser inherits the job object installed at
-//! startup, so it dies with Alethe instead of outliving a crash, and its profile stays in the
-//! active Alethe profile rather than the user's real one.
+//! startup, so it dies with Thor instead of outliving a crash, and its profile stays in the
+//! active Thor profile rather than the user's real one.
 
 use std::net::TcpListener;
 use std::path::PathBuf;
@@ -242,7 +242,7 @@ pub async fn browser_session_start(
 }
 
 /// Chromium deliberately breaks away from the job object that ties every other child process to
-/// Alethe, so the browser outlives a crash unless it is torn down explicitly.
+/// Thor, so the browser outlives a crash unless it is torn down explicitly.
 pub fn kill_running_session(state: &BrowserSessionState) {
     if let Ok(mut guard) = state.session.lock() {
         if let Some(session) = guard.take() {

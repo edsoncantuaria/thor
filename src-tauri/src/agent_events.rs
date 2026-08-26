@@ -159,7 +159,7 @@ pub fn start_listener(app: AppHandle) {
 
             // processo real (claude/codex/opencode) via
             // `curl -X POST /spawn -d '{"agent":"codex","task":"...","mode":"exec"}'`.
-            // O Alethe emite `agent-spawn`; o front sobe um PTY worker. Campos:
+            // O Thor emite `agent-spawn`; o front sobe um PTY worker. Campos:
 
             if url.starts_with("/mcp") {
                 let app = app.clone();
@@ -245,7 +245,7 @@ pub fn start_listener(app: AppHandle) {
                 let payload = serde_json::json!({ "agent": "codex", "task": task });
                 let _ = app.emit("agent-spawn", &payload);
                 let _ = request.respond(tiny_http::Response::from_string(
-                    "queued no terminal codex do Alethe",
+                    "queued no terminal codex do Thor",
                 ));
                 continue;
             }

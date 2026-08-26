@@ -64,7 +64,7 @@ regex = "1"
 # without rewriting the credentials, hooks and project tables around it.
 toml_edit = "0.22"
 
-# Impede execuções paralelas do Alethe (pré-requisito da guarda de
+# Impede execuções paralelas do Thor (pré-requisito da guarda de
 # monotonicidade de `save_projects` em projects.rs). Só compila em desktop —
 # a crate não suporta mobile.
 [target.'cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))'.dependencies]

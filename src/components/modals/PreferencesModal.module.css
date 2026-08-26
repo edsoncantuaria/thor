@@ -1166,3 +1166,45 @@
   right: 6px;
   color: var(--accent);
 }
+
+.bucketList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bucketCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.bucketRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.bucketRow .input {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.bucketStatus {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  white-space: nowrap;
+}
+
+.bucketStatusOk {
+  color: var(--status-working);
+}
+
+.bucketStatusMissing {
+  color: var(--status-waiting);
+}

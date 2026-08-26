@@ -209,7 +209,7 @@ export function useXtermSession(params: {
     if (!container) return
 
     if (import.meta.env.DEV) {
-      console.debug('[Alethe][xterm] mount', {
+      console.debug('[Thor][xterm] mount', {
         sessionPersistenceKey,
         retryKey,
         ptyId: ptyIdRef.current,
@@ -630,7 +630,7 @@ export function useXtermSession(params: {
       try {
         fitAddon.fit()
       } catch (error) {
-        if (import.meta.env.DEV) console.error('[Alethe][xterm] fit failed', error)
+        if (import.meta.env.DEV) console.error('[Thor][xterm] fit failed', error)
 
         return
       }
@@ -640,7 +640,7 @@ export function useXtermSession(params: {
       try {
         terminal.refresh(0, Math.max(0, terminal.rows - 1))
       } catch (error) {
-        if (import.meta.env.DEV) console.error('[Alethe][xterm] refresh failed', error)
+        if (import.meta.env.DEV) console.error('[Thor][xterm] refresh failed', error)
       }
       clampHorizontalScroll()
       const force = forceNextResize
@@ -1387,7 +1387,7 @@ export function useXtermSession(params: {
 
     return () => {
       if (import.meta.env.DEV) {
-        console.debug('[Alethe][xterm] unmount', {
+        console.debug('[Thor][xterm] unmount', {
           sessionPersistenceKey,
           retryKey,
           ptyId: ptyIdRef.current,

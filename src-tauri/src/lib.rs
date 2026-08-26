@@ -175,7 +175,7 @@ pub fn run() {
         .setup(move |app| {
             #[cfg(debug_assertions)]
             if let Some(window) = app.get_webview_window("main") {
-                let _ = window.set_title("(DEV) Alethe");
+                let _ = window.set_title("(DEV) Thor");
             }
 
             #[cfg(target_os = "linux")]
@@ -214,7 +214,7 @@ pub fn run() {
             pty::cleanup_orphan_scrollback(app.handle());
             agent_events::start_listener(app.handle().clone());
 
-            // reporta working/idle real de volta pro Alethe (ver opencode_bridge.rs).
+            // reporta working/idle real de volta pro Thor (ver opencode_bridge.rs).
             opencode_bridge::ensure_installed();
             session_watcher::start_watcher(app.handle().clone());
 
@@ -236,6 +236,8 @@ pub fn run() {
             orchestrator::orchestrator_mcp_config_path,
             orchestrator::orchestrator_jobs,
             orchestrator::orchestrator_set_concurrency,
+            orchestrator::orchestrator_set_buckets,
+            orchestrator::orchestrator_list_buckets,
             browser_session::browser_session_start,
             browser_session::browser_session_stop,
             browser_session::browser_session_status,

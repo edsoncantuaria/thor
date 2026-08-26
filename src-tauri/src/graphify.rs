@@ -745,7 +745,7 @@ mod tests {
         fs::create_dir_all(&root).unwrap();
         let run = |args: &[&str]| checked_output(&root, args).unwrap();
         run(&["init"]);
-        run(&["config", "user.name", "Alethe Test"]);
+        run(&["config", "user.name", "Thor Test"]);
         run(&["config", "user.email", "alethe@example.invalid"]);
         let out_dir = root.join(GRAPH_SUBDIR);
         fs::create_dir_all(&out_dir).unwrap();

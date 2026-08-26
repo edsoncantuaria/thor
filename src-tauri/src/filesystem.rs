@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 
 const TODO_TEMPLATE_FILE: &str = "alethe-todo.template.jsonc";
-const TODO_TEMPLATE: &str = r#"// Alethe Todo template
+const TODO_TEMPLATE: &str = r#"// Thor Todo template
                                                                                      
 // For now, the app stores Todo items in its local profile; this template documents
 // the structure expected by the importer/sync layer.

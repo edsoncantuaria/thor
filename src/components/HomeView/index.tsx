@@ -3,13 +3,10 @@ import {
   Bell,
   CheckCircle2,
   ChevronDown,
-  CircleDot,
   Flame,
   FolderOpen,
   FolderPlus,
-  Github,
   Layers,
-  PackageOpen,
   Send,
   TerminalSquare,
 } from 'lucide-react'
@@ -22,7 +19,6 @@ import { formatHomeDate, formatRelativeTimestamp, getGreeting } from '../../lib/
 import { useT, type TFunction } from '../../lib/i18n'
 import { formatShortcut } from '../../lib/platform'
 import { getFirstName, getProfileImageUrl, getProfileInitial } from '../../lib/profile'
-import { openInBrowser } from '../../lib/tauri'
 import { getProjectDefaultCwd, useProjectsStore } from '../../stores/projectsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { UNRESTRICTED_FLAG, type AgentType, type Project } from '../../lib/types'
@@ -40,9 +36,6 @@ import styles from './HomeView.module.css'
 
 const RECENT_PROJECTS_LIMIT = 6
 const NOTIFICATIONS_LIMIT = 5
-const REPOSITORY_URL = 'https://github.com/Kc1t/alethe-agents'
-const ISSUES_URL = `${REPOSITORY_URL}/issues`
-const RELEASES_URL = `${REPOSITORY_URL}/releases`
 const QUICK_AGENTS: Array<{ type: AgentType; label: string }> = [
   { type: 'claude', label: 'Claude' },
   { type: 'codex', label: 'Codex' },
@@ -578,23 +571,6 @@ export function HomeView() {
       </div>
 
       <footer className={styles.footer}>
-        <div className={styles.footerLinks}>
-          <FooterLink
-            icon={<Github size={13} />}
-            label={t('home.repository')}
-            onClick={() => void openInBrowser(REPOSITORY_URL)}
-          />
-          <FooterLink
-            icon={<CircleDot size={13} />}
-            label={t('home.issues')}
-            onClick={() => void openInBrowser(ISSUES_URL)}
-          />
-          <FooterLink
-            icon={<PackageOpen size={13} />}
-            label={t('home.releases')}
-            onClick={() => void openInBrowser(RELEASES_URL)}
-          />
-        </div>
         <div className={styles.footerShortcuts}>
           <FooterShortcut
             keys={formatShortcut('Ctrl+P')}
@@ -695,19 +671,3 @@ function FooterShortcut({
   )
 }
 
-function FooterLink({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-}) {
-  return (
-    <button type="button" className={styles.footerLink} onClick={onClick}>
-      {icon}
-      <span>{label}</span>
-    </button>
-  )
-}

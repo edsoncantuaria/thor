@@ -1,6 +1,6 @@
-# Alethe visual styles
+# Thor visual styles
 
-Alethe supports two application-wide visual languages. They share behavior, accessibility, theme
+Thor supports two application-wide visual languages. They share behavior, accessibility, theme
 palettes, and component logic; only presentation changes.
 
 ## Normal

@@ -1,13 +1,13 @@
 ---
 name: testing-app
-description: Use when running, authoring, debugging, or validating tests across any layer of the Alethe application (frontend unit tests, Rust backend tests, TypeScript/i18n checks, or WebdriverIO E2E UI suites).
+description: Use when running, authoring, debugging, or validating tests across any layer of the Thor application (frontend unit tests, Rust backend tests, TypeScript/i18n checks, or WebdriverIO E2E UI suites).
 ---
 
-# Testing the Alethe Application
+# Testing the Thor Application
 
 ## Overview
 
-Alethe is a desktop-first multi-agent workspace built with React (frontend), Rust/Tauri (backend), and standalone sync servers. Quality is enforced through a strict multi-layer testing pyramid ranging from static type and i18n contract validation to full-stack WebdriverIO end-to-end tests interacting with real desktop windows.
+Thor is a desktop-first multi-agent workspace built with React (frontend), Rust/Tauri (backend), and standalone sync servers. Quality is enforced through a strict multi-layer testing pyramid ranging from static type and i18n contract validation to full-stack WebdriverIO end-to-end tests interacting with real desktop windows.
 
 ## When to Use
 
@@ -113,7 +113,7 @@ WebdriverIO interacts directly with the compiled desktop application through `@w
    - `window.__ALETHE_E2E__` / `window.__ALETHE_E2E_QUERY__` / `window.__ALETHE_E2E_STORE_DEBUG__` are strictly **read-only** for state verification, NEVER for triggering actions (opening modals, creating projects, dispatching events).
 2. **Strict Profile Isolation:**
    - E2E runs use `ALETHE_APP_DATA_DIR` pointing to a clean temporary directory (`mkdtempSync`).
-   - NEVER touch or rely on `%LOCALAPPDATA%\Alethe` (user's real profile).
+   - NEVER touch or rely on `%LOCALAPPDATA%\Thor` (user's real profile).
 3. **Build Target Separation:**
    - E2E tests compile into `src-tauri/target-e2e/debug/alethe.exe` using `CARGO_TARGET_DIR=target-e2e`.
    - Never kill or interfere with `target\debug\alethe.exe` (user's active `tauri dev` instance).
@@ -214,7 +214,7 @@ Validates terminal grid resize convergence (`cols`/`rows`) across desktop and we
 ## Red Flags - STOP and Fix
 
 - Calling `window.__ALETHE_E2E__` to perform state mutation or click actions.
-- Modifying or deleting `%LOCALAPPDATA%\Alethe` directly during test runs.
+- Modifying or deleting `%LOCALAPPDATA%\Thor` directly during test runs.
 - Killing all `alethe.exe` processes without filtering by executable path.
 - Committing frontend changes without verifying `npm run build` (i18n parity check).
 - Hardcoding file paths or assuming `D:\` drives in tests (use `fixtureProject.ts` and `tmpdir()`).

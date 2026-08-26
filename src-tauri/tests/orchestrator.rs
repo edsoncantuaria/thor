@@ -17,7 +17,7 @@ use std::time::Duration;
 
 use serde_json::{json, Value};
 
-use orchestrator_core::{handle_mcp_body, Core, Launcher};
+use orchestrator_core::{handle_mcp_body, Core, Launcher, AGENT_CODEX};
 
 fn rpc(core: &Core, id: u32, method: &str, params: Value) -> Value {
     let body = json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params });
@@ -195,7 +195,7 @@ fn a_job_fails_cleanly_when_no_launcher_is_configured() {
         deliveries[0]["text"]
             .as_str()
             .unwrap_or_default()
-            .contains("launcher"),
+            .contains("bucket"),
         "{checked}"
     );
     assert_eq!(checked["workersStillBusy"], json!(0));
@@ -229,7 +229,7 @@ fn the_observer_sees_every_state_change() {
 #[ignore = "spawns real codex workers"]
 fn two_workers_overlap_and_check_waits_for_both() {
     let core = Core::default();
-    core.set_launcher(codex_launcher());
+    core.set_launcher(AGENT_CODEX, codex_launcher());
     let dir = workspace("parallel");
     let watcher = PeakWatcher::start(core.clone());
 
@@ -274,7 +274,7 @@ fn two_workers_overlap_and_check_waits_for_both() {
 #[ignore = "spawns real codex workers"]
 fn the_queue_never_breaches_the_concurrency_limit() {
     let core = Core::default();
-    core.set_launcher(codex_launcher());
+    core.set_launcher(AGENT_CODEX, codex_launcher());
     core.set_concurrency_limit(2);
     let dir = workspace("queue");
     let watcher = PeakWatcher::start(core.clone());

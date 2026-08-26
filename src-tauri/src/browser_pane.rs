@@ -1,4 +1,4 @@
-//! A browser tab rendered inside an Alethe pane.
+//! A browser tab rendered inside an Thor pane.
 //!
 //! Frames arrive over CDP screencast and are forwarded to the frontend, which paints them on a
 //! canvas; mouse and keyboard go back the same way. Unlike a native child webview, this is ordinary

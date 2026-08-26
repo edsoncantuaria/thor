@@ -29,7 +29,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Alethe version
+      label: Thor version
       description: Shown in the app menu, or the release tag you installed.
       placeholder: v1.3.0
     validations:
@@ -68,7 +68,7 @@ body:
     attributes:
       label: Logs or screenshots
       description: |
-        Screenshots help a lot for UI bugs. Local data lives in `%APPDATA%/Alethe/`
+        Screenshots help a lot for UI bugs. Local data lives in `%APPDATA%/Thor/`
         (Windows) — `spawn.log` is often the relevant one for terminal issues.
       render: text
     validations:

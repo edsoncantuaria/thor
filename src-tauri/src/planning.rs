@@ -146,13 +146,13 @@ fn audit_record(
 
     checked_output(root, &["add", "--", PLANNING_DIR])?;
     let subject = format!(
-        "gsd(alethe): {}",
+        "gsd(thor): {}",
         reason
             .map(str::trim)
             .filter(|r| !r.is_empty())
             .unwrap_or("planning update")
     );
-    let trailer = format!("Alethe-Agent: {}", agent_id.unwrap_or("unknown"));
+    let trailer = format!("Thor-Agent: {}", agent_id.unwrap_or("unknown"));
     // Scoped commit: `commit -- .planning` guarantees staged changes from
     // other directories do NOT get pulled into this audit commit.
     checked_output(
@@ -202,7 +202,7 @@ pub fn planning_audit_history(
     let root = crate::git_control::repository_root(&repo_path)?;
     let count = limit.unwrap_or(50).min(500).to_string();
     let format = format!(
-        "%H{FIELD_SEP}%an{FIELD_SEP}%ct{FIELD_SEP}%s{FIELD_SEP}%(trailers:key=Alethe-Agent,valueonly,separator=,){RECORD_SEP}"
+        "%H{FIELD_SEP}%an{FIELD_SEP}%ct{FIELD_SEP}%s{FIELD_SEP}%(trailers:key=Thor-Agent,valueonly,separator=,){FIELD_SEP}%(trailers:key=Alethe-Agent,valueonly,separator=,){RECORD_SEP}"
     );
     // With no commits yet (new repo) the log fails — return an empty history.
     let output = match git_command(
@@ -234,6 +234,12 @@ pub fn planning_audit_history(
             .get(4)
             .map(|s| s.trim())
             .filter(|s| !s.is_empty())
+            .or_else(|| {
+                fields
+                    .get(5)
+                    .map(|s| s.trim())
+                    .filter(|s| !s.is_empty())
+            })
             .map(|s| s.to_string());
         commits.push(PlanningCommit {
             hash: fields[0].to_string(),
@@ -576,7 +582,7 @@ mod tests {
         fs::create_dir_all(root.join(PLANNING_DIR)).unwrap();
         let run = |args: &[&str]| checked_output(&root, args).unwrap();
         run(&["init", "-b", "main"]);
-        run(&["config", "user.name", "Alethe Test"]);
+        run(&["config", "user.name", "Thor Test"]);
         run(&["config", "user.email", "alethe@example.invalid"]);
         fs::write(root.join("code.txt"), "code\n").unwrap();
         fs::write(root.join(PLANNING_DIR).join("roadmap.md"), "- [ ] task 1\n").unwrap();

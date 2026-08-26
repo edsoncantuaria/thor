@@ -454,7 +454,7 @@ export type Preferences = {
   /** Credenciais locais do Spotify Developer Dashboard para Now Playing. */
   spotifyClientId: string
   spotifyClientSecret: string
-  /** Exibe a atividade atual do Alethe no perfil do Discord. */
+  /** Exibe a atividade atual do Thor no perfil do Discord. */
   discordRichPresenceEnabled: boolean
   /** Itens opcionais exibidos no canto direito da topbar. */
   topbarShowClaudeUsage: boolean
@@ -509,6 +509,36 @@ export type Preferences = {
   nodeHeapProfile?: 'conservative' | 'balanced' | 'performance'
 
   gsdSyncModelChain?: string[]
+
+  /** Worker buckets the orchestrator's `alethe_delegate` MCP tool can pick between. Default []. */
+  orchestratorBuckets: OrchestratorBucketConfig[]
+}
+
+/** One configurable delegation target: any agent CLI, any model, any invocation shape. */
+export type OrchestratorBucketConfig = {
+  /** Stable id the lead passes to `alethe_delegate`'s `bucket` field. */
+  id: string
+  label: string
+  /** Binary resolved on PATH the same way every other agent CLI in Thor is. */
+  command: string
+  /**
+   * "appServer" locks in Codex's persistent JSON-RPC invocation (steerable, multi-turn).
+   * "oneShot" runs `command [...args] [modelFlag model] task` and captures the whole reply —
+   * this is the generic path for Claude, Cursor, a second OpenCode, or anything else.
+   */
+  protocol: 'appServer' | 'oneShot'
+  /** Base args before the model flag / task text. Ignored for "appServer". */
+  args: string[]
+  /** Flag used to pass a model, e.g. "--model". Empty means this bucket has no model override. */
+  modelFlag: string
+  /** Used when a delegate call doesn't override the model. */
+  model: string
+  /**
+   * Id of another bucket to retry the same task on, automatically, if this one fails with what
+   * looks like a quota/rate-limit error (e.g. a "claude-sonnet" bucket falling back to
+   * "gemini-flash"). Empty means no automatic failover.
+   */
+  fallback: string
 }
 
 export type ResourcePolicyMode = 'smart-lru' | 'manual'
@@ -633,6 +663,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
     spawnGraceSeconds: 120,
   },
   nodeHeapProfile: 'balanced',
+  orchestratorBuckets: [],
 }
 
 export const EMPTY_PROJECTS_FILE: ProjectsFile = {

@@ -8,9 +8,9 @@
 // Este modulo escreve um plugin real do OpenCode (formato confirmado em
 // opencode.ai/docs/plugins/) num diretorio GLOBAL do usuario
 
-// qualquer terminal opencode que o Alethe spawnar, nao so os com Graphify
+// qualquer terminal opencode que o Thor spawnar, nao so os com Graphify
 // habilitado. O plugin reporta session.idle/tool.execute.before de volta pro
-// Alethe via HTTP local, reaproveitando o listener ja existente em
+// Thor via HTTP local, reaproveitando o listener ja existente em
 
 use std::path::PathBuf;
 
@@ -22,7 +22,7 @@ const PLUGIN_SOURCE: &str = r#"
                                                                                 
 // via o endpoint local passado em ALETHE_BRIDGE_ENDPOINT (injetado como env var
                                                                           
-// quebrar a sessao do OpenCode se o Alethe nao estiver rodando ou a porta tiver
+// quebrar a sessao do OpenCode se o Thor nao estiver rodando ou a porta tiver
 // mudado.
 export const AletheBridgePlugin = async ({ directory }) => {
   const endpoint = process.env.ALETHE_BRIDGE_ENDPOINT

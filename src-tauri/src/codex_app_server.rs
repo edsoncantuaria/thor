@@ -155,7 +155,7 @@ pub fn codex_app_server_start(
             "params": {
                 "clientInfo": {
                     "name": "alethe-agent-sandbox",
-                    "title": "Alethe Agent Sandbox",
+                    "title": "Thor Agent Sandbox",
                     "version": env!("CARGO_PKG_VERSION")
                 }
             }

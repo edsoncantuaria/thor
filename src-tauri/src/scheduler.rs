@@ -416,7 +416,7 @@ mod tests {
         let root = std::env::temp_dir().join(format!("alethe-scheduler-{label}-{suffix}"));
         fs::create_dir_all(&root).unwrap();
         crate::git_control::checked_output(&root, &["init", "-b", "main"]).unwrap();
-        crate::git_control::checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        crate::git_control::checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         crate::git_control::checked_output(
             &root,
             &["config", "user.email", "alethe@example.invalid"],

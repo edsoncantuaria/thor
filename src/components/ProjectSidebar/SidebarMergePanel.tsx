@@ -34,7 +34,7 @@ import { MergeTree } from './MergeTree'
 import styles from './SidebarMergePanel.module.css'
 
 /** Initial prompt for the Branch Reviewer — agent-facing (appears in its own
- *  terminal, not in the Alethe UI), so it lives outside i18n, same as
+ *  terminal, not in the Thor UI), so it lives outside i18n, same as
  *  conflictPrompt() in mergeStore. Doesn't implement/fix anything on its
  *  own — only evaluates and responds to the user in its own terminal. */
 function reviewPrompt(branch: string, target: string): string {

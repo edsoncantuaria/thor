@@ -17,7 +17,7 @@
     opacity 0.15s ease;
 }
 
-/* Pane focus (Alethe focus mode): solid layered ring (same pattern as
+/* Pane focus (Thor focus mode): solid layered ring (same pattern as
    .dropTarget below), no extra bg/lift. Lights up whenever the xterm inside
    receives focus. Suppressed when .paneFocus (overlay) — there we don't
    want a blue ring.

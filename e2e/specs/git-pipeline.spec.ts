@@ -53,7 +53,7 @@ import { recordStep } from '../support/report'
  * SAME Rust commands the UI buttons call — it covers the same code,
  * just without depending on automatic AI resolution.
  *
- * Each step verifies the result INDEPENDENTLY of any Alethe API
+ * Each step verifies the result INDEPENDENTLY of any Thor API
  * whenever possible (a real file on disk via `fs`, raw `git log`/
  * `git show` via `child_process`) — the entire point of this suite is to not
  * repeat the mistake that motivated Part 1 of the plan: the app "saying it passed"
@@ -118,7 +118,7 @@ describe('Merge Center: full git pipeline', function () {
 
   it('git init via the UI (real banner + native confirm()) correctly creates .git (verified directly on disk)', async () => {
     await initGitViaUi()
-    // Node child_process, not the Alethe API — the real confirmation.
+    // Node child_process, not the Thor API — the real confirmation.
     expect(hasRealGitDir(repoPath)).toBe(true)
 
     // `git init` alone doesn't leave a resolvable HEAD (no commit yet) — the

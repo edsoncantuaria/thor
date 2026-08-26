@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Captura SÓ a janela do Alethe (não a tela inteira), por CGWindowID.
+# Captura SÓ a janela do Thor (não a tela inteira), por CGWindowID.
 #
 # Resolve o problema que tínhamos: screencapture de tela cheia pegava o app
 # errado / dependia de foco. Aqui achamos o window id do processo "alethe" via
@@ -43,7 +43,7 @@ SWIFT
 )"
 
 if [[ -z "${WID:-}" ]]; then
-  echo "capture-window: janela do Alethe não encontrada (o app está aberto?)" >&2
+  echo "capture-window: janela do Thor não encontrada (o app está aberto?)" >&2
   exit 1
 fi
 

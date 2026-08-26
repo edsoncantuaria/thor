@@ -70,8 +70,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__
-          releaseName: 'Alethe v__VERSION__'
-          releaseBody: 'Free desktop build of Alethe for Windows, macOS and Linux. Local app is free; cloud/sync services may be offered separately.'
+          releaseName: 'Thor v__VERSION__'
+          releaseBody: 'Free desktop build of Thor for Windows, macOS and Linux. Local app is free; cloud/sync services may be offered separately.'
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
@@ -80,7 +80,7 @@ jobs:
   # `windows-x86_64` do latest.json, e escolhe o MSI. Quase todo mundo instala
   # pelo NSIS (a landing serve o setup.exe), e um MSI aplicado sobre uma
   # instalação NSIS não faz upgrade dela nem reinicia o app — o updater fecha o
-  # Alethe e nada volta. Aqui a chave genérica é reapontada para o NSIS, sem
+  # Thor e nada volta. Aqui a chave genérica é reapontada para o NSIS, sem
   # remover as chaves `-msi` / `-nsis`, que continuam publicadas.
   fix-updater-target:
     name: Point windows-x86_64 at NSIS

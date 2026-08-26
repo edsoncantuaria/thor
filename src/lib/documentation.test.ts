@@ -10,7 +10,7 @@ describe('security and privacy documentation', () => {
     const text = normalize(security)
 
     expect(text).toContain('Supported versions')
-    expect(text).toContain('contact@kc1t.com')
+    expect(text).toContain('edsoncantuaria@outlook.com')
     expect(text).toContain('Do not open a public issue')
     expect(text).toContain('Coordinated disclosure')
     expect(text).toContain('Bugs, questions, and feature requests')
@@ -31,7 +31,7 @@ describe('security and privacy documentation', () => {
       'Coding-agent CLIs and other subprocesses',
       'Handoff artifacts and redaction limits',
       'Embedded content, CSP, and privileged commands',
-      'Automatic update check | **On**',
+      'Automatic update check | **Off**',
       'Provider usage polling | **On**',
       'Discord Rich Presence | **On**',
       'Spotify Now Playing | **Off / unconfigured**',

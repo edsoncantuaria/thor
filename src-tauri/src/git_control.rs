@@ -436,16 +436,16 @@ fn git_init_inner(path: String) -> Result<String, String> {
     checked_output(&dir, &["add", "-A"])?;
     let identity = [
         "-c",
-        "user.name=Alethe",
+        "user.name=Thor",
         "-c",
         "user.email=alethe@localhost",
     ];
     let mut commit_args: Vec<&str> = identity.to_vec();
-    commit_args.extend(["commit", "-m", "Commit inicial (Alethe)"]);
+    commit_args.extend(["commit", "-m", "Commit inicial (Thor)"]);
 
     if checked_output(&dir, &commit_args).is_err() {
         let mut empty_args: Vec<&str> = identity.to_vec();
-        empty_args.extend(["commit", "--allow-empty", "-m", "Commit inicial (Alethe)"]);
+        empty_args.extend(["commit", "--allow-empty", "-m", "Commit inicial (Thor)"]);
         checked_output(&dir, &empty_args)?;
     }
     repository_root(&path).map(|root| root.to_string_lossy().into_owned())
@@ -653,7 +653,7 @@ pub struct DiffSummaryEntry {
 
 /// `.opencode/alethe-gsd-config.json`, `.planning/goal.md` etc. como se
 
-/// Alethe escrevendo essa infraestrutura na worktree.
+/// Thor escrevendo essa infraestrutura na worktree.
 fn is_alethe_infra_path(path: &str) -> bool {
     path.starts_with(".planning/") || path.starts_with(".opencode/") || path == "opencode.json"
 }
@@ -830,7 +830,7 @@ const LOG_GRAPH_FIELD_SEP: char = '\u{1f}';
 
 /// Recognizes `alethe/agent-<id>` and `alethe/merge-<id>` (with or without a
 /// decoration prefix like `HEAD -> `/`tag: `/`origin/`) — the ephemeral
-/// branches that Alethe itself creates and deletes in worktree/merge flows,
+/// branches that Thor itself creates and deletes in worktree/merge flows,
 /// never real branches from the user's point of view.
 fn is_ephemeral_ref(raw: &str) -> bool {
     let name = raw
@@ -850,7 +850,7 @@ fn git_log_graph_inner(repo: String, max_count: u32) -> Result<Vec<GitCommitEntr
     // `--branches --tags` (not `--all`): shows the user's real branches/tags
     // in the graph — without this, the log falls back to just HEAD's history
     // and any other branch simply disappears from the UI. The `--exclude`
-    // flags strip out only the EPHEMERAL branches that Alethe itself creates
+    // flags strip out only the EPHEMERAL branches that Thor itself creates
     // and discards for worktree/merge flows (`alethe/agent-<id>`,
     // `alethe/merge-<id>` — see worktrees.rs/conflict_resolution.rs), which
     // aren't real branches from the user's point of view and would only
@@ -902,7 +902,7 @@ fn git_log_graph_inner(repo: String, max_count: u32) -> Result<Vec<GitCommitEntr
             let refs_raw = fields.next().unwrap_or("").trim();
             // `--exclude` only affects which commits `log` TRAVERSES, not the
             // decoration (`%D`) of a commit that's still reachable through
-            // another included ref — if an ephemeral Alethe branch points at
+            // another included ref — if an ephemeral Thor branch points at
             // the SAME commit that's already on `main` (common after a
             // --ff-only merge, where no new commit is created), its name
             // still shows up as a badge even though it was excluded from the
@@ -1236,7 +1236,7 @@ mod tests {
         let root = std::env::temp_dir().join(format!("alethe-main-repo-root-{suffix}"));
         fs::create_dir_all(&root).unwrap();
         checked_output(&root, &["init", "-b", "main"]).unwrap();
-        checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(&root, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         fs::write(root.join("a.txt"), "a\n").unwrap();
         checked_output(&root, &["add", "-A"]).unwrap();
@@ -1296,7 +1296,7 @@ mod tests {
         let root_string = root.to_string_lossy().into_owned();
         let run = |args: &[&str]| checked_output(&root, args).unwrap();
         run(&["init"]);
-        run(&["config", "user.name", "Alethe Test"]);
+        run(&["config", "user.name", "Thor Test"]);
         run(&["config", "user.email", "alethe@example.invalid"]);
 
         fs::write(root.join("tracked.txt"), "one\n").unwrap();
@@ -1367,7 +1367,7 @@ mod tests {
     fn git_init_is_idempotent_on_an_existing_repo() {
         let root = temp_dir("init-idempotent");
         checked_output(&root, &["init"]).unwrap();
-        checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(&root, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         fs::write(root.join("a.txt"), "a\n").unwrap();
         checked_output(&root, &["add", "-A"]).unwrap();
@@ -1386,7 +1386,7 @@ mod tests {
     fn git_diff_summary_lists_added_modified_and_renamed_files_between_branches() {
         let root = temp_dir("diff-summary");
         checked_output(&root, &["init", "-b", "main"]).unwrap();
-        checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(&root, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         fs::write(root.join("kept.txt"), "same on both\n").unwrap();
         fs::write(root.join("old-name.txt"), "will be renamed\n").unwrap();
@@ -1423,7 +1423,7 @@ mod tests {
     fn git_diff_summary_includes_uncommitted_worktree_changes() {
         let root = temp_dir("diff-summary-uncommitted");
         checked_output(&root, &["init", "-b", "main"]).unwrap();
-        checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(&root, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         fs::write(root.join("base.txt"), "base\n").unwrap();
         checked_output(&root, &["add", "-A"]).unwrap();
@@ -1470,7 +1470,7 @@ mod tests {
         );
         assert!(
             with_worktree.iter().all(|e| !e.path.starts_with(".planning/") && !e.path.starts_with(".opencode/") && e.path != "opencode.json"),
-            "Alethe infrastructure (.planning/, .opencode/, opencode.json) should never show up: {with_worktree:?}"
+            "Thor infrastructure (.planning/, .opencode/, opencode.json) should never show up: {with_worktree:?}"
         );
 
         fs::remove_dir_all(root).unwrap();
@@ -1530,7 +1530,7 @@ mod tests {
         let root = temp_dir("diff-unstaged");
         let root_string = root.to_string_lossy().into_owned();
         checked_output(&root, &["init"]).unwrap();
-        checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(&root, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         fs::write(root.join("file.txt"), "line1\n").unwrap();
         checked_output(&root, &["add", "file.txt"]).unwrap();
@@ -1548,7 +1548,7 @@ mod tests {
         let root = temp_dir("diff-staged");
         let root_string = root.to_string_lossy().into_owned();
         checked_output(&root, &["init"]).unwrap();
-        checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(&root, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         fs::write(root.join("file.txt"), "line1\n").unwrap();
         checked_output(&root, &["add", "file.txt"]).unwrap();
@@ -1570,7 +1570,7 @@ mod tests {
         let root = temp_dir("diff-binary");
         let root_string = root.to_string_lossy().into_owned();
         checked_output(&root, &["init"]).unwrap();
-        checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(&root, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         fs::write(root.join("bin.dat"), &0u8.to_le_bytes()).unwrap();
         checked_output(&root, &["add", "bin.dat"]).unwrap();

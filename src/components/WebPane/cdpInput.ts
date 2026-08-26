@@ -102,7 +102,7 @@ export function toKeyInput(kind: BrowserKeyInput['kind'], event: KeySource): Bro
 }
 
 /**
- * Keys that belong to Alethe rather than to the page. Without this the pane swallows the shortcuts
+ * Keys that belong to Thor rather than to the page. Without this the pane swallows the shortcuts
  * that move between panes, and the only way out is the mouse.
  */
 export function isAppShortcut(event: ModifierSource & { key: string }): boolean {

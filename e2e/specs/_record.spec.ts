@@ -36,7 +36,7 @@ describe('interactive procedure recording', () => {
 
     // eslint-disable-next-line no-console
     console.log(
-      `\n>>> Recording "${PROCEDURE_NAME}" — interact with the Alethe window normally.\n` +
+      `\n>>> Recording "${PROCEDURE_NAME}" — interact with the Thor window normally.\n` +
         `>>> A "REC" button appears in the bottom-right corner with shortcuts (e.g. create\n` +
         `>>> a project in a temporary folder, without typing anything).\n` +
         `>>> Saves on its own every 2s — Ctrl+C here at any time is safe.\n` +

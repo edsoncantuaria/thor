@@ -61,7 +61,7 @@ import { AGENT_SANDBOX_ENABLED } from './lib/featureFlags'
 import { intlLocale, translate, useT } from './lib/i18n'
 import { visibilityFromPanelResize, widthFromPanelResize } from './lib/sidebarPanelState'
 import { setMaxConcurrentSpawns } from './lib/spawnQueue'
-import { ghosttyKillAll, setWindowOpacity } from './lib/tauri'
+import { ghosttyKillAll, orchestratorSetBuckets, setWindowOpacity } from './lib/tauri'
 import { getLastCrashReport } from './lib/tauri'
 import { loadThemeIconBytes } from './lib/themeIcons'
 import { checkForUpdate } from './lib/updater'
@@ -224,6 +224,7 @@ export default function App() {
   const windowOpacity = useProjectsStore((s) => s.preferences.windowOpacity)
   const language = useProjectsStore((s) => s.preferences.language)
   const spawnConcurrency = useProjectsStore((s) => s.preferences.spawnConcurrency)
+  const orchestratorBuckets = useProjectsStore((s) => s.preferences.orchestratorBuckets)
   const activeView = useUiStore((s) => s.activeView)
   const openModal = useUiStore((s) => s.openModal)
   const restoreMarkdownSidebarHistory = useUiStore((s) => s.restoreMarkdownSidebarHistory)
@@ -304,6 +305,13 @@ export default function App() {
         console.error('[app-icon] failed to apply window icon', error)
       })
   }, [appIconTheme, hydrated])
+
+  useEffect(() => {
+    if (!hydrated) return
+    void orchestratorSetBuckets(orchestratorBuckets).catch((error) => {
+      console.error('[orchestrator] failed to apply worker buckets', error)
+    })
+  }, [orchestratorBuckets, hydrated])
 
   useEffect(() => {
     document.documentElement.lang = language === 'pt-BR' ? 'pt-BR' : 'en'

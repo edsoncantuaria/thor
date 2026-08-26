@@ -1,4 +1,4 @@
-# Diagnóstico de Maturidade Técnica — Alethe
+# Diagnóstico de Maturidade Técnica — Thor
 
 > Documento de diagnóstico, não de execução. Cada achado tem file:line, evidência concreta e uma
 > recomendação objetiva — mas nenhuma correção foi aplicada. Priorização e sequenciamento ficam a

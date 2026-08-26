@@ -1,7 +1,7 @@
 //! Minimal Chrome DevTools Protocol client.
 //!
 //! The browser owned by `browser_session` already speaks CDP, and Playwright MCP attaches to the
-//! same endpoint. This is the second consumer: it lets Alethe drive and observe a tab itself —
+//! same endpoint. This is the second consumer: it lets Thor drive and observe a tab itself —
 //! frames in, input events out — instead of only handing the browser to an agent.
 
 use std::collections::HashMap;

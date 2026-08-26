@@ -7,7 +7,7 @@ const APPEARANCE_SYNC_MS = 10_000
 
 const messages = {
   en: {
-    'brand.remote': 'Alethe Remote',
+    'brand.remote': 'Thor Remote',
     'common.back': 'Back',
     'common.details': 'Technical details',
     'common.reload': 'Try again',
@@ -22,7 +22,7 @@ const messages = {
     'home.chatCount': '{count} chat',
     'home.chatCountPlural': '{count} chats',
     'home.description': 'Choose a shared terminal and continue your work from this device.',
-    'home.emptyDescription': 'Open a terminal in Alethe or allow remote access to an existing one.',
+    'home.emptyDescription': 'Open a terminal in Thor or allow remote access to an existing one.',
     'home.emptyTitle': 'No shared chats yet',
     'home.noMatchesDescription': 'Try a project, group, agent, or terminal name.',
     'home.noMatchesTitle': 'No matching chats',
@@ -39,26 +39,26 @@ const messages = {
     'chat.jumpLatest': 'Jump to latest',
     'chat.liveTerminal': 'Live terminal',
     'chat.messageHint': 'Enter sends · Shift + Enter adds a line',
-    'chat.readOnly': 'This device has read-only access. Sending messages is disabled in Alethe.',
+    'chat.readOnly': 'This device has read-only access. Sending messages is disabled in Thor.',
     'chat.send': 'Send message',
     'chat.sendError': 'Message not sent: {message}',
     'chat.sendPlaceholder': 'Message this terminal…',
     'chat.sending': 'Sending message',
     'state.connectionDescription':
-      'Alethe could not be reached on the local network. Check that the desktop app and this device are still connected to the same network.',
+      'Thor could not be reached on the local network. Check that the desktop app and this device are still connected to the same network.',
     'state.connectionTitle': 'Connection unavailable',
     'state.loadingDescription': 'Preparing your shared workspace…',
-    'state.loadingTitle': 'Connecting to Alethe',
+    'state.loadingTitle': 'Connecting to Thor',
     'state.pairingDescription':
-      'Open Remote control in Alethe and scan the QR code to connect this device.',
+      'Open Remote control in Thor and scan the QR code to connect this device.',
     'state.pairingTitle': 'Pair this device',
     'state.sessionDescription':
-      'This device is no longer paired. Open Remote control in Alethe and scan a new QR code.',
+      'This device is no longer paired. Open Remote control in Thor and scan a new QR code.',
     'state.sessionTitle': 'Remote session ended',
     'state.terminalError': 'Unable to load terminal output.',
   },
   'pt-BR': {
-    'brand.remote': 'Alethe Remote',
+    'brand.remote': 'Thor Remote',
     'common.back': 'Voltar',
     'common.details': 'Detalhes técnicos',
     'common.reload': 'Tentar novamente',
@@ -75,7 +75,7 @@ const messages = {
     'home.description':
       'Escolha um terminal compartilhado e continue seu trabalho neste dispositivo.',
     'home.emptyDescription':
-      'Abra um terminal no Alethe ou permita o acesso remoto a um terminal existente.',
+      'Abra um terminal no Thor ou permita o acesso remoto a um terminal existente.',
     'home.emptyTitle': 'Nenhuma conversa compartilhada',
     'home.noMatchesDescription': 'Busque pelo nome de um projeto, grupo, agente ou terminal.',
     'home.noMatchesTitle': 'Nenhuma conversa encontrada',
@@ -93,21 +93,21 @@ const messages = {
     'chat.liveTerminal': 'Terminal ao vivo',
     'chat.messageHint': 'Enter envia · Shift + Enter adiciona uma linha',
     'chat.readOnly':
-      'Este dispositivo tem acesso somente leitura. O envio de mensagens está desativado no Alethe.',
+      'Este dispositivo tem acesso somente leitura. O envio de mensagens está desativado no Thor.',
     'chat.send': 'Enviar mensagem',
     'chat.sendError': 'Mensagem não enviada: {message}',
     'chat.sendPlaceholder': 'Enviar mensagem para este terminal…',
     'chat.sending': 'Enviando mensagem',
     'state.connectionDescription':
-      'Não foi possível alcançar o Alethe na rede local. Confira se o app desktop e este dispositivo continuam conectados à mesma rede.',
+      'Não foi possível alcançar o Thor na rede local. Confira se o app desktop e este dispositivo continuam conectados à mesma rede.',
     'state.connectionTitle': 'Conexão indisponível',
     'state.loadingDescription': 'Preparando seu workspace compartilhado…',
-    'state.loadingTitle': 'Conectando ao Alethe',
+    'state.loadingTitle': 'Conectando ao Thor',
     'state.pairingDescription':
-      'Abra o Controle remoto no Alethe e escaneie o QR code para conectar este dispositivo.',
+      'Abra o Controle remoto no Thor e escaneie o QR code para conectar este dispositivo.',
     'state.pairingTitle': 'Conecte este dispositivo',
     'state.sessionDescription':
-      'Este dispositivo não está mais pareado. Abra o Controle remoto no Alethe e escaneie um novo QR code.',
+      'Este dispositivo não está mais pareado. Abra o Controle remoto no Thor e escaneie um novo QR code.',
     'state.sessionTitle': 'Sessão remota encerrada',
     'state.terminalError': 'Não foi possível carregar a saída do terminal.',
   },

@@ -28,22 +28,120 @@ pub const STATUS_RELEASED: &str = "released";
 
 pub type Observer = Arc<dyn Fn(Value) + Send + Sync>;
 
-/// How to start one worker. The app layer resolves this once; the core never guesses.
+/// Bucket id Thor seeds automatically when Codex/OpenCode are found on PATH. Any other id is a
+/// worker bucket the user configured in Preferences → Orchestrator — nothing beyond these two
+/// defaults is baked in, so Claude, Cursor, a second OpenCode pointed at a local Ollama model, or
+/// anything else that runs from a CLI is just another bucket the lead can pick by id.
+pub const AGENT_CODEX: &str = "codex";
+pub const AGENT_OPENCODE: &str = "opencode";
+
+/// Codex speaks a persistent JSON-RPC app-server protocol over stdin/stdout, so one worker can be
+/// steered or sent follow-up turns mid-thread. Every other CLI is treated as one-shot: run it with
+/// the task as the final argument, capture stdout, done — that covers `opencode run`, `claude -p`,
+/// `cursor-agent -p` and anything else without a persistent app-server mode.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LauncherKind {
+    CodexAppServer,
+    OneShotRun,
+}
+
+/// How to start one worker bucket. The core never guesses a binary, a protocol, or an invocation
+/// shape — every field here comes from either the PATH-scan defaults or the user's own config.
 #[derive(Clone, Debug)]
 pub struct Launcher {
+    pub kind: LauncherKind,
+    /// Display name only (surfaced to the lead via `alethe_status` so it can pick sensibly).
+    pub label: String,
     pub program: PathBuf,
+    /// Base args before the model flag / task text. Fixed to `["app-server","--stdio"]` for
+    /// `CodexAppServer` (that protocol IS that invocation); user-defined for `OneShotRun`.
     pub args: Vec<String>,
+    /// Flag used to pass a model, e.g. `--model`. `None` means this bucket has no model override
+    /// (the CLI has nothing to configure, or the model is already baked into `args`/the CLI's own
+    /// config).
+    pub model_flag: Option<String>,
+    /// Used when `alethe_delegate` doesn't override the model for a task.
+    pub default_model: Option<String>,
+    /// Bucket id to retry the same task on, automatically, if this one fails with what looks
+    /// like a quota/rate-limit error (see `looks_like_quota_exhaustion`). User-configured, so
+    /// nothing fails over unless the user built that chain — e.g. a "claude-sonnet" bucket
+    /// falling back to a "gemini-flash" one.
+    pub fallback: Option<String>,
     pub env: Vec<(String, String)>,
 }
 
 impl Launcher {
     pub fn codex_app_server(program: PathBuf) -> Self {
         Self {
+            kind: LauncherKind::CodexAppServer,
+            label: "Codex".into(),
             program,
             args: vec!["app-server".into(), "--stdio".into()],
+            model_flag: None,
+            default_model: None,
+            fallback: None,
             env: Vec::new(),
         }
     }
+
+    /// `opencode run` — non-interactive, exits when the task is done.
+    pub fn opencode_run(program: PathBuf) -> Self {
+        Self {
+            kind: LauncherKind::OneShotRun,
+            label: "OpenCode".into(),
+            program,
+            args: vec!["run".into()],
+            model_flag: Some("--model".into()),
+            default_model: None,
+            fallback: None,
+            env: Vec::new(),
+        }
+    }
+
+    /// A user-configured one-shot bucket: any CLI, any base args, any model flag. This is the
+    /// generic path Claude, Cursor, or a second differently-configured OpenCode go through.
+    pub fn one_shot(
+        label: String,
+        program: PathBuf,
+        args: Vec<String>,
+        model_flag: Option<String>,
+        default_model: Option<String>,
+    ) -> Self {
+        Self {
+            kind: LauncherKind::OneShotRun,
+            label,
+            program,
+            args,
+            model_flag,
+            default_model,
+            fallback: None,
+            env: Vec::new(),
+        }
+    }
+}
+
+/// Deliberately a keyword sweep rather than parsing exit codes or JSON error shapes, since every
+/// CLI reports "you're out of quota" differently. Case-insensitive substring match against
+/// whatever text the failed job produced (stderr/stdout for one-shot, the turn's reply for
+/// Codex). False negatives just mean no failover (safe); a false positive triggers one extra
+/// retry on a bucket the user explicitly chose as this one's fallback (safe, cheap).
+fn looks_like_quota_exhaustion(text: &str) -> bool {
+    let lower = text.to_lowercase();
+    const MARKERS: [&str; 12] = [
+        "rate limit",
+        "rate_limit",
+        "ratelimit",
+        "429",
+        "quota",
+        "usage limit",
+        "usage_limit",
+        "resource_exhausted",
+        "resource exhausted",
+        "too many requests",
+        "insufficient_quota",
+        "overloaded",
+    ];
+    MARKERS.iter().any(|marker| lower.contains(marker))
 }
 
 fn now_ms() -> u64 {
@@ -57,6 +155,15 @@ struct Job {
     id: String,
     spec: String,
     cwd: String,
+    bucket: String,
+    model: Option<String>,
+    /// Every bucket already attempted for this task, including the current one once it fails.
+    /// Bounds automatic failover to a finite chain and stops a fallback cycle from looping.
+    bucket_chain_tried: Vec<String>,
+    /// Which protocol the currently (or most recently) running worker actually used. `None` while
+    /// still queued. Set once at spawn time so `alethe_steer`/`alethe_send` can give an accurate
+    /// answer even if the bucket's config changes after the job started.
+    protocol_hint: Option<LauncherKind>,
     status: String,
     thread_id: Option<String>,
     active_turn_id: Option<String>,
@@ -83,6 +190,8 @@ impl Job {
             "id": self.id,
             "spec": self.spec,
             "cwd": self.cwd,
+            "bucket": self.bucket,
+            "model": self.model,
             "status": self.status,
             "threadId": self.thread_id,
             "outcome": self.outcome,
@@ -176,7 +285,11 @@ impl Inner {
 pub struct Core {
     inner: Arc<Mutex<Inner>>,
     signal: Arc<Condvar>,
-    launcher: Arc<Mutex<Option<Launcher>>>,
+    /// PATH-scan defaults (codex/opencode), set once by `orchestrator.rs::prepare`.
+    auto_buckets: Arc<Mutex<HashMap<String, Launcher>>>,
+    /// User-configured buckets from Preferences → Orchestrator. Replaced wholesale on every save,
+    /// and checked before `auto_buckets`, so a user bucket named "codex" overrides the default.
+    user_buckets: Arc<Mutex<HashMap<String, Launcher>>>,
     observer: Arc<Mutex<Option<Observer>>>,
 }
 
@@ -188,7 +301,8 @@ impl Default for Core {
                 ..Inner::default()
             })),
             signal: Arc::new(Condvar::new()),
-            launcher: Arc::new(Mutex::new(None)),
+            auto_buckets: Arc::new(Mutex::new(HashMap::new())),
+            user_buckets: Arc::new(Mutex::new(HashMap::new())),
             observer: Arc::new(Mutex::new(None)),
         }
     }
@@ -226,8 +340,55 @@ fn job_rpc(inner: &mut Inner, job_id: &str, method: &str, params: Value) -> Resu
 }
 
 impl Core {
-    pub fn set_launcher(&self, launcher: Launcher) {
-        *guard(&self.launcher) = Some(launcher);
+    /// Registers a PATH-scan default bucket (codex/opencode). Never overrides a user bucket of
+    /// the same id — `resolve_launcher` always checks user buckets first.
+    pub fn set_launcher(&self, id: &str, launcher: Launcher) {
+        guard(&self.auto_buckets).insert(id.to_string(), launcher);
+    }
+
+    /// Replaces every user-configured bucket wholesale — called on app boot and whenever
+    /// Preferences → Orchestrator is saved. Does not touch the PATH-scan defaults.
+    pub fn set_user_buckets(&self, buckets: Vec<(String, Launcher)>) {
+        let mut map = guard(&self.user_buckets);
+        map.clear();
+        for (id, launcher) in buckets {
+            map.insert(id, launcher);
+        }
+    }
+
+    fn resolve_launcher(&self, id: &str) -> Option<Launcher> {
+        if let Some(launcher) = guard(&self.user_buckets).get(id) {
+            return Some(launcher.clone());
+        }
+        guard(&self.auto_buckets).get(id).cloned()
+    }
+
+    /// Every configured bucket, for `alethe_status` (so the lead can discover real options
+    /// instead of guessing an id) and for the Preferences UI's live status list.
+    pub fn list_buckets(&self) -> Value {
+        let auto = guard(&self.auto_buckets);
+        let user = guard(&self.user_buckets);
+        let mut ids: Vec<&String> = auto.keys().chain(user.keys()).collect();
+        ids.sort();
+        ids.dedup();
+        let buckets: Vec<Value> = ids
+            .into_iter()
+            .filter_map(|id| {
+                let launcher = user.get(id).or_else(|| auto.get(id))?;
+                Some(json!({
+                    "id": id,
+                    "label": launcher.label,
+                    "protocol": match launcher.kind {
+                        LauncherKind::CodexAppServer => "appServer",
+                        LauncherKind::OneShotRun => "oneShot",
+                    },
+                    "defaultModel": launcher.default_model,
+                    "fallback": launcher.fallback,
+                    "custom": user.contains_key(id),
+                }))
+            })
+            .collect();
+        json!({ "buckets": buckets })
     }
 
     pub fn set_observer(&self, observer: Observer) {
@@ -256,27 +417,66 @@ impl Core {
     }
 
     fn spawn_worker(&self, job_id: &str) {
-        let (cwd, spec) = {
+        let (cwd, spec, bucket, model) = {
             let mut inner = guard(&self.inner);
             let Some(job) = inner.jobs.get_mut(job_id) else {
                 return;
             };
             job.status = STATUS_RUNNING.to_string();
             job.started_at = Some(now_ms());
-            let pair = (job.cwd.clone(), job.spec.clone());
+            let tuple = (
+                job.cwd.clone(),
+                job.spec.clone(),
+                job.bucket.clone(),
+                job.model.clone(),
+            );
             inner.running += 1;
-            pair
+            tuple
         };
 
-        let Some(launcher) = guard(&self.launcher).clone() else {
-            self.settle(job_id, STATUS_FAILED, "failed", "no worker launcher configured");
+        let Some(launcher) = self.resolve_launcher(&bucket) else {
+            self.settle(
+                job_id,
+                STATUS_FAILED,
+                "failed",
+                &format!(
+                    "no worker bucket configured with id \"{bucket}\" — check alethe_status or add it in Preferences → Orchestrator"
+                ),
+            );
             return;
         };
 
+        {
+            let mut inner = guard(&self.inner);
+            if let Some(job) = inner.jobs.get_mut(job_id) {
+                job.protocol_hint = Some(launcher.kind);
+            }
+        }
+
+        let effective_model = model.or_else(|| launcher.default_model.clone());
+
+        match launcher.kind {
+            LauncherKind::CodexAppServer => {
+                self.spawn_codex_worker(job_id, &cwd, &spec, effective_model.as_deref(), &launcher)
+            }
+            LauncherKind::OneShotRun => {
+                self.spawn_one_shot_worker(job_id, &cwd, &spec, effective_model.as_deref(), &launcher)
+            }
+        }
+    }
+
+    fn spawn_codex_worker(
+        &self,
+        job_id: &str,
+        cwd: &str,
+        spec: &str,
+        model: Option<&str>,
+        launcher: &Launcher,
+    ) {
         let mut command = Command::new(&launcher.program);
         command
             .args(&launcher.args)
-            .current_dir(PathBuf::from(&cwd))
+            .current_dir(PathBuf::from(cwd))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
@@ -328,22 +528,25 @@ impl Core {
             &json!({
                 "id": 1,
                 "method": "initialize",
-                "params": { "clientInfo": { "name": "alethe-orchestrator", "title": "Alethe", "version": "1" } }
+                "params": { "clientInfo": { "name": "alethe-orchestrator", "title": "Thor", "version": "1" } }
             }),
         );
         let _ = send_rpc(&stdin, &json!({ "method": "initialized" }));
+        let mut thread_start_params = json!({
+            "cwd": cwd, "approvalPolicy": "never", "sandbox": "workspace-write"
+        });
+        if let Some(model) = model {
+            thread_start_params["model"] = json!(model);
+        }
         let _ = send_rpc(
             &stdin,
-            &json!({
-                "id": 2,
-                "method": "thread/start",
-                "params": { "cwd": cwd, "approvalPolicy": "never", "sandbox": "workspace-write" }
-            }),
+            &json!({ "id": 2, "method": "thread/start", "params": thread_start_params }),
         );
 
         if let Some(stdout) = stdout {
             let core = self.clone();
             let owned_id = job_id.to_string();
+            let spec = spec.to_string();
             let stdin = Arc::clone(&stdin);
             thread::spawn(move || {
                 for line in BufReader::new(stdout).lines() {
@@ -365,6 +568,95 @@ impl Core {
                 );
             });
         }
+    }
+
+    /// OpenCode (and anything else one-shot) has no persistent RPC thread to steer or send more
+    /// work to: the whole task is the initial prompt, and the whole reply is whatever it printed
+    /// before exiting. `alethe_steer`/`alethe_send` reject jobs of this kind for that reason.
+    fn spawn_one_shot_worker(
+        &self,
+        job_id: &str,
+        cwd: &str,
+        spec: &str,
+        model: Option<&str>,
+        launcher: &Launcher,
+    ) {
+        let mut command = Command::new(&launcher.program);
+        command
+            .args(&launcher.args)
+            .current_dir(PathBuf::from(cwd))
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        for (key, value) in &launcher.env {
+            command.env(key, value);
+        }
+        if let (Some(flag), Some(model)) = (launcher.model_flag.as_deref(), model) {
+            command.arg(flag).arg(model);
+        }
+        command.arg(spec);
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+            command.creation_flags(CREATE_NO_WINDOW);
+        }
+
+        let mut child = match command.spawn() {
+            Ok(child) => child,
+            Err(error) => {
+                self.settle(
+                    job_id,
+                    STATUS_FAILED,
+                    "failed",
+                    &format!("worker spawn failed: {error}"),
+                );
+                return;
+            }
+        };
+
+        let stdout = child.stdout.take();
+        let stderr = child.stderr.take();
+        let child = Arc::new(Mutex::new(child));
+
+        {
+            let mut inner = guard(&self.inner);
+            if let Some(job) = inner.jobs.get_mut(job_id) {
+                job.child = Some(Arc::clone(&child));
+            }
+            self.notify(&inner);
+        }
+
+        let core = self.clone();
+        let owned_id = job_id.to_string();
+        thread::spawn(move || {
+            use std::io::Read;
+            let mut out = String::new();
+            if let Some(mut stdout) = stdout {
+                let _ = stdout.read_to_string(&mut out);
+            }
+            let mut err = String::new();
+            if let Some(mut stderr) = stderr {
+                let _ = stderr.read_to_string(&mut err);
+            }
+            let status = guard(&child).wait();
+            let ok = matches!(status, Ok(status) if status.success());
+            let mut text = out.trim().to_string();
+            if text.is_empty() {
+                text = err.trim().to_string();
+            }
+            if text.len() > REPLY_LIMIT {
+                let cut = text.len() - REPLY_LIMIT;
+                text = text.split_off(cut);
+            }
+            core.finish(
+                &owned_id,
+                if ok { STATUS_DONE } else { STATUS_FAILED },
+                Some(if ok { "succeeded".into() } else { "failed".into() }),
+                text,
+                true,
+            );
+        });
     }
 
     fn settle(&self, job_id: &str, status: &str, outcome: &str, text: &str) {
@@ -492,6 +784,66 @@ impl Core {
         self.notify(&inner);
     }
 
+    /// Requeues `job_id` on its bucket's configured fallback when the failure text looks like a
+    /// quota/rate-limit error. Returns `false` (do the normal terminal-failure handling) when
+    /// there's no fallback, the fallback was already tried for this job, or the text doesn't
+    /// match — false negatives just mean no failover, which is always safe.
+    fn maybe_failover(&self, job_id: &str, text: &str) -> bool {
+        if !looks_like_quota_exhaustion(text) {
+            return false;
+        }
+        let mut inner = guard(&self.inner);
+        let Some(job) = inner.jobs.get_mut(job_id) else {
+            return false;
+        };
+        if job.settled() {
+            return false;
+        }
+        let Some(fallback) = self
+            .resolve_launcher(&job.bucket)
+            .and_then(|launcher| launcher.fallback)
+        else {
+            return false;
+        };
+        if job.bucket_chain_tried.contains(&fallback) {
+            return false;
+        }
+
+        let previous = job.bucket.clone();
+        job.bucket_chain_tried.push(previous.clone());
+        job.bucket = fallback.clone();
+        // A model string that meant something to the old bucket's CLI may mean nothing (or the
+        // wrong thing) to the fallback's — fall through to the fallback bucket's own default.
+        job.model = None;
+        job.status = STATUS_QUEUED.to_string();
+        job.thread_id = None;
+        job.active_turn_id = None;
+        job.reply.clear();
+        job.plan.clear();
+        job.diff = None;
+        job.tokens = None;
+        job.outcome = None;
+        job.started_at = None;
+        job.ended_at = None;
+        job.protocol_hint = None;
+        job.teardown();
+
+        inner.running = inner.running.saturating_sub(1);
+        inner.push_delivery(
+            "failover",
+            job_id,
+            Some("failover".into()),
+            format!(
+                "bucket \"{previous}\" looked exhausted (quota/rate limit) — retrying automatically on fallback bucket \"{fallback}\""
+            ),
+        );
+        inner.queue.push_back(job_id.to_string());
+        self.notify(&inner);
+        drop(inner);
+        self.signal.notify_all();
+        true
+    }
+
     /// `terminal` decides whether the worker process dies with the turn. A completed turn keeps
     /// it alive so `alethe_send` can hand it more work on the same thread; cancelling kills it.
     fn finish(
@@ -502,6 +854,10 @@ impl Core {
         text: String,
         terminal: bool,
     ) {
+        if terminal && status == STATUS_FAILED && self.maybe_failover(job_id, &text) {
+            self.drain_queue();
+            return;
+        }
         {
             let mut inner = guard(&self.inner);
             let Some(job) = inner.jobs.get_mut(job_id) else {
@@ -547,7 +903,7 @@ pub fn tools() -> Value {
     json!([
         {
             "name": "alethe_delegate",
-            "description": "Hand independent units of work to worker agents that Alethe runs for you. Returns job ids immediately; the workers run in parallel. Delegate any unit that would make you read more than 5 files or that you estimate at over 2 minutes of your own work, and send every qualifying unit in ONE call so they run at the same time. Each task must be self contained.",
+            "description": "Hand independent units of work to worker agents that Thor runs for you. Returns job ids immediately; the workers run in parallel. Delegate any unit that would make you read more than 5 files or that you estimate at over 2 minutes of your own work, and send every qualifying unit in ONE call so they run at the same time. Each task must be self contained. All tasks in one call share the same bucket and model — make a separate call to mix them. Call alethe_status first if you don't already know which buckets are configured.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -556,14 +912,22 @@ pub fn tools() -> Value {
                         "items": { "type": "string" },
                         "description": "One self contained instruction per worker."
                     },
-                    "cwd": { "type": "string", "description": "Working directory. Defaults to the lead's directory." }
+                    "cwd": { "type": "string", "description": "Working directory. Defaults to the lead's directory." },
+                    "bucket": {
+                        "type": "string",
+                        "description": "Which configured worker bucket runs the tasks — see alethe_status for the live list. \"codex\" (default) keeps a live thread you can steer or send more work to. Every other bucket is one-shot: fire the task, get the final answer, no steer/send afterwards — pick a cheap one-shot bucket (e.g. a local Ollama-backed OpenCode) for simple, well-scoped work."
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "Overrides the bucket's default model for this call (ignored by buckets with no model flag, e.g. plain codex). Example: \"ollama/qwen2.5-coder:7b\"."
+                    }
                 },
                 "required": ["tasks"]
             }
         },
         {
             "name": "alethe_check",
-            "description": "Collect what workers reported. With wait set it blocks until they settle. Process every delivery it returns before calling it again.",
+            "description": "Collect what workers reported. With wait set it blocks until they settle. Process every delivery it returns before calling it again. A \"failover\" delivery means the job hit an automatic bucket failover and is still running (not settled) — its final \"worker_done\" delivery comes later, so don't treat a failover as the job finishing.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -578,7 +942,7 @@ pub fn tools() -> Value {
         },
         {
             "name": "alethe_status",
-            "description": "Snapshot of every worker without blocking: status, elapsed time, current plan and token usage.",
+            "description": "Snapshot without blocking: every worker's status, elapsed time, current plan and token usage, plus the list of configured buckets (id, label, protocol, default model, fallback) you can pass to alethe_delegate. If a bucket has a fallback and a worker fails with what looks like a quota/rate-limit error, Thor automatically retries the same task on the fallback bucket — watch for a \"failover\" delivery in alethe_check, the job keeps its id but its bucket changes.",
             "inputSchema": { "type": "object", "properties": {} }
         },
         {
@@ -678,6 +1042,17 @@ pub fn call_tool(
                         .map(|path| path.to_string_lossy().into_owned())
                 })
                 .ok_or_else(|| "cwd is required".to_string())?;
+            let bucket = arguments
+                .get("bucket")
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
+                .unwrap_or(AGENT_CODEX)
+                .to_string();
+            let model = arguments
+                .get("model")
+                .and_then(Value::as_str)
+                .map(ToOwned::to_owned);
 
             let mut created = Vec::new();
             {
@@ -691,6 +1066,10 @@ pub fn call_tool(
                             id: id.clone(),
                             spec: spec.clone(),
                             cwd: cwd.clone(),
+                            bucket: bucket.clone(),
+                            model: model.clone(),
+                            bucket_chain_tried: Vec::new(),
+                            protocol_hint: None,
                             status: STATUS_QUEUED.to_string(),
                             thread_id: None,
                             active_turn_id: None,
@@ -719,6 +1098,7 @@ pub fn call_tool(
                 "accepted": created.len(),
                 "runningInParallel": true,
                 "concurrencyLimit": limit,
+                "bucket": bucket,
                 "jobs": created,
                 "next": "call alethe_check with wait true"
             }))
@@ -777,7 +1157,13 @@ pub fn call_tool(
             }))
         }
 
-        "alethe_status" => Ok(core.snapshot()),
+        "alethe_status" => {
+            let mut snapshot = core.snapshot();
+            if let Value::Object(map) = &mut snapshot {
+                map.insert("buckets".into(), core.list_buckets()["buckets"].clone());
+            }
+            Ok(snapshot)
+        }
 
         "alethe_steer" => {
             let job_id = required_str(arguments, "jobId")?;
@@ -787,6 +1173,12 @@ pub fn call_tool(
                 .jobs
                 .get(&job_id)
                 .ok_or_else(|| format!("unknown job {job_id}"))?;
+            if job.protocol_hint == Some(LauncherKind::OneShotRun) {
+                return Err(format!(
+                    "job {job_id} is a one-shot {} worker: it has no live thread to steer",
+                    job.bucket
+                ));
+            }
             let thread_id = job
                 .thread_id
                 .clone()
@@ -816,6 +1208,12 @@ pub fn call_tool(
                 .jobs
                 .get(&job_id)
                 .ok_or_else(|| format!("unknown job {job_id}"))?;
+            if job.protocol_hint == Some(LauncherKind::OneShotRun) {
+                return Err(format!(
+                    "job {job_id} is a one-shot {} worker: release it and delegate a new task instead",
+                    job.bucket
+                ));
+            }
             let thread_id = job
                 .thread_id
                 .clone()
@@ -936,7 +1334,7 @@ pub fn handle_mcp_body(core: &Core, body: &str) -> Option<String> {
                     .and_then(Value::as_str)
                     .unwrap_or("2025-06-18"),
                 "capabilities": { "tools": { "listChanged": false } },
-                "serverInfo": { "name": "alethe", "title": "Alethe", "version": "1" }
+                "serverInfo": { "name": "alethe", "title": "Thor", "version": "1" }
             }
         }),
         "tools/list" => json!({ "jsonrpc": "2.0", "id": id, "result": { "tools": tools() } }),

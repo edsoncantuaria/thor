@@ -1,4 +1,4 @@
-# Alethe Brand and Design Tokens
+# Thor Brand and Design Tokens
 
 This file documents the public app assets and the core design tokens used by the interface.
 
@@ -6,7 +6,7 @@ This file documents the public app assets and the core design tokens used by the
 
 - Main mark: [src/assets/alethe-mark.svg](../src/assets/alethe-mark.svg)
 - Loading mark: [src/assets/alethe-loading-mark.png](../src/assets/alethe-loading-mark.png)
-- Default profile avatar: [src/assets/default-profile.svg](../src/assets/default-profile.svg)
+- Default profile avatar: [src/assets/default-profile.png](../src/assets/default-profile.png)
 - App icons: [src-tauri/icons/](../src-tauri/icons/)
 
 To regenerate Tauri app icons from a new source image:
@@ -111,4 +111,4 @@ Common usage:
 
 ## Trademark
 
-The Alethe name, logo, and official branding are reserved for official builds. See [TRADEMARK.md](../TRADEMARK.md).
+The Thor name, logo, and official branding are reserved for official builds. See [TRADEMARK.md](../TRADEMARK.md).

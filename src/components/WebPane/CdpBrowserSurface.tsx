@@ -89,7 +89,7 @@ export function CdpBrowserSurface({
 
     const fail = (stage: string, cause: unknown) => {
       const detail = `${stage}: ${cause instanceof Error ? cause.message : String(cause)}`
-      if (import.meta.env.DEV) console.error('[Alethe][browser-cdp]', detail)
+      if (import.meta.env.DEV) console.error('[Thor][browser-cdp]', detail)
       void recordFrontendError(detail, null, 'browser-cdp.surface')
       if (!disposed) setError(failedLabelRef.current)
     }

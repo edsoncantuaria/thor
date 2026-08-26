@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid'
 import { useEffect, useState } from 'react'
 
 import { useT } from '../../../lib/i18n'
@@ -22,7 +23,7 @@ import {
   optimizerInstallHeadroom,
   optimizerInstallRtk,
 } from '../../../lib/tauri'
-import type { Preferences } from '../../../lib/types'
+import type { OrchestratorBucketConfig, Preferences } from '../../../lib/types'
 import { useProjectsStore } from '../../../stores/projectsStore'
 import controls from '../controls.module.css'
 import styles from '../PreferencesModal.module.css'
@@ -431,6 +432,192 @@ function OptimizerSection() {
   )
 }
 
+function BucketStatusBadge({ command }: { command: string }) {
+  const t = useT()
+  const [resolved, setResolved] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    let disposed = false
+    const trimmed = command.trim()
+    if (!trimmed) {
+      setResolved(null)
+      return
+    }
+    void findCliLauncher(trimmed).then((path) => {
+      if (!disposed) setResolved(path !== null)
+    })
+    return () => {
+      disposed = true
+    }
+  }, [command])
+
+  if (resolved === null) return null
+  return (
+    <span
+      className={`${styles.bucketStatus} ${resolved ? styles.bucketStatusOk : styles.bucketStatusMissing}`}
+    >
+      {resolved ? t('prefs.orchestratorBucketFound') : t('prefs.orchestratorBucketMissing')}
+    </span>
+  )
+}
+
+function OrchestratorBucketsSection() {
+  const t = useT()
+  const preferences = useProjectsStore((state) => state.preferences)
+  const setPreferences = useProjectsStore((state) => state.setPreferences)
+  const buckets = preferences.orchestratorBuckets
+
+  const updateBucket = (id: string, patch: Partial<OrchestratorBucketConfig>) => {
+    setPreferences({
+      orchestratorBuckets: buckets.map((bucket) =>
+        bucket.id === id ? { ...bucket, ...patch } : bucket,
+      ),
+    })
+  }
+
+  const addBucket = () => {
+    const bucket: OrchestratorBucketConfig = {
+      id: nanoid(8),
+      label: '',
+      command: '',
+      protocol: 'oneShot',
+      args: [],
+      modelFlag: '--model',
+      model: '',
+      fallback: '',
+    }
+    setPreferences({ orchestratorBuckets: [...buckets, bucket] })
+  }
+
+  const removeBucket = (id: string) => {
+    setPreferences({
+      orchestratorBuckets: buckets
+        .filter((bucket) => bucket.id !== id)
+        .map((bucket) => (bucket.fallback === id ? { ...bucket, fallback: '' } : bucket)),
+    })
+  }
+
+  const fallbackOptions = (selfId: string) => [
+    { id: 'codex', label: 'Codex (default)' },
+    { id: 'opencode', label: 'OpenCode (default)' },
+    ...buckets.map((bucket) => ({ id: bucket.id, label: bucket.label || bucket.command || bucket.id })),
+  ].filter((option) => option.id !== selfId)
+
+  return (
+    <SettingsSection
+      id="orchestrator-buckets"
+      title={t('prefs.orchestratorBuckets')}
+      description={t('prefs.orchestratorBucketsDesc')}
+    >
+      <div className={styles.integrationFields}>
+        <p>{t('prefs.orchestratorBucketsHint')}</p>
+
+        <div className={styles.bucketList}>
+          {buckets.map((bucket) => (
+            <div key={bucket.id} className={styles.bucketCard}>
+              <div className={styles.bucketRow}>
+                <input
+                  className={controls.input}
+                  value={bucket.label}
+                  placeholder={t('prefs.orchestratorBucketLabel')}
+                  onChange={(event) => updateBucket(bucket.id, { label: event.target.value })}
+                  spellCheck={false}
+                />
+                <input
+                  className={controls.input}
+                  value={bucket.command}
+                  placeholder={t('prefs.orchestratorBucketCommand')}
+                  onChange={(event) => updateBucket(bucket.id, { command: event.target.value })}
+                  spellCheck={false}
+                />
+                <BucketStatusBadge command={bucket.command} />
+                <button
+                  type="button"
+                  className={`${controls.btn} ${controls.btnDanger}`}
+                  onClick={() => removeBucket(bucket.id)}
+                >
+                  {t('prefs.orchestratorBucketRemove')}
+                </button>
+              </div>
+
+              <div className={styles.bucketRow}>
+                <div className={styles.segmented}>
+                  <button
+                    type="button"
+                    className={bucket.protocol === 'appServer' ? styles.segmentActive : undefined}
+                    onClick={() => updateBucket(bucket.id, { protocol: 'appServer' })}
+                  >
+                    {t('prefs.orchestratorProtocolAppServer')}
+                  </button>
+                  <button
+                    type="button"
+                    className={bucket.protocol === 'oneShot' ? styles.segmentActive : undefined}
+                    onClick={() => updateBucket(bucket.id, { protocol: 'oneShot' })}
+                  >
+                    {t('prefs.orchestratorProtocolOneShot')}
+                  </button>
+                </div>
+                <input
+                  className={controls.input}
+                  value={bucket.model}
+                  placeholder={t('prefs.orchestratorBucketModel')}
+                  onChange={(event) => updateBucket(bucket.id, { model: event.target.value })}
+                  spellCheck={false}
+                />
+                <select
+                  className={controls.input}
+                  value={bucket.fallback}
+                  onChange={(event) => updateBucket(bucket.id, { fallback: event.target.value })}
+                >
+                  <option value="">{t('prefs.orchestratorBucketFallbackNone')}</option>
+                  {fallbackOptions(bucket.id).map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {bucket.protocol === 'oneShot' ? (
+                <div className={styles.bucketRow}>
+                  <input
+                    className={controls.input}
+                    value={bucket.args.join(' ')}
+                    placeholder={t('prefs.orchestratorBucketArgs')}
+                    onChange={(event) =>
+                      updateBucket(bucket.id, {
+                        args: event.target.value.split(/\s+/).filter(Boolean),
+                      })
+                    }
+                    spellCheck={false}
+                  />
+                  <input
+                    className={controls.input}
+                    value={bucket.modelFlag}
+                    placeholder={t('prefs.orchestratorBucketModelFlag')}
+                    onChange={(event) => updateBucket(bucket.id, { modelFlag: event.target.value })}
+                    spellCheck={false}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.cliActions}>
+          <button
+            type="button"
+            className={`${controls.btn} ${controls.btnPrimary}`}
+            onClick={addBucket}
+          >
+            {t('prefs.orchestratorBucketAdd')}
+          </button>
+        </div>
+      </div>
+    </SettingsSection>
+  )
+}
+
 export function IntegrationsPage() {
   const t = useT()
   const preferences = useProjectsStore((state) => state.preferences)
@@ -442,6 +629,8 @@ export function IntegrationsPage() {
       <OllamaSection />
 
       <OptimizerSection />
+
+      <OrchestratorBucketsSection />
 
       <SettingsSection id="spotify" title={t('prefs.spotify')} description={t('prefs.spotifyDesc')}>
         <div className={styles.integrationFields}>

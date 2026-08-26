@@ -375,7 +375,7 @@ mod tests {
     fn read_planning_status_resolves_the_given_worktree_not_the_main_repo() {
         let root = temp_dir("worktree-resolve");
         crate::git_control::checked_output(&root, &["init", "-b", "main"]).unwrap();
-        crate::git_control::checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        crate::git_control::checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         crate::git_control::checked_output(
             &root,
             &["config", "user.email", "alethe@example.invalid"],
@@ -422,7 +422,7 @@ mod tests {
     fn temp_git_repo(label: &str) -> std::path::PathBuf {
         let root = temp_dir(label);
         crate::git_control::checked_output(&root, &["init", "-b", "main"]).unwrap();
-        crate::git_control::checked_output(&root, &["config", "user.name", "Alethe Test"]).unwrap();
+        crate::git_control::checked_output(&root, &["config", "user.name", "Thor Test"]).unwrap();
         crate::git_control::checked_output(
             &root,
             &["config", "user.email", "alethe@example.invalid"],

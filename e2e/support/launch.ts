@@ -15,7 +15,7 @@ function realBinaryPath(): string {
 
 /**
  * Isolates the data dir in a temporary folder, to guarantee ZERO contact with the
- * owner's real profile (`%LOCALAPPDATA%\Alethe` on Windows, `~/.local/share`
+ * owner's real profile (`%LOCALAPPDATA%\Thor` on Windows, `~/.local/share`
  * on Linux, etc.).
  *
  * REAL BUG CONFIRMED IN THIS SESSION (found by the owner, running live): the
@@ -24,7 +24,7 @@ function realBinaryPath(): string {
  * `%LOCALAPPDATA%` (the Local folder) — a DIFFERENT variable, never touched. The
  * isolation never actually worked on Windows: every e2e run opened
  * against the owner's real profile, with real projects/repositories. Confirmed
- * empirically (`%APPDATA%\Alethe` doesn't even exist; `%LOCALAPPDATA%\Alethe` is
+ * empirically (`%APPDATA%\Thor` doesn't even exist; `%LOCALAPPDATA%\Thor` is
  * where the real data lives).
  *
  * Fix: uses `ALETHE_APP_DATA_DIR`, the explicit override that BOTH

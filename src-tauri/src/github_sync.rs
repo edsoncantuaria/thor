@@ -13,8 +13,8 @@ use tauri::AppHandle;
 use crate::paths::{activity_stats_file_path, app_data_dir, projects_file_path};
 use crate::provider_common::now_ms;
 
-const GIST_DESCRIPTION: &str = "Alethe sync — projects & activity (managed by the app)";
-const USER_AGENT: &str = "Alethe";
+const GIST_DESCRIPTION: &str = "Thor sync — projects & activity (managed by the app)";
+const USER_AGENT: &str = "Thor";
 const GITHUB_API: &str = "https://api.github.com";
 
 #[derive(Default, Serialize, Deserialize)]

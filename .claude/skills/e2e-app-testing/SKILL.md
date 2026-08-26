@@ -1,9 +1,9 @@
 ---
 name: e2e-app-testing
-description: Real click/typing WebdriverIO e2e toolkit for the Alethe desktop app — use whenever the user asks to test, explore, click through, or verify a feature in the running Alethe UI (not unit/Rust tests). Covers generic navigation tools, a saved-procedure registry, and the specific flows already mapped (onboarding, project creation, git init, agent/merge settings).
+description: Real click/typing WebdriverIO e2e toolkit for the Thor desktop app — use whenever the user asks to test, explore, click through, or verify a feature in the running Thor UI (not unit/Rust tests). Covers generic navigation tools, a saved-procedure registry, and the specific flows already mapped (onboarding, project creation, git init, agent/merge settings).
 ---
 
-# Testing Alethe via real e2e (WebdriverIO)
+# Testing Thor via real e2e (WebdriverIO)
 
 This skill exists so that **any Claude Code session** (not just the one that wrote it) can
 test the app by really clicking/typing in the UI, without needing to rediscover from scratch how

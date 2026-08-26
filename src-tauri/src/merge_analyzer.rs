@@ -280,7 +280,7 @@ pub(crate) mod tests {
         fs::create_dir_all(&root).unwrap();
         let run = |args: &[&str]| checked_output(&root, args).unwrap();
         run(&["init", "-b", "main"]);
-        run(&["config", "user.name", "Alethe Test"]);
+        run(&["config", "user.name", "Thor Test"]);
         run(&["config", "user.email", "alethe@example.invalid"]);
         fs::write(root.join("shared.ts"), "export const value = 'base'\n").unwrap();
         fs::write(root.join("other.rs"), "fn base() {}\n").unwrap();

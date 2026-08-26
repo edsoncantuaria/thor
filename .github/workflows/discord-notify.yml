@@ -1,4 +1,4 @@
-# Notifica o Discord (Kc1t AI Labs) sobre eventos do Alethe Agents.
+# Notifica o Discord sobre eventos do Thor.
 #   release publicada  -> #alethe-releases (webhook DISCORD_WEBHOOK_ALETHE_RELEASES)
 #   issue aberta/fechada + PR mergeado na branch padrao -> #alethe-updates (webhook DISCORD_WEBHOOK_ALETHE_UPDATES)
 #
@@ -44,7 +44,7 @@ jobs:
       COLOR: "2278750" # verde da marca #22c55e
       EVENT: ${{ github.event_name }}
       ACTION: ${{ github.event.action }}
-      SITE: "https://alethe-agents.kc1t.com/"
+      SITE: "https://github.com/${{ github.repository }}"
     steps:
       - name: Montar e enviar embed
         env:
@@ -74,14 +74,14 @@ jobs:
           case "$EVENT" in
             release)
               WH="$WH_RELEASES"
-              if [ -n "${REL_NAME:-}" ]; then TITLE="🚀 $REL_NAME"; else TITLE="🚀 Alethe ${REL_TAG:-nova versao} disponivel"; fi
+              if [ -n "${REL_NAME:-}" ]; then TITLE="🚀 $REL_NAME"; else TITLE="🚀 Thor ${REL_TAG:-nova versao} disponivel"; fi
               URL="$REL_URL"
               BODY="$(slice "${REL_BODY:-Nova versao publicada.}" 3200)"
               DESC="$BODY
 
 📥 Baixar (Windows / macOS / Linux): $REL_URL
 🌐 $SITE"
-              FOOTER="Alethe Agents • release ${REL_TAG:-}"
+              FOOTER="Thor Agents • release ${REL_TAG:-}"
               ;;
             issues)
               WH="$WH_UPDATES"
@@ -93,7 +93,7 @@ jobs:
               else
                 TITLE="✅ Issue #${ISSUE_NUM} resolvida: ${ISSUE_TITLE}"
                 DESC="Essa issue foi fechada. 🎉"
-                FOOTER="Alethe Agents • issues"
+                FOOTER="Thor Agents • issues"
               fi
               ;;
             pull_request_target)

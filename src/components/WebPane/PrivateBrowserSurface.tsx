@@ -88,7 +88,7 @@ export function PrivateBrowserSurface({
       const detail = `${stage}: ${cause instanceof Error ? cause.message : String(cause)}`
       if (detail === lastFailure) return
       lastFailure = detail
-      if (import.meta.env.DEV) console.error('[Alethe][private-browser]', detail)
+      if (import.meta.env.DEV) console.error('[Thor][private-browser]', detail)
       void recordFrontendError(detail, null, 'private-browser.geometry')
     }
 
@@ -187,7 +187,7 @@ export function PrivateBrowserSurface({
         .once<string>('tauri://error', (event) => {
           if (disposed || webview !== instance) return
           const detail = String(event.payload || startFailedRef.current)
-          if (import.meta.env.DEV) console.error('[Alethe][private-browser]', detail)
+          if (import.meta.env.DEV) console.error('[Thor][private-browser]', detail)
           void recordFrontendError(detail, null, 'private-browser.create')
           setSurfaceState('error')
           setError(detail)

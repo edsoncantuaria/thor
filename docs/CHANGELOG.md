@@ -1,6 +1,6 @@
 # Changelog
 
-Notable user-facing changes to **Alethe** are documented here. The format is based on
+Notable user-facing changes to **Thor** are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows
 [Semantic Versioning](https://semver.org/). Dates use UTC.
 
@@ -12,11 +12,20 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 
 ### Added
 
+- The orchestrator's worker launcher is no longer hardcoded to Codex. A new Preferences →
+  Orchestrator settings page lets you configure any number of worker "buckets" — any agent CLI
+  (Claude in print mode, Cursor, a second OpenCode pointed at a local Ollama model, etc.), with
+  its own protocol (Codex's steerable app-server mode, or a generic one-shot `command [args]
+  [model flag] task` invocation), default model, and extra args. Codex and OpenCode still work
+  out of the box when installed. `alethe_delegate` picks a bucket by id (`bucket` field) and can
+  override its model per call; `alethe_status` lists every configured bucket so the lead agent
+  can discover what's available instead of guessing. `alethe_steer`/`alethe_send` correctly
+  refuse one-shot buckets, since they have no live thread to steer.
 - Agent CLIs installed via nvm, bun, `npm --prefix`, pnpm or volta are now detected on Linux
-  even when Alethe is launched from the desktop menu — which inherits a minimal PATH — matching
+  even when Thor is launched from the desktop menu — which inherits a minimal PATH — matching
   the existing `~/.local/bin` and `~/.cargo/bin` fallbacks. Onboarding and agent tabs now see
   these installs instead of reporting them as missing.
-- When an agent opens a page in the shared browser, Alethe asks where it should go. The browser
+- When an agent opens a page in the shared browser, Thor asks where it should go. The browser
   itself has no window, which is right most of the time — an agent reading a page needs no
   interface at all — so the question only comes up when a page actually appears. All three
   answers are spelled out: show it in a pane, open it in your own browser, or leave it running
@@ -59,9 +68,16 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 
 ### Changed
 
-- Alethe Remote now mirrors the selected desktop theme, app icon, motion preference, and language
+- The default profile photo is now the Thor portrait (arms crossed, sunset background)
+  instead of the previous dark knight avatar.
+- Docs, skills, and remaining user-visible copy now use Thor throughout. Internal
+  identifiers that would break existing worktrees, merge flows, or agent hooks
+  (`.alethe/`, `alethe/agent-*` branches, `ALETHE_*` env vars, `X-Alethe-Token`,
+  crate/binary names) are unchanged. The README keeps a license attribution to
+  the original project at https://github.com/Kc1t/alethe-agents.
+- Thor Remote now mirrors the selected desktop theme, app icon, motion preference, and language
   while it is open. Its splash, workspace, terminal view, connection feedback, empty states, and
-  recovery screens now use the same Alethe design tokens and official branding.
+  recovery screens now use the same Thor design tokens and official branding.
 - Notifications that ask something now read as one line rather than a block. The choices sit
   inline as chips after the message, separated by a hairline, with a single filled chip for the
   answer most people want and a plain one for declining. Stacking buttons underneath had broken
@@ -128,7 +144,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 - Confirmation dialogs work again. The permission for them was missing, so every confirm — including
   the one guarding app close — was rejected before it could be shown, and the action behind it was
   silently abandoned.
-- Two Alethe instances no longer redirect each other's agent events. The hook endpoint was written
+- Two Thor instances no longer redirect each other's agent events. The hook endpoint was written
   to a single shared file, so whichever started last captured the events of both.
 - Terminals are no longer killed behind your back under memory pressure. At critical pressure
   the app terminated one hidden, idle session every five seconds and never brought any of them
@@ -151,7 +167,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   falls back to its own default otherwise.
 - The automation browser is now shut down with the app and any copy left by a previous run is
   cleared on startup. Chromium deliberately detaches from the job object that ties every other
-  child process to Alethe, so it used to survive a crash and keep holding its profile.
+  child process to Thor, so it used to survive a crash and keep holding its profile.
 - Memory relief actually runs now. The resource manager raised one event per pressure level and
   nothing on the frontend listened to any of them, so every level was a no-op — and the most
   severe one was emitted as `resource::drop-caches`, a name no listener could match. Cached
@@ -192,7 +208,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 - Windows updates no longer close the app without coming back. The update manifest pointed Windows
   at the MSI, but the installer nearly everyone actually has is the NSIS `setup.exe` the download
   page serves. An MSI applied over an NSIS install neither upgrades it nor restarts the app, so the
-  updater downloaded, closed Alethe, and left the old version behind. The generic Windows entry now
+  updater downloaded, closed Thor, and left the old version behind. The generic Windows entry now
   points at the NSIS installer; the `-msi` and `-nsis` entries are still published for anyone
   pinning one deliberately. Existing installs that ended up with both an MSI and an NSIS entry
   registered will settle onto NSIS after this update.
@@ -217,7 +233,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   one, right after the theme step.
 - Claude Code and Codex conversations can now be continued in the other agent from the terminal
   toolbar or Recent chats — so hitting a usage limit on one agent no longer ends the conversation,
-  you carry it into the other and keep working. Alethe builds an editable context packet, redacts
+  you carry it into the other and keep working. Thor builds an editable context packet, redacts
   anything that looks like a secret, token, password, API key or credential before it leaves the
   machine, opens the target agent in a new pane, keeps the source conversation available, and
   removes the temporary packet after the first target turn or when its pane is closed.
@@ -243,7 +259,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   own docs use, or a search of the official MCP registry — which turns a published package into a
   ready-to-run command and pre-fills the variables it expects, marking the secret ones empty. The
   last successful search of each term is kept on disk so the list still opens when the registry is
-  unreachable, labelled with the date it was captured. Alethe translates a server to each target's
+  unreachable, labelled with the date it was captured. Thor translates a server to each target's
   format and refuses, rather than silently dropping, a field the target cannot express. A per-agent
   **Check** button asks the agent itself whether it can actually reach each server — the one thing no
   config file can answer. The first time the app opens with the feature on, a card shows what was
@@ -270,10 +286,10 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   dialog. Empty cells also became drop targets: dragging a pane or a container onto one moves it
   there instead of swapping with a neighbour.
 - The project container header has a **+** button that creates a new terminal in that project.
-- Agents that are not installed can now be installed from inside Alethe. The onboarding agent step
+- Agents that are not installed can now be installed from inside Thor. The onboarding agent step
   and the "not found" overlay of a terminal both offer an **Install** button that runs the official
   installer in a real shell and streams its output, then confirms the CLI is reachable before
-  reporting success. Alethe probes the machine for Node, npm, WinGet, Scoop and Chocolatey and only
+  reporting success. Thor probes the machine for Node, npm, WinGet, Scoop and Chocolatey and only
   offers the methods that work there, preferring each vendor's official installer — which needs no
   Node — and listing the alternatives under **Other ways**.
 - A **Recent chats** button on the terminal toolbar, next to Open in VS Code, lists the Claude and
@@ -286,7 +302,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   so instead of dead-ending on "no automatic installer". It offers a one-click Node.js install
   through WinGet, Scoop or Chocolatey when one of them is available, and a **Download Node.js**
   button otherwise. Once Node lands, the agent's own installer appears without reopening the card.
-- Freebuff and Mimo can now be installed from inside Alethe like the other agents, with their
+- Freebuff and Mimo can now be installed from inside Thor like the other agents, with their
   documentation links — until now they were the only agents with no installer at all.
 - Installed agents can be **uninstalled** from the onboarding agent step. Confirmation happens in a
   dialog that shows the exact command about to run, and the agent is only reported as removed once
@@ -305,7 +321,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   revealing entries in File Explorer, renaming, and confirmed deletion. Git file rows can also open
   the working file in the grid or reveal it alongside the existing stage, discard, commit, and sync actions.
 - Browser panes now offer app-first, balanced, and keep-alive resource modes. App-first is the default,
-  and every mode releases hidden native webviews when Alethe detects memory pressure.
+  and every mode releases hidden native webviews when Thor detects memory pressure.
 - The layout organizer now includes adaptive presets and keeps the eight most recently saved layouts
   separately for each project, group, and workspace.
 - New **Ember** interface theme: cool charcoal surfaces, hairline dividers and a single ember-orange
@@ -347,7 +363,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   or uninstall — so all rows line up regardless of what each agent offers. Above it there is a
   counter strip (enabled, up to date, with updates, installable), a search field that matches on name
   or path, and All / Detected / Installable filters. A **Scan again** link re-runs detection without
-  leaving the step, for when an agent was installed outside Alethe.
+  leaving the step, for when an agent was installed outside Thor.
 - GitHub Copilot is drawn with its official mark instead of the generic robot placeholder, so every
   agent in the app now carries its own logo.
 - Setting MCP up is no longer a step of first-run onboarding. It is offered once as its own card
@@ -517,7 +533,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   the link unless a file extension is waiting on the other side, which is what a path with spaces
   actually looks like.
 - Invalid CLI overrides are rejected instead of being saved and launched. Existing invalid overrides
-  are cleared automatically, preventing the Antigravity desktop application from opening when Alethe
+  are cleared automatically, preventing the Antigravity desktop application from opening when Thor
   expects the `agy` command-line executable.
 - The agent update button in onboarding no longer fails silently. It decided success purely by
   checking whether the CLI binary was still on PATH, which is true even when the update itself
@@ -550,7 +566,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 - Reopening a pane no longer replays its history line by line. The stored scrollback was fed to the
   terminal in 16 KB slices, one rendered frame each, so a large buffer visibly scrolled from the top
   down to the prompt and took seconds; it is now written in a single pass straight to the bottom.
-- Switching conversation from inside the CLI with `/new` or `/resume` now sticks. Alethe pinned the
+- Switching conversation from inside the CLI with `/new` or `/resume` now sticks. Thor pinned the
   session id given at launch and sent the old one back on the next restart, dragging the pane to the
   previous chat.
 - Ctrl+Tab did nothing after coming back to the app from another window. Returning left the webview
@@ -573,7 +589,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
   backend using `wl-paste` / `wl-copy` (Wayland) or `xclip` (X11) now handles screenshots, images
   copied from the web (`image/png`) and files copied in a file manager (`text/uri-list`). macOS is
   still unimplemented.
-- **Remote control is now off by default and stays off until you turn it on.** Alethe used to open a
+- **Remote control is now off by default and stays off until you turn it on.** Thor used to open a
   LAN listener on every launch, and the on/off switch was lost when the app restarted. The setting is
   now saved with your preferences and the listener only starts while it is enabled.
 - The remote pairing address and QR code are only shown while a pairing window is open, and the
@@ -636,7 +652,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 - Clean sidebar group headers now only expand or collapse the tree instead of also adding every
   project in the group to the workspace.
 - GitHub repository cloning no longer depends on a hardcoded `D:\Projects` directory. The selected
-  destination is now respected, with `~/Alethe/<repository>` as the cross-platform fallback.
+  destination is now respected, with `~/Thor/<repository>` as the cross-platform fallback.
 - Background agents now report completion through the lightweight off-screen activity channel.
 - Lightweight background output is accumulated between updates instead of being discarded, so
   activity detection and Codex busy-session recovery remain reliable off screen.
@@ -652,7 +668,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 - New GSD plugin instances clear stale synchronization markers left by crashed or closed processes.
 - Terminal hover and click coordinates are remeasured after app zoom changes, keeping xterm.js link
   detection aligned with the pointer.
-- Development builds on Linux now also apply the Alethe icon at runtime. Packaged builds remain the
+- Development builds on Linux now also apply the Thor icon at runtime. Packaged builds remain the
   reliable icon source for compositors that prefer desktop-file lookup.
 - Linux now sets `WEBKIT_DISABLE_DMABUF_RENDERER=1` before creating the webview, avoiding the known
   WebKitGTK DMA-BUF animation and fractional-scaling issues documented by Tauri.
@@ -719,7 +735,7 @@ Notable user-facing changes to **Alethe** are documented here. The format is bas
 
 - CLI detection during onboarding is time-boxed per provider so slow PATH entries cannot freeze setup.
 - New profiles reach onboarding cleanly, and parking terminals no longer blocks account switching.
-- The default profile image and generated app icons now use the dark Alethe artwork.
+- The default profile image and generated app icons now use the dark Thor artwork.
 - Agent Sandbox project creation entry points are hidden behind a build flag while the feature is
   archived.
 - The startup screen now shares the Home background and ASCII-art treatment.
@@ -823,7 +839,7 @@ memory controls, and Linux/macOS parity for Antigravity and OpenCode.
 - Stabilized the pane-area Zustand fallback to prevent React #185 during project hydration.
 - Disabled unstable xterm.js WebGL rendering in the Windows WebView to avoid teardown races.
 - Sidebar resize persistence no longer rebuilds `defaultSize` during the resize event.
-- GSD test briefings are scoped to the files changed in the current session and exclude Alethe-generated
+- GSD test briefings are scoped to the files changed in the current session and exclude Thor-generated
   `.opencode/`, `opencode.json`, and `.planning/` infrastructure.
 - Graphify and GSD setup commands now run on blocking worker threads instead of freezing Tauri IPC when
   spawning agents.
@@ -847,7 +863,7 @@ memory controls, and Linux/macOS parity for Antigravity and OpenCode.
 - Deleting a worktree agent also deletes its hidden GSD viewer terminal and PTY.
 - Repository-root discovery excludes GSD viewer panes and can resolve the shared Git root from any
   existing worktree.
-- GSD viewer panes trust Alethe-tracked child session IDs that OpenCode intentionally omits from normal
+- GSD viewer panes trust Thor-tracked child session IDs that OpenCode intentionally omits from normal
   session listings.
 - Merge Center **Accept** now performs the real analyze, prepare, resolve, validate, and fast-forward
   merge flow; **Reject** removes the worktree while preserving its branch.
@@ -920,7 +936,7 @@ the sidebar, and adds Antigravity support.
   development shells.
 - Redesigned Home with interactive ASCII artwork, smooth dashboard transitions, a mini-terminal quick
   launcher, a compact Spotify dock, clearer usage and focus panels, and real streak/activity data.
-- Rebuilt the loading screen with animated Alethe ASCII branding and dot-matrix progress.
+- Rebuilt the loading screen with animated Thor ASCII branding and dot-matrix progress.
 - Reorganized the Projects sidebar around a fixed active-project card, a flat project list, colored
   monograms, always-visible menus, activity indicators, and reduced metadata clutter.
 - Terminal links now exclude explanatory text, input failures recover the PTY, Codex restart preserves

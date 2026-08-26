@@ -1,7 +1,7 @@
 // alethe-managed: v12
-// Gerado automaticamente pelo Alethe. Seguro editar — se você mudar este
+// Gerado automaticamente pelo Thor. Seguro editar — se você mudar este
 // arquivo, remova ou altere a linha acima ("alethe-managed: vN") para
-// impedir que o Alethe sobrescreva suas mudanças em versões futuras.
+// impedir que o Thor sobrescreva suas mudanças em versões futuras.
 //
 // Mantém .planning/ sincronizado sozinho, sem depender do modelo lembrar de
 // fazer isso. Estrutura de planejamento (6 arquivos, sempre a mesma,
@@ -37,14 +37,14 @@
 //
 // A sessão-filha é única e persistente por worktree — criada uma vez,
 // reaproveitada em todo ciclo seguinte. O id fica gravado em
-// `.planning/.gsd-child-session` (o Alethe usa esse arquivo pra abrir uma
+// `.planning/.gsd-child-session` (o Thor usa esse arquivo pra abrir uma
 // pane "GSD Sync" anexada via `opencode --session <id>`), e
 // `.planning/.gsd-child-busy` marca enquanto ela está processando.
 //
 // Modelo: cada ciclo tenta primeiro o MESMO modelo que a sessão principal
 // acabou de usar (espelhado, sempre automático) e, se isso falhar, tenta em
 // ordem a cadeia de fallback configurada globalmente no app (lida em
-// runtime de `.opencode/alethe-gsd-config.json`, escrito pelo Alethe a cada
+// runtime de `.opencode/alethe-gsd-config.json`, escrito pelo Thor a cada
 // spawn). Falha é detectada via `session.error` (evento dedicado,
 // confirmado empiricamente — não é uma promise rejeitada) seguido de
 // `session.idle`; só escreve `.planning/.gsd-child-error` se TODA a cadeia
@@ -59,7 +59,7 @@
 // sem lista nenhuma e nunca disparavam sincronização.
 //
 // Validado empiricamente contra opencode 1.18.11 real (server mode, modelo
-// gratuito) antes de ser embutido no binário do Alethe — ver
+// gratuito) antes de ser embutido no binário do Thor — ver
 // docs/CHANGELOG.md.
 
 import type { Plugin } from '@opencode-ai/plugin'
@@ -103,7 +103,7 @@ Não implemente nem corrija nada agora — só documente/registre.
 Contexto da sessão principal (delta desde a última sincronização) segue abaixo, se houver — é só um resumo em texto solto da conversa, não confie nele pra detalhes exatos de código.`
 
 /** Um arquivo é excluído do escopo do procedimento se for infraestrutura do
- *  próprio Alethe (`.planning/` — estado deste plugin — e `.opencode/`/
+ *  próprio Thor (`.planning/` — estado deste plugin — e `.opencode/`/
  *  `opencode.json`, escritos automaticamente a cada spawn: plugin GSD, MCP do
  *  Graphify) — nenhum dos dois é trabalho real do usuário nesta sessão; sem
  *  essa exclusão a sessão-filha via esses arquivos em `git status`/`git diff`
@@ -263,7 +263,7 @@ export const AletheGsdStatePlugin: Plugin = async ({ directory, worktree, client
       // SEM parentID — ver nota no cabeçalho do arquivo sobre por que uma
       // sessão-filha vinculada não resumia com histórico visível na TUI.
       const created: any = await (client as any).session.create({
-        body: { directory: root, title: 'Alethe · GSD Sync' },
+        body: { directory: root, title: 'Thor · GSD Sync' },
       })
       const id: string | undefined = created?.data?.id ?? created?.id
       if (!id) return null

@@ -112,7 +112,7 @@ describe('toKeyInput', () => {
 })
 
 describe('isAppShortcut', () => {
-  it('keeps the shortcuts that move around Alethe out of the page', () => {
+  it('keeps the shortcuts that move around Thor out of the page', () => {
     expect(isAppShortcut({ ...noModifiers, key: 'Escape' })).toBe(true)
     expect(isAppShortcut({ ...noModifiers, ctrlKey: true, key: 'Tab' })).toBe(true)
     expect(isAppShortcut({ ...noModifiers, ctrlKey: true, key: 'w' })).toBe(true)

@@ -69,7 +69,7 @@ fn set_activity(
             .assets(
                 activity::Assets::new()
                     .large_image(LARGE_IMAGE_ASSET)
-                    .large_text("Alethe"),
+                    .large_text("Thor"),
             )
     };
 

@@ -1,6 +1,6 @@
 # Roadmap — Real Orchestration
 
-Alethe today is a **workspace**: it runs many agents in parallel and keeps their state alive. It is
+Thor today is a **workspace**: it runs many agents in parallel and keeps their state alive. It is
 not yet an **orchestrator**: nothing decides what each agent should work on, nothing tracks a unit of
 work from split to landed, and nothing stops two agents from colliding on the same file.
 
@@ -42,7 +42,7 @@ A unit of orchestrated work has five stages:
 split  →  isolate  →  delegate  →  supervise  →  land
 ```
 
-Alethe covers `isolate` well and `split` partially. `delegate` is manual. `supervise` is per-agent,
+Thor covers `isolate` well and `split` partially. `delegate` is manual. `supervise` is per-agent,
 never per-run. And `land` was **removed in 1.6.0** along with the Merge Center — it returns in a
 later version, and when it does it should come back as the terminal stage of a run, not as a
 standalone panel.
@@ -56,7 +56,7 @@ That reframing is the spine of this roadmap.
 Today a task only exists if a GSD `.planning/` file describes it. Orchestration cannot be built on a
 format owned by a plugin.
 
-- Promote `Task` to a first-class, persisted Alethe entity, versioned in `projects.json` with the
+- Promote `Task` to a first-class, persisted Thor entity, versioned in `projects.json` with the
   same migration discipline as the rest of the schema.
 - Keep GSD as **one importer** among others, not the source of truth.
 - Let a task be created from the UI, from an agent via the existing `TaskCreated` hook, or from an
@@ -80,7 +80,7 @@ Make "run this task on that agent, in its own worktree" a single action.
   a size budget, which is exactly what a task briefing needs.
 
 **Open question:** whether a delegated agent runs in a visible pane or headless. Headless is cheaper
-and scales, but it breaks Alethe's core promise that you can always see and take over any agent.
+and scales, but it breaks Thor's core promise that you can always see and take over any agent.
 Leaning toward visible-by-default with an explicit background mode.
 
 ## Phase 3 — Supervision

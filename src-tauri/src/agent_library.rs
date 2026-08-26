@@ -4,12 +4,17 @@ use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 
-const MARKER: &str = "gerado pelo Alethe";
+const MARKER: &str = "gerado pelo Thor";
+const LEGACY_MARKER: &str = "gerado pelo Alethe";
+
+fn has_owned_marker(content: &str) -> bool {
+    content.contains(MARKER) || content.contains(LEGACY_MARKER)
+}
 
 #[derive(Serialize)]
 pub struct InstalledAgent {
     pub name: String,
-    /// Whether the file contains the Alethe marker and can be removed safely.
+    /// Whether the file contains the Thor marker and can be removed safely.
     pub from_alethe: bool,
 }
 
@@ -41,7 +46,7 @@ fn list_installed_agents_inner(folder: String) -> Vec<InstalledAgent> {
             }
             let name = path.file_stem()?.to_str()?.to_string();
             let from_alethe = fs::read_to_string(&path)
-                .map(|c| c.contains(MARKER))
+                .map(|c| has_owned_marker(&c))
                 .unwrap_or(false);
             Some(InstalledAgent { name, from_alethe })
         })
@@ -67,7 +72,7 @@ pub fn install_agent(
 
     if path.exists() && !force {
         let ours = fs::read_to_string(&path)
-            .map(|c| c.contains(MARKER))
+            .map(|c| has_owned_marker(&c))
             .unwrap_or(false);
         if !ours {
             return Err("conflict".to_string());
@@ -90,7 +95,7 @@ pub fn uninstall_agent(folder: String, name: String, force: bool) -> Result<(), 
         return Ok(());
     }
     let ours = fs::read_to_string(&path)
-        .map(|c| c.contains(MARKER))
+        .map(|c| has_owned_marker(&c))
         .unwrap_or(false);
     if !ours && !force {
         return Err("not-ours".to_string());

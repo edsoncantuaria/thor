@@ -20,7 +20,7 @@ pub struct HealthProbeResult {
     pub status_code: Option<u16>,
     pub elapsed_ms: u64,
     pub output_tail: String,
-    /// `None` = the tested project is not an Alethe core (it has no PTY API,
+    /// `None` = the tested project is not an Thor core (it has no PTY API,
     /// nothing to verify here — the majority of user projects). Only when
     /// `/api/health` confirms `service: "alethe-core"` do we actually try to
     /// open a terminal against the freshly-started instance — `Some` carries
@@ -28,7 +28,7 @@ pub struct HealthProbeResult {
     pub terminal_verified: Option<bool>,
 }
 
-/// Only runs when `/api/health` confirms that what came up is an Alethe
+/// Only runs when `/api/health` confirms that what came up is an Thor
 /// core — opens a real PTY against the freshly-provisioned instance and
 /// confirms an actual input/output round trip (writes a command with a
 /// unique marker, reads the scrollback back until the marker appears).

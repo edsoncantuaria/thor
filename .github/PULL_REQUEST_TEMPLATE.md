@@ -30,4 +30,4 @@ Closes #
 - [ ] `npm run format` was run
 - [ ] User-facing strings go through `t()` and exist in both `en.ts` and `pt-BR.ts`
 - [ ] Colors/spacing use tokens from `styles/theme.css` — no hardcoded values
-- [ ] `docs/CHANGELOG.md` updated under `[Não lançado]` (features only)
+- [ ] `docs/CHANGELOG.md` updated under `[Unreleased]` (features only)

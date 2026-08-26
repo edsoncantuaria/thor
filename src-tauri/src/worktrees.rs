@@ -346,8 +346,8 @@ fn resolve_worktree_env(repo: &str, agent_id: &str) -> Result<PathBuf, String> {
 }
 
 /// Mirrors `isRealWork()` in `assets/opencode-plugins/alethe-gsd-state.ts` —
-/// Alethe's own infrastructure (GSD plugin in `.opencode/`, GSD Sync state in
-/// `.planning/`, the `opencode.json` Alethe writes on every spawn) is never
+/// Thor's own infrastructure (GSD plugin in `.opencode/`, GSD Sync state in
+/// `.planning/`, the `opencode.json` Thor writes on every spawn) is never
 /// real agent work in this worktree and must not be auto-committed/merged.
 fn is_real_work(path: &str) -> bool {
     !path.is_empty()
@@ -386,7 +386,7 @@ fn commit_all_pending(env: &Path, message: &str) -> Result<bool, String> {
     } else {
         message
     };
-    // Never `add -A`: stage only the real paths (filtered above) so Alethe's
+    // Never `add -A`: stage only the real paths (filtered above) so Thor's
     // own infrastructure never rides along into the commit.
     let mut add_args: Vec<&str> = vec!["add", "--"];
     add_args.extend(changes.iter().map(|change| change.path.as_str()));
@@ -476,7 +476,7 @@ mod tests {
         fs::create_dir_all(&root).unwrap();
         let run = |args: &[&str]| checked_output(&root, args).unwrap();
         run(&["init"]);
-        run(&["config", "user.name", "Alethe Test"]);
+        run(&["config", "user.name", "Thor Test"]);
         run(&["config", "user.email", "alethe@example.invalid"]);
         fs::write(root.join("file.txt"), "one\n").unwrap();
         run(&["add", "file.txt"]);
@@ -503,7 +503,7 @@ mod tests {
         let env = Path::new(&lc.path);
 
         fs::write(env.join("file.txt"), "changed in copy\n").unwrap();
-        checked_output(env, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(env, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(env, &["config", "user.email", "alethe@example.invalid"]).unwrap();
         checked_output(env, &["commit", "-am", "copy work"]).unwrap();
 
@@ -549,7 +549,7 @@ mod tests {
         let wt =
             worktree_provision(root_str.clone(), "op1".into(), WorktreeMode::GitWorktree).unwrap();
         let env = Path::new(&wt.path);
-        checked_output(env, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(env, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(env, &["config", "user.email", "alethe@example.invalid"]).unwrap();
 
         // Nothing pending yet — no-op, no new commit.
@@ -587,7 +587,7 @@ mod tests {
         let wt =
             worktree_provision(root_str.clone(), "op2".into(), WorktreeMode::GitWorktree).unwrap();
         let env = Path::new(&wt.path);
-        checked_output(env, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(env, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(env, &["config", "user.email", "alethe@example.invalid"]).unwrap();
 
         assert!(worktree_pending_changes(root_str.clone(), "op2".into())
@@ -643,10 +643,10 @@ mod tests {
         let wt =
             worktree_provision(root_str.clone(), "op3".into(), WorktreeMode::GitWorktree).unwrap();
         let env = Path::new(&wt.path);
-        checked_output(env, &["config", "user.name", "Alethe Test"]).unwrap();
+        checked_output(env, &["config", "user.name", "Thor Test"]).unwrap();
         checked_output(env, &["config", "user.email", "alethe@example.invalid"]).unwrap();
 
-        // Only Alethe infrastructure pending (GSD plugin + OpenCode config
+        // Only Thor infrastructure pending (GSD plugin + OpenCode config
         // auto-written on spawn) — no real agent work.
         fs::create_dir_all(env.join(".opencode").join("plugins")).unwrap();
         fs::write(
@@ -664,7 +664,7 @@ mod tests {
             worktree_pending_changes(root_str.clone(), "op3".into())
                 .unwrap()
                 .is_empty(),
-            "Alethe infrastructure files must not show up as pending"
+            "Thor infrastructure files must not show up as pending"
         );
         assert!(
             !worktree_commit_worktree(root_str.clone(), "op3".into(), "infra only".into()).unwrap(),
@@ -738,7 +738,7 @@ mod tests {
         .unwrap();
 
         // Real administrative lock via `git worktree lock --reason`, like a
-        // user would do outside Alethe.
+        // user would do outside Thor.
         checked_output(
             &root,
             &[
