@@ -488,7 +488,7 @@ fn atomic_write(path: &Path, contents: &str) -> Result<(), String> {
         fs::create_dir_all(parent).map_err(|error| format!("mkdir_failed:{error}"))?;
     }
     let mut tmp = path.as_os_str().to_os_string();
-    tmp.push(".alethe-tmp");
+    tmp.push(".thor-tmp");
     let tmp = PathBuf::from(tmp);
     fs::write(&tmp, contents).map_err(|error| format!("write_failed:{error}"))?;
     // A fresh temp file is created with the default mode, which would widen a config the

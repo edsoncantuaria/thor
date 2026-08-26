@@ -21,10 +21,10 @@ fn init_token() -> &'static str {
 
 fn check_token(request: &tiny_http::Request) -> bool {
     let expected = init_token();
-    request
-        .headers()
-        .iter()
-        .any(|h| h.field.as_str() == "X-Thor-Token" && h.value.as_str() == expected)
+    request.headers().iter().any(|h| {
+        let name = h.field.as_str();
+        (name == "X-Thor-Token" || name == "X-Alethe-Token") && h.value.as_str() == expected
+    })
 }
 
 fn listener_addr(port: u16) -> String {

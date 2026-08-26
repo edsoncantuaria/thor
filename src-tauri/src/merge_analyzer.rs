@@ -168,7 +168,7 @@ fn ensure_branch(root: &Path, branch: &str) -> Result<(), String> {
 }
 
 pub(crate) fn merge_envs_dir(root: &Path) -> PathBuf {
-    root.join(".alethe").join("merge-envs")
+    crate::git_control::app_hidden_dir(root).join("merge-envs")
 }
 
 /// Lists the non-merged paths (`--diff-filter=U`) of a worktree in conflict.

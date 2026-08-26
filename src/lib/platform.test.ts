@@ -59,6 +59,9 @@ describe('normalizeCwd', () => {
   })
 
   it('remove o prefixo verbatim \\\\?\\ antes de comparar, senão worktrees nunca batem com o path real', () => {
+    expect(normalizeCwd('\\\\?\\D:\\Projetos\\PICLESV2\\.thor\\worktrees\\opencode-x')).toBe(
+      normalizeCwd('D:\\Projetos\\PICLESV2\\.thor\\worktrees\\opencode-x'),
+    )
     expect(normalizeCwd('\\\\?\\D:\\Projetos\\PICLESV2\\.alethe\\worktrees\\opencode-x')).toBe(
       normalizeCwd('D:\\Projetos\\PICLESV2\\.alethe\\worktrees\\opencode-x'),
     )

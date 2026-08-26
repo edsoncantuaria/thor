@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { ensureAgentReady, readPtyScrollback, sendPtyLine, waitUntil } from './ptyAgent'
 import { sendOpenCodePrompt } from './openCodePrompt'
 
-const RULE_PREFIX = 'ALETHE_E2E_RULE: '
+const RULE_PREFIX = 'THOR_E2E_RULE: '
 
 export type ContinuityResult = {
   file1Path: string

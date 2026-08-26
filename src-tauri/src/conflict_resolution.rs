@@ -2,7 +2,7 @@
 //!
 //! Second stage of the safe merge cycle. The Merge Analyzer (RFC-006) decided
 //! there's integration work to do; this module provisions an **ephemeral
-//! environment** (worktree `alethe/merge-<id>`) with the real merge applied —
+//! environment** (worktree `thor/merge-<id>`) with the real merge applied —
 //! including the conflict markers — and the **minimal context**
 //! (`THOR_CONFLICT.md`) for the Conflict Resolution Agent to work with:
 //!
@@ -88,11 +88,32 @@ fn validate_env_id(id: &str) -> Result<(), String> {
 }
 
 fn env_dir(root: &Path, id: &str) -> PathBuf {
+    for hidden in crate::git_control::app_hidden_dirs(root) {
+        let dest = hidden.join("merge-envs").join(id);
+        if dest.exists() {
+            return dest;
+        }
+        if hidden.join("merge-envs").join(format!("{id}.json")).exists() {
+            return dest;
+        }
+    }
     merge_envs_dir(root).join(id)
 }
 
 fn meta_path(root: &Path, id: &str) -> PathBuf {
+    if let Some(parent) = env_dir(root, id).parent() {
+        return parent.join(format!("{id}.json"));
+    }
     merge_envs_dir(root).join(format!("{id}.json"))
+}
+
+fn ephemeral_merge_branch(id: &str) -> String {
+    format!("thor/merge-{id}")
+}
+
+fn delete_ephemeral_merge_branch(root: &Path, id: &str) {
+    let _ = git_command(root, &["branch", "-D", &format!("thor/merge-{id}")]);
+    let _ = git_command(root, &["branch", "-D", &format!("alethe/merge-{id}")]);
 }
 
 fn read_meta(root: &Path, id: &str) -> Result<MergeMeta, String> {
@@ -173,7 +194,7 @@ pub(crate) fn merge_prepare_inner(
     std::fs::create_dir_all(&envs).map_err(|e| format!("mkdir_failed:{e}"))?;
     let env = env_dir(&root, &id);
     let env_arg = git_arg(&env);
-    let branch = format!("alethe/merge-{id}");
+    let branch = ephemeral_merge_branch(&id);
 
     checked_output(
         &root,
@@ -466,7 +487,7 @@ pub(crate) fn merge_finalize_inner(
                 .ok()
         });
 
-    let message = format!("merge(alethe): {} -> {}", meta.source, meta.target);
+    let message = format!("merge(thor): {} -> {}", meta.source, meta.target);
     // After a successful merge_rebase_onto_target, the reconciliation already
     // committed everything — nothing is left staged here, and that's expected
     // (HEAD is already the right commit). `diff --cached --quiet`: exit 0 =
@@ -527,7 +548,7 @@ pub(crate) fn merge_finalize_inner(
             ..Default::default()
         });
     }
-    let branch = format!("alethe/merge-{env_id}");
+    let branch = ephemeral_merge_branch(&env_id);
     // Real bug, confirmed live with a real agent (a branch with no commit
     // relative to the target — nothing was committed above because there was
     // no change at all): without this check, `git merge --ff-only` responds
@@ -761,7 +782,7 @@ pub struct ForceCleanupResult {
 /// Brute-force cleanup of an unrecoverable merge environment (`TerminalError`,
 /// when the preventive abort already failed due to real corruption). Direct
 /// physical deletion of the directory (double-checked to never leave
-/// `.alethe/merge-envs/`) followed by a best-effort `git worktree prune`. The
+/// `.thor/merge-envs/` or a leftover `.alethe/merge-envs/`) followed by a best-effort `git worktree prune`. The
 /// frontend decides `pruneOnly` vs `requiresRawDeletion` based on
 /// `deleted`/`pruned`.
 #[tauri::command]
@@ -780,8 +801,11 @@ pub(crate) fn merge_force_cleanup_inner(
 ) -> Result<ForceCleanupResult, String> {
     let root = repository_root(&repo)?;
     validate_env_id(&env_id)?;
-    let envs_base = merge_envs_dir(&root);
     let env = env_dir(&root, &env_id);
+    let envs_base = env
+        .parent()
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| merge_envs_dir(&root));
 
     let deleted = if !env.exists() {
         true
@@ -799,6 +823,7 @@ pub(crate) fn merge_force_cleanup_inner(
     };
 
     let pruned = checked_output(&root, &["worktree", "prune"]).is_ok();
+    delete_ephemeral_merge_branch(&root, &env_id);
     let _ = std::fs::remove_file(meta_path(&root, &env_id));
 
     Ok(ForceCleanupResult { deleted, pruned })
@@ -820,7 +845,7 @@ pub(crate) fn merge_abort_inner(repo: String, env_id: String) -> Result<(), Stri
 
     let env_arg = git_arg(&env);
     let _ = git_command(&root, &["worktree", "remove", "--force", &env_arg]);
-    let _ = git_command(&root, &["branch", "-D", &format!("alethe/merge-{env_id}")]);
+    delete_ephemeral_merge_branch(&root, &env_id);
     let _ = std::fs::remove_file(meta_path(&root, &env_id));
 
     if let Some(meta) = meta {
@@ -918,8 +943,10 @@ mod tests {
         // now happens before `add -A`).
         assert!(!root.join("THOR_CONFLICT.md").exists());
         // Temporary branch removed.
-        let branches = checked_output(&root, &["branch", "--list", "alethe/merge-*"]).unwrap();
+        let branches = checked_output(&root, &["branch", "--list", "thor/merge-*"]).unwrap();
         assert!(String::from_utf8_lossy(&branches.stdout).trim().is_empty());
+        let legacy = checked_output(&root, &["branch", "--list", "alethe/merge-*"]).unwrap();
+        assert!(String::from_utf8_lossy(&legacy.stdout).trim().is_empty());
 
         fs::remove_dir_all(root).unwrap();
     }

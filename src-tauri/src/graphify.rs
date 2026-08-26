@@ -96,7 +96,7 @@ fn graph_path(root: &Path) -> PathBuf {
 }
 
 fn snapshots_dir(root: &Path) -> PathBuf {
-    root.join(".alethe").join(SNAPSHOTS_SUBDIR)
+    crate::git_control::app_hidden_dir(root).join(SNAPSHOTS_SUBDIR)
 }
 
 fn mcp_server_spec(command: &str, root: &Path) -> Value {

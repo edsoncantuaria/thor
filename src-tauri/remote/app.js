@@ -2,7 +2,7 @@ const app = document.querySelector('#app')
 const params = new URLSearchParams(location.search)
 const pairingToken = params.get('pair') || ''
 const httpBase = location.origin
-const SESSION_KEY = 'alethe.remote.session'
+const SESSION_KEY = 'thor.remote.session'
 const APPEARANCE_SYNC_MS = 10_000
 
 const messages = {
@@ -162,7 +162,7 @@ const groupColorNames = {
   '#0a0a0a': 'black',
 }
 
-let sessionToken = sessionStorage.getItem(SESSION_KEY) || ''
+let sessionToken = sessionStorage.getItem(SESSION_KEY) || sessionStorage.getItem('alethe.remote.session') || ''
 let wsBase = null
 let readOnly = false
 let state = { groups: [], projects: [] }

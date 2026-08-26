@@ -26,11 +26,12 @@ pub struct ClaudeSessionSnapshot {
 
 /// Mirrors how Claude names the directory it stores a project's sessions in.
 ///
-/// The dot matters. Worktrees live under `<repo>/.alethe/worktrees/<id>`, and
-/// Claude folds the dot into a hyphen along with the separators, writing
-/// `-home-user-repo--alethe-worktrees-<id>`. Leaving it as `.alethe` produced a
-/// path that never exists, so no session was ever found for a pane running in a
-/// worktree.
+/// The dot matters. Worktrees live under `<repo>/.thor/worktrees/<id>`
+/// (or a leftover `.alethe/worktrees/<id>`), and Claude folds the dot into
+/// a hyphen along with the separators, writing
+/// `-home-user-repo--thor-worktrees-<id>`. Leaving the hidden folder as
+/// `.thor` produced a path that never exists, so no session was ever found
+/// for a pane running in a worktree.
 fn encode_cwd_for_claude(cwd: &str) -> String {
     let trimmed = cwd.trim_end_matches(|c: char| c == '\\' || c == '/');
     trimmed
@@ -687,6 +688,10 @@ mod encode_cwd_tests {
 
     #[test]
     fn folds_the_dot_of_a_worktree_path() {
+        assert_eq!(
+            encode_cwd_for_claude("/home/user/repo/.thor/worktrees/cl-a1b2c3"),
+            "-home-user-repo--thor-worktrees-cl-a1b2c3"
+        );
         assert_eq!(
             encode_cwd_for_claude("/home/user/repo/.alethe/worktrees/cl-a1b2c3"),
             "-home-user-repo--alethe-worktrees-cl-a1b2c3"

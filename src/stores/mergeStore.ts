@@ -22,6 +22,7 @@ import {
   watchFile,
   worktreeCommitPending,
   worktreeFetchBranch,
+  worktreeList,
   worktreeRemove,
 } from '../lib/tauri'
 import type { Project } from '../lib/types'
@@ -306,10 +307,11 @@ function stopResolvingWatch() {
 
 function beginResolvingWatch(env: ConflictEnv, agentTerminalId: string) {
   stopResolvingWatch()
-  const markerPath = `${env.path.replace(/[\\/]+$/, '')}/THOR_RESOLVED`
+  const base = env.path.replace(/[\\/]+$/, '')
+  const markerPaths = [`${base}/THOR_RESOLVED`, `${base}/ALETHE_RESOLVED`]
   let stopped = false
   let pollTimer: ReturnType<typeof setInterval> | null = null
-  let unlistenFile: (() => void) | null = null
+  const unlistenFiles: Array<() => void> = []
   let unlistenExit: (() => void) | null = null
 
   const signal = () => {
@@ -322,10 +324,11 @@ function beginResolvingWatch(env: ConflictEnv, agentTerminalId: string) {
 
   void (async () => {
     try {
-      await watchFile(markerPath)
-      unlistenFile = await listenFileChanged((path) => {
-        if (path === markerPath) signal()
+      await Promise.all(markerPaths.map((path) => watchFile(path)))
+      const unlisten = await listenFileChanged((path) => {
+        if (markerPaths.includes(path)) signal()
       })
+      unlistenFiles.push(unlisten)
     } catch (err) {
       console.warn('[mergeStore] watchFile unavailable, continuing with only pty-exit/poll:', err)
     }
@@ -335,7 +338,7 @@ function beginResolvingWatch(env: ConflictEnv, agentTerminalId: string) {
       console.warn('[mergeStore] listenPtyExit failed:', err)
     }
     pollTimer = setInterval(() => {
-      readTextFile(markerPath)
+      void Promise.any(markerPaths.map((path) => readTextFile(path)))
         .then(() => signal())
         .catch(() => {
           /* marker doesn't exist yet — nothing to do, just wait for the next tick */
@@ -345,10 +348,10 @@ function beginResolvingWatch(env: ConflictEnv, agentTerminalId: string) {
     // Race: if we already left resolving while the async setup was
     // running, tear down right away instead of leaking listeners/timer.
     if (useMergeStore.getState().phase !== 'resolving' || stopped) {
-      unlistenFile?.()
+      for (const unlisten of unlistenFiles) unlisten()
       unlistenExit?.()
       if (pollTimer) clearInterval(pollTimer)
-      void unwatchFile(markerPath).catch(() => {})
+      for (const path of markerPaths) void unwatchFile(path).catch(() => {})
     }
   })()
 
@@ -357,9 +360,9 @@ function beginResolvingWatch(env: ConflictEnv, agentTerminalId: string) {
       if (stopped) return
       stopped = true
       if (pollTimer) clearInterval(pollTimer)
-      unlistenFile?.()
+      for (const unlisten of unlistenFiles) unlisten()
       unlistenExit?.()
-      void unwatchFile(markerPath).catch(() => {})
+      for (const path of markerPaths) void unwatchFile(path).catch(() => {})
     },
   }
 }
@@ -673,7 +676,10 @@ export const useMergeStore = create<MergeState>((set, get) => ({
       // (In gitWorktree mode this is a no-op on the backend.)
       await worktreeFetchBranch(repo, worktreeAgentId)
       const target = (await gitStatus(repo)).branch
-      const source = `alethe/agent-${worktreeAgentId}`
+      const listed = (await worktreeList(repo).catch(() => [])).find(
+        (item) => item.agentId === worktreeAgentId,
+      )
+      const source = listed?.branch || `thor/agent-${worktreeAgentId}`
       await get().start(project, repo, source, target, worktreeAgentId)
       const { phase } = get()
       if (phase === 'merged') {

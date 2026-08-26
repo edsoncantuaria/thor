@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 use crate::diagnostics::timestamp_ms;
 use crate::resources::RuntimeSnapshot;
@@ -25,7 +25,7 @@ fn unix_secs() -> u64 {
 }
 
 pub fn logs_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    let root = app.path().app_local_data_dir().map_err(|e| e.to_string())?;
+    let root = crate::paths::root_data_dir(app)?;
     Ok(root.join("logs"))
 }
 

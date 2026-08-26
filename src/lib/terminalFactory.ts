@@ -247,13 +247,13 @@ export function getProjectDefaultCwd(
   return ''
 }
 
-/** Matches the `.alethe/worktrees/` OR `.alethe/merge-envs/` segment (Windows or
+/** Matches `.thor/` or leftover `.alethe/` worktrees / merge-envs (Windows or
  *  POSIX) anywhere in the path — including nested worktrees, where the
  *  leftmost match still points at the outermost segment (the real root).
  *  `merge-envs` is the conflict-resolution agent's ephemeral environment
  *  (`conflict_resolution.rs`) — same class of "isolated path that doesn't
  *  represent the project's main folder" as regular worktrees. */
-const THOR_WORKTREES_SEGMENT = /[\\/]\.alethe[\\/](?:worktrees|merge-envs)[\\/]/i
+const THOR_WORKTREES_SEGMENT = /[\\/]\.(?:thor|alethe)[\\/](?:worktrees|merge-envs)[\\/]/i
 
 function deriveRepoRootFromWorktreeCwd(cwd: string): string {
   const match = cwd.match(THOR_WORKTREES_SEGMENT)

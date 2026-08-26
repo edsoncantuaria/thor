@@ -800,11 +800,7 @@ pub fn reset_app_data(app: AppHandle) -> Result<(), String> {
 /// skipped; the caller should relaunch so nothing keeps them locked.
 #[tauri::command]
 pub fn wipe_all_app_data(app: AppHandle) -> Result<(), String> {
-    use tauri::Manager;
-    let root = app
-        .path()
-        .app_local_data_dir()
-        .map_err(|error| error.to_string())?;
+    let root = crate::paths::root_data_dir(&app)?;
     if !root.exists() {
         return Ok(());
     }

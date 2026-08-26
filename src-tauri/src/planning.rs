@@ -338,13 +338,21 @@ pub fn list_project_plans(repo_path: String, project_id: String) -> Result<Vec<P
 
 pub fn list_project_plans_core(repo_path: &str, project_id: &str) -> Result<Vec<PlanItem>, String> {
     let repo_root = Path::new(repo_path);
-    let plans_dir = repo_root.join(".alethe").join("plans");
-    if !plans_dir.is_dir() {
-        return Ok(Vec::new());
-    }
-
     let mut plans = Vec::new();
-    collect_plans_recursive(&plans_dir, &plans_dir, repo_root, project_id, &mut plans)?;
+    let mut seen = std::collections::HashSet::new();
+    for hidden in crate::git_control::app_hidden_dirs(repo_root) {
+        let plans_dir = hidden.join("plans");
+        if !plans_dir.is_dir() {
+            continue;
+        }
+        let mut batch = Vec::new();
+        collect_plans_recursive(&plans_dir, &plans_dir, repo_root, project_id, &mut batch)?;
+        for plan in batch {
+            if seen.insert(plan.relative_path.clone()) {
+                plans.push(plan);
+            }
+        }
+    }
     plans.sort_by(|a, b| b.modified_at_ms.cmp(&a.modified_at_ms));
     Ok(plans)
 }
@@ -393,7 +401,8 @@ fn collect_plans_recursive(
                         .map(|s| s.to_string_lossy().to_string())
                         .unwrap_or_else(|| "Plan".to_string());
 
-                    // Infer terminal_id if saved in .alethe/plans/<terminal_id>/...
+                    // Infer terminal_id if saved in .thor/plans/<terminal_id>/...
+                    // (or a leftover .alethe/plans/<terminal_id>/...).
                     let terminal_id = path
                         .parent()
                         .and_then(|p| p.strip_prefix(plans_root).ok())
@@ -443,7 +452,7 @@ pub fn save_project_plan(
     content: String,
 ) -> Result<PlanItem, String> {
     let repo_root = Path::new(&repo_path);
-    let mut target_dir = repo_root.join(".alethe").join("plans");
+    let mut target_dir = crate::git_control::app_hidden_dir(repo_root).join("plans");
     if let Some(ref tid) = terminal_id {
         target_dir = target_dir.join(tid);
     }
@@ -620,7 +629,7 @@ mod tests {
         let history = planning_audit_history(root_str, Some(10)).unwrap();
         assert_eq!(history.len(), 2); // base + auditoria
         assert_eq!(history[0].agent_id.as_deref(), Some("agent-42"));
-        assert!(history[0].subject.contains("gsd(alethe)"));
+        assert!(history[0].subject.contains("gsd(thor)"));
         assert!(history[0].timestamp_ms > 0);
         assert_eq!(history[1].agent_id, None);
 

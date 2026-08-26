@@ -110,7 +110,7 @@ export async function attachRecorder(): Promise<void> {
         if (inputType === 'checkbox' || inputType === 'radio') return
         const placeholder = target.getAttribute('placeholder')
         if (!placeholder) {
-          console.warn('[alethe-recorder] field with no placeholder ignored:', target)
+          console.warn('[thor-recorder] field with no placeholder ignored:', target)
           return
         }
         const steps = w.__THOR_RECORDED_STEPS__!

@@ -22,7 +22,8 @@ pub struct HealthProbeResult {
     pub output_tail: String,
     /// `None` = the tested project is not an Thor core (it has no PTY API,
     /// nothing to verify here — the majority of user projects). Only when
-    /// `/api/health` confirms `service: "alethe-core"` do we actually try to
+    /// `/api/health` confirms `service: "thor-core"` (or leftover
+    /// `"alethe-core"`) do we actually try to
     /// open a terminal against the freshly-started instance — `Some` carries
     /// whether that terminal actually came up.
     pub terminal_verified: Option<bool>,
@@ -48,7 +49,9 @@ async fn verify_alethe_terminal(client: &reqwest::Client, base_url: &str) -> Opt
         .await
         .ok()?;
     let body: serde_json::Value = health.json().await.ok()?;
-    if body.get("service").and_then(|v| v.as_str()) != Some("alethe-core") {
+    if body.get("service").and_then(|v| v.as_str()) != Some("thor-core")
+        && body.get("service").and_then(|v| v.as_str()) != Some("alethe-core")
+    {
         return None;
     }
 

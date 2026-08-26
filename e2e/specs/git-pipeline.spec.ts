@@ -149,7 +149,7 @@ describe('Merge Center: full git pipeline', function () {
     const migrated = await findLatestTerminal(projectId)
     expect(migrated.worktreeAgentId).toBeTruthy()
     agentAWorktreeId = migrated.worktreeAgentId!
-    agentAWorktreePath = join(repoPath, '.alethe', 'worktrees', agentAWorktreeId)
+    agentAWorktreePath = join(repoPath, '.thor', 'worktrees', agentAWorktreeId)
     if (!existsSync(agentAWorktreePath)) {
       // Fallback: confirms the real path via the API in case the folder convention changes.
       const worktrees = await invokeTauri<{ path: string; agentId: string }[]>('worktree_list', {
@@ -209,7 +209,7 @@ describe('Merge Center: full git pipeline', function () {
     // Changes the SAME file on both sides — in the agent's worktree and directly
     // in main — guaranteeing a real, reproducible conflict, instead of
     // waiting for the agent to eventually run into a concurrent change.
-    const agentBranch = `alethe/agent-${agentAWorktreeId}`
+    const agentBranch = `thor/agent-${agentAWorktreeId}`
     writeFileSync(join(agentAWorktreePath, 'shared.txt'), 'mudança do agente A\n')
     commitFileOnBranch(
       agentAWorktreePath,
@@ -242,7 +242,7 @@ describe('Merge Center: full git pipeline', function () {
   })
 
   it('resolves the conflict, integrates, and confirms via git log/show DIRECTLY on the repo (does not trust what the app reports)', async () => {
-    const agentBranch = `alethe/agent-${agentAWorktreeId}`
+    const agentBranch = `thor/agent-${agentAWorktreeId}`
     const env = await invokeTauri<{
       id: string
       path: string

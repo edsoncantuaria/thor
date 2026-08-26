@@ -497,7 +497,7 @@ static ghostty_input_mods_e alethe_mods(NSEventModifierFlags f) {
 
 // ---- API pública ----------------------------------------------------------
 
-bool alethe_ghostty_ensure_app(void) {
+bool thor_ghostty_ensure_app(void) {
     if (g_app != NULL) return true;
 
     // ghostty_init é global e idempotente do nosso lado (só chamamos quando
@@ -567,11 +567,11 @@ static void alethe_install_cmd_monitor(void) {
     }];
 }
 
-thor_surface_t alethe_ghostty_surface_new(void *superview,
+thor_surface_t thor_ghostty_surface_new(void *superview,
                                             const char *cwd,
                                             const char *command,
                                             double scale_factor) {
-    if (!alethe_ghostty_ensure_app()) return NULL;
+    if (!thor_ghostty_ensure_app()) return NULL;
     if (superview == NULL) return NULL;
 
     // Cria a NSView customizada que recebe input e hospeda a surface, e a anexa
@@ -628,7 +628,7 @@ static ThorGhosttyView *alethe_view_for_surface(ghostty_surface_t s) {
 
 // Posiciona a NSView (em pontos AppKit, origem inferior-esquerda) — chamado pelo
 // Rust no sync_frame. Mantém a view alinhada ao placeholder do DOM.
-void alethe_ghostty_surface_set_frame(thor_surface_t surface,
+void thor_ghostty_surface_set_frame(thor_surface_t surface,
                                       double x, double y,
                                       double w, double h) {
     if (surface == NULL) return;
@@ -636,13 +636,13 @@ void alethe_ghostty_surface_set_frame(thor_surface_t surface,
     if (v) v.frame = NSMakeRect(x, y, w < 1 ? 1 : w, h < 1 ? 1 : h);
 }
 
-void alethe_ghostty_surface_set_hidden(thor_surface_t surface, bool hidden) {
+void thor_ghostty_surface_set_hidden(thor_surface_t surface, bool hidden) {
     if (surface == NULL) return;
     ThorGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
     if (v) v.hidden = hidden;
 }
 
-void alethe_ghostty_surface_set_size(thor_surface_t surface,
+void thor_ghostty_surface_set_size(thor_surface_t surface,
                                      unsigned int width_px,
                                      unsigned int height_px) {
     if (surface == NULL) return;
@@ -650,18 +650,18 @@ void alethe_ghostty_surface_set_size(thor_surface_t surface,
                              (uint32_t)width_px, (uint32_t)height_px);
 }
 
-void alethe_ghostty_surface_set_content_scale(thor_surface_t surface,
+void thor_ghostty_surface_set_content_scale(thor_surface_t surface,
                                               double x, double y) {
     if (surface == NULL) return;
     ghostty_surface_set_content_scale((ghostty_surface_t)surface, x, y);
 }
 
-void alethe_ghostty_surface_set_focus(thor_surface_t surface, bool focused) {
+void thor_ghostty_surface_set_focus(thor_surface_t surface, bool focused) {
     if (surface == NULL) return;
     ghostty_surface_set_focus((ghostty_surface_t)surface, focused);
 }
 
-void alethe_ghostty_surface_draw(thor_surface_t surface) {
+void thor_ghostty_surface_draw(thor_surface_t surface) {
     if (surface == NULL) return;
     alethe_draw_surface((ghostty_surface_t)surface);
 }
@@ -669,16 +669,16 @@ void alethe_ghostty_surface_draw(thor_surface_t surface) {
 // true quando o processo do terminal (shell/agente) já terminou — o Ghostty
 // mostra "Press any key to close", mas cabe ao app fechar o pane. Consultado por
 // polling do frontend (ghostty_surface_exited) para reajustar o layout.
-bool alethe_ghostty_surface_process_exited(thor_surface_t surface) {
+bool thor_ghostty_surface_process_exited(thor_surface_t surface) {
     if (surface == NULL) return false;
     return ghostty_surface_process_exited((ghostty_surface_t)surface);
 }
 
-unsigned long long alethe_ghostty_draw_count(void) {
+unsigned long long thor_ghostty_draw_count(void) {
     return g_draw_count;
 }
 
-bool alethe_ghostty_test_type_key(thor_surface_t surface,
+bool thor_ghostty_test_type_key(thor_surface_t surface,
                                   const char *characters,
                                   unsigned short keycode) {
     if (surface == NULL || characters == NULL) return false;
@@ -700,14 +700,14 @@ bool alethe_ghostty_test_type_key(thor_surface_t surface,
     return true;
 }
 
-const char *alethe_ghostty_test_last_key_text(void) {
+const char *thor_ghostty_test_last_key_text(void) {
     return g_last_key_text;
 }
-bool alethe_ghostty_test_last_key_composing(void) {
+bool thor_ghostty_test_last_key_composing(void) {
     return g_last_key_composing;
 }
 
-bool alethe_ghostty_test_ime_compose(thor_surface_t surface,
+bool thor_ghostty_test_ime_compose(thor_surface_t surface,
                                      const char *marked,
                                      const char *final) {
     if (surface == NULL) return false;
@@ -727,7 +727,7 @@ bool alethe_ghostty_test_ime_compose(thor_surface_t surface,
     return true;
 }
 
-void alethe_ghostty_surface_free(thor_surface_t surface) {
+void thor_ghostty_surface_free(thor_surface_t surface) {
     if (surface == NULL) return;
     ThorGhosttyView *v = alethe_view_for_surface((ghostty_surface_t)surface);
     alethe_unregister_surface((ghostty_surface_t)surface);
@@ -739,7 +739,7 @@ void alethe_ghostty_surface_free(thor_surface_t surface) {
 // surfaces órfãs que sobreviveram a um reload da WebView (o JS é recriado mas as
 // NSViews/o app Ghostty persistem). Sem isso, surfaces antigas ficam empilhadas
 // e roubam foco/atrapalham o render. Main thread.
-void alethe_ghostty_kill_all(void) {
+void thor_ghostty_kill_all(void) {
     while (g_surface_count > 0) {
         ghostty_surface_t s = g_surfaces[0];
         ThorGhosttyView *v = g_views[0];
@@ -750,18 +750,18 @@ void alethe_ghostty_kill_all(void) {
     fprintf(stderr, "[alethe-diag] kill_all -> count=%d\n", g_surface_count);
 }
 
-void alethe_ghostty_app_tick(void) {
+void thor_ghostty_app_tick(void) {
     if (g_app) ghostty_app_tick(g_app);
 }
 
-void alethe_ghostty_surface_send_text(thor_surface_t surface,
+void thor_ghostty_surface_send_text(thor_surface_t surface,
                                       const char *utf8,
                                       size_t len) {
     if (surface == NULL || utf8 == NULL || len == 0) return;
     ghostty_surface_text((ghostty_surface_t)surface, utf8, (uintptr_t)len);
 }
 
-size_t alethe_ghostty_surface_read_screen(thor_surface_t surface,
+size_t thor_ghostty_surface_read_screen(thor_surface_t surface,
                                           char *out,
                                           size_t cap) {
     if (surface == NULL || out == NULL || cap == 0) return 0;

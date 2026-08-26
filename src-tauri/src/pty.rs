@@ -95,7 +95,7 @@ pub(crate) fn align_to_char_boundary(slice: &[u8], start: usize) -> usize {
 /// output real → resize → nudge de redesenho) em `spawn.log`, pro
 
 fn pty_debug_enabled() -> bool {
-    std::env::var("THOR_PTY_DEBUG").as_deref() == Ok("1")
+    crate::paths::env_var_prefer_thor("THOR_PTY_DEBUG", "ALETHE_PTY_DEBUG").as_deref() == Some("1")
 }
 
 fn activity_emit_due(last_activity_emit: Option<Instant>, interval_ms: u128) -> bool {
@@ -1542,7 +1542,7 @@ pub fn kill_all_sessions_background(sessions: &PtySessions) {
     for session in drained {
         let done = done.clone();
         let _ = std::thread::Builder::new()
-            .name("alethe-pty-shutdown".to_string())
+            .name("thor-pty-shutdown".to_string())
             .spawn(move || {
                 terminate_session(session);
                 let _ = done.send(());

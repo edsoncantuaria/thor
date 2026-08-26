@@ -412,6 +412,7 @@ build/
 venv/
 __pycache__/
 .alethe/
+.thor/
 .env
 .env.local
 ";
@@ -422,6 +423,30 @@ fn seed_gitignore_if_missing(dir: &Path) {
         return;
     }
     let _ = std::fs::write(&path, GITIGNORE_SEED);
+}
+
+/// Hidden per-repo directory Thor writes (worktrees, merge envs, snapshots).
+/// New writes go to `.thor`; existing `.alethe` trees keep being used so a
+/// repo that already has Alethe worktrees is not split across two folders.
+pub(crate) fn app_hidden_dir(root: &Path) -> PathBuf {
+    let current = root.join(".thor");
+    if current.exists() {
+        return current;
+    }
+    let legacy = root.join(".alethe");
+    if legacy.exists() {
+        return legacy;
+    }
+    current
+}
+
+/// Every hidden app directory that already exists on disk, Thor first.
+pub(crate) fn app_hidden_dirs(root: &Path) -> Vec<PathBuf> {
+    [".thor", ".alethe"]
+        .into_iter()
+        .map(|name| root.join(name))
+        .filter(|path| path.exists())
+        .collect()
 }
 
 /// worktree add`/`git clone --local` (isolamento por agente) exigem um HEAD
@@ -838,7 +863,10 @@ fn is_ephemeral_ref(raw: &str) -> bool {
         .or_else(|| raw.strip_prefix("tag: "))
         .unwrap_or(raw);
     let name = name.strip_prefix("origin/").unwrap_or(name);
-    name.starts_with("alethe/agent-") || name.starts_with("alethe/merge-")
+    name.starts_with("thor/agent-")
+        || name.starts_with("thor/merge-")
+        || name.starts_with("alethe/agent-")
+        || name.starts_with("alethe/merge-")
 }
 
 fn git_log_graph_inner(repo: String, max_count: u32) -> Result<Vec<GitCommitEntry>, String> {
@@ -870,6 +898,8 @@ fn git_log_graph_inner(repo: String, max_count: u32) -> Result<Vec<GitCommitEntr
     let mut args = vec![
         "log",
         "--topo-order",
+        "--exclude=refs/heads/thor/agent-*",
+        "--exclude=refs/heads/thor/merge-*",
         "--exclude=refs/heads/alethe/agent-*",
         "--exclude=refs/heads/alethe/merge-*",
         "--branches",

@@ -80,6 +80,11 @@ pub fn orchestrator_mcp_config_path(app: AppHandle) -> Result<String, String> {
                 "type": "http",
                 "url": format!("{endpoint}/mcp"),
                 "headers": { "X-Thor-Token": token }
+            },
+            "thor": {
+                "type": "http",
+                "url": format!("{endpoint}/mcp"),
+                "headers": { "X-Thor-Token": token }
             }
         }
     });

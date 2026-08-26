@@ -1,7 +1,7 @@
-// alethe-managed: v12
-// Gerado automaticamente pelo Thor. Seguro editar — se você mudar este
-// arquivo, remova ou altere a linha acima ("alethe-managed: vN") para
-// impedir que o Thor sobrescreva suas mudanças em versões futuras.
+// thor-managed: v12
+// Generated automatically by Thor. Safe to edit — if you change this
+// file, remove or alter the line above ("thor-managed: vN") to keep Thor
+// from overwriting your changes in future versions.
 //
 // Mantém .planning/ sincronizado sozinho, sem depender do modelo lembrar de
 // fazer isso. Estrutura de planejamento (6 arquivos, sempre a mesma,

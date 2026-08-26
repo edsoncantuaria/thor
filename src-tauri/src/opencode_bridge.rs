@@ -14,7 +14,7 @@
 
 use std::path::PathBuf;
 
-const PLUGIN_FILE_NAME: &str = "alethe-bridge.js";
+const PLUGIN_FILE_NAME: &str = "thor-bridge.js";
 
 const PLUGIN_SOURCE: &str = r#"                                                                                
 // boot do app se o conteudo mudar).

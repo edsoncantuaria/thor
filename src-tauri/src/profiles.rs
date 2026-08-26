@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 pub(crate) use crate::provider_common::now_ms;
 
@@ -47,9 +47,7 @@ pub struct ProfileSummary {
 }
 
 fn root_data_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    app.path()
-        .app_local_data_dir()
-        .map_err(|error| error.to_string())
+    crate::paths::root_data_dir(app)
 }
 
 fn profiles_root_dir(root: &Path) -> PathBuf {

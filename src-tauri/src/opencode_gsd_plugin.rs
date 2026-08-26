@@ -10,18 +10,22 @@ use crate::git_control::repository_root;
 const PLUGIN_TS: &str = include_str!("../assets/opencode-plugins/thor-gsd-state.ts");
 const PLUGIN_REL_PATH: &str = ".opencode/plugins/thor-gsd-state.ts";
 const PLUGIN_CONFIG_ENTRY: &str = "./.opencode/plugins/thor-gsd-state.ts";
-const MANAGED_MARKER_PREFIX: &str = "// alethe-managed: v";
+const MANAGED_MARKER_PREFIX: &str = "// thor-managed: v";
+const LEGACY_MANAGED_MARKER_PREFIX: &str = "// alethe-managed: v";
 const CURRENT_PLUGIN_VERSION: u32 = 12;
+
+fn managed_plugin_version(content: &str) -> Option<u32> {
+    let first = content.lines().next()?;
+    first
+        .strip_prefix(MANAGED_MARKER_PREFIX)
+        .or_else(|| first.strip_prefix(LEGACY_MANAGED_MARKER_PREFIX))
+        .and_then(|value| value.trim().parse().ok())
+}
 
 fn should_write_plugin_file(existing: Option<&str>) -> bool {
     match existing {
         None => true,
-        Some(content) => match content
-            .lines()
-            .next()
-            .and_then(|l| l.strip_prefix(MANAGED_MARKER_PREFIX))
-            .and_then(|v| v.trim().parse::<u32>().ok())
-        {
+        Some(content) => match managed_plugin_version(content) {
             Some(v) => v <= CURRENT_PLUGIN_VERSION,
             None => false,
         },
@@ -101,6 +105,7 @@ fn write_opencode_plugin_entry(root: &std::path::Path) -> Result<(), String> {
     if let Value::Array(arr) = list {
         let already_present = arr.iter().any(|v| v.as_str() == Some(PLUGIN_CONFIG_ENTRY));
         if !already_present {
+            arr.retain(|v| v.as_str() != Some("./.opencode/plugins/alethe-gsd-state.ts"));
             arr.push(Value::String(PLUGIN_CONFIG_ENTRY.to_string()));
         }
     }
@@ -145,7 +150,7 @@ mod tests {
         let plugin_path = root.join(PLUGIN_REL_PATH);
         let content = fs::read_to_string(&plugin_path).unwrap();
         assert_eq!(content, PLUGIN_TS);
-        assert!(content.starts_with("// alethe-managed: v12"));
+        assert!(content.starts_with("// thor-managed: v12"));
         fs::remove_dir_all(root).unwrap();
     }
 

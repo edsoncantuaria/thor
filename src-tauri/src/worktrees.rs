@@ -3,7 +3,8 @@
 
 //!
 
-//!   `<repo>/.alethe/worktrees/<id>/`, compartilhando o `.git` do repo. Nesse
+//!   `<repo>/.thor/worktrees/<id>/` (or a leftover `.alethe/worktrees/<id>/`),
+//!   sharing the repo `.git`. In this
 
 //! - **LocalCopy** (pesado/mais funcional): `git clone --local` gera um repo
 
@@ -14,7 +15,8 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 use crate::git_control::{
-    checked_output, git_command, main_repository_root, repository_root, with_lock_awareness,
+    app_hidden_dir, checked_output, git_command, main_repository_root, repository_root,
+    with_lock_awareness,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,7 +50,21 @@ fn sanitize_id(agent_id: &str) -> Result<String, String> {
 }
 
 fn worktrees_base(root: &Path) -> PathBuf {
-    root.join(".alethe").join("worktrees")
+    app_hidden_dir(root).join("worktrees")
+}
+
+fn find_worktree_dir(root: &Path, id: &str) -> Option<PathBuf> {
+    for hidden in crate::git_control::app_hidden_dirs(root) {
+        let dest = hidden.join("worktrees").join(id);
+        if dest.exists() {
+            return Some(dest);
+        }
+    }
+    None
+}
+
+fn worktree_dir(root: &Path, id: &str) -> PathBuf {
+    find_worktree_dir(root, id).unwrap_or_else(|| worktrees_base(root).join(id))
 }
 
 /// Remove o prefixo verbatim `\\?\` do Windows. `repository_root` canonicaliza os
@@ -111,7 +127,7 @@ pub(crate) fn worktree_provision_inner(
     if dest.exists() {
         return Err("worktree_exists".to_string());
     }
-    let branch = format!("alethe/agent-{id}");
+    let branch = format!("thor/agent-{id}");
     let dest_arg = git_arg(&dest);
 
     match mode {
@@ -147,30 +163,36 @@ pub async fn worktree_list(repo: String) -> Result<Vec<WorktreeInfo>, String> {
 
 pub(crate) fn worktree_list_inner(repo: String) -> Result<Vec<WorktreeInfo>, String> {
     let root = repository_root(&repo)?;
-    let base = worktrees_base(&root);
     let mut result = Vec::new();
-    if !base.is_dir() {
-        return Ok(result);
-    }
-    let entries = std::fs::read_dir(&base).map_err(|error| format!("read_dir_failed:{error}"))?;
-    for entry in entries.flatten() {
-        let dir = entry.path();
-        if !dir.is_dir() {
+    let mut seen = std::collections::HashSet::new();
+    for hidden in crate::git_control::app_hidden_dirs(&root) {
+        let base = hidden.join("worktrees");
+        if !base.is_dir() {
             continue;
         }
-        let Some(mode) = detect_mode(&dir) else {
-            continue;
-        };
-        let agent_id = dir
-            .file_name()
-            .map(|name| name.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        result.push(WorktreeInfo {
-            agent_id,
-            path: git_arg(&dir),
-            branch: current_branch(&dir),
-            mode,
-        });
+        let entries = std::fs::read_dir(&base).map_err(|error| format!("read_dir_failed:{error}"))?;
+        for entry in entries.flatten() {
+            let dir = entry.path();
+            if !dir.is_dir() {
+                continue;
+            }
+            let Some(mode) = detect_mode(&dir) else {
+                continue;
+            };
+            let agent_id = dir
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            if !seen.insert(agent_id.clone()) {
+                continue;
+            }
+            result.push(WorktreeInfo {
+                agent_id,
+                path: git_arg(&dir),
+                branch: current_branch(&dir),
+                mode,
+            });
+        }
     }
     result.sort_by(|a, b| a.agent_id.cmp(&b.agent_id));
     Ok(result)
@@ -190,13 +212,16 @@ pub(crate) fn worktree_remove_inner(
 ) -> Result<(), String> {
     let root = repository_root(&repo)?;
     let id = sanitize_id(&agent_id)?;
-    let base = worktrees_base(&root);
-    let dest = base.join(&id);
+    let dest = worktree_dir(&root, &id);
     if !dest.exists() {
         return Err("worktree_not_found".to_string());
     }
 
-    // que o destino esteja dentro de `<repo>/.alethe/worktrees`.
+    // Keep the destination inside this repo's hidden worktrees folder
+    // (`.thor/worktrees` or a leftover `.alethe/worktrees`).
+    let Some(base) = dest.parent() else {
+        return Err("invalid_worktree_path".to_string());
+    };
     let canon_base = base
         .canonicalize()
         .map_err(|_| "invalid_worktree_path".to_string())?;
@@ -248,7 +273,7 @@ pub(crate) fn worktree_lock_inner(
 ) -> Result<(), String> {
     let root = repository_root(&repo)?;
     let id = sanitize_id(&agent_id)?;
-    let dest = worktrees_base(&root).join(&id);
+    let dest = worktree_dir(&root, &id);
     if !dest.exists() {
         return Err("worktree_not_found".to_string());
     }
@@ -274,7 +299,7 @@ pub async fn worktree_unlock(repo: String, agent_id: String) -> Result<(), Strin
 pub(crate) fn worktree_unlock_inner(repo: String, agent_id: String) -> Result<(), String> {
     let root = repository_root(&repo)?;
     let id = sanitize_id(&agent_id)?;
-    let dest = worktrees_base(&root).join(&id);
+    let dest = worktree_dir(&root, &id);
     if !dest.exists() {
         return Err("worktree_not_found".to_string());
     }
@@ -294,8 +319,11 @@ pub async fn worktree_fetch_branch(repo: String, agent_id: String) -> Result<(),
 pub(crate) fn worktree_fetch_branch_inner(repo: String, agent_id: String) -> Result<(), String> {
     let root = repository_root(&repo)?;
     let id = sanitize_id(&agent_id)?;
-    let env = worktrees_base(&root).join(&id);
-    let branch = format!("alethe/agent-{id}");
+    let env = worktree_dir(&root, &id);
+    let mut branch = current_branch(&env);
+    if branch.is_empty() {
+        branch = format!("thor/agent-{id}");
+    }
 
     match detect_mode(&env) {
         Some(WorktreeMode::LocalCopy) => {
@@ -338,7 +366,7 @@ fn resolve_worktree_env(repo: &str, agent_id: &str) -> Result<PathBuf, String> {
     // if the project has no "plain" terminal left to use as a reference.
     let root = main_repository_root(repo)?;
     let id = sanitize_id(agent_id)?;
-    let env = worktrees_base(&root).join(&id);
+    let env = worktree_dir(&root, &id);
     if detect_mode(&env).is_none() {
         return Err("worktree_not_found".to_string());
     }
@@ -509,7 +537,7 @@ mod tests {
 
         let missing = git_command(
             &root,
-            &["rev-parse", "--verify", "refs/heads/alethe/agent-fetchme"],
+            &["rev-parse", "--verify", "refs/heads/thor/agent-fetchme"],
         )
         .unwrap();
         assert!(
@@ -520,7 +548,7 @@ mod tests {
         worktree_fetch_branch(root_str.clone(), "fetchme".into()).unwrap();
         let present = git_command(
             &root,
-            &["rev-parse", "--verify", "refs/heads/alethe/agent-fetchme"],
+            &["rev-parse", "--verify", "refs/heads/thor/agent-fetchme"],
         )
         .unwrap();
         assert!(

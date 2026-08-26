@@ -86,11 +86,11 @@ Notable user-facing changes to **Thor** are documented here. The format is based
   still work when only one of the two tools is installed.
 - The default profile photo, every themed app icon, and the README logo now use the
   Thor portrait instead of the previous knight avatar.
-- Docs, skills, and remaining user-visible copy now use Thor throughout. Internal
-  identifiers that would break existing worktrees, merge flows, or agent hooks
-  (`.alethe/`, `alethe/agent-*` branches, `ALETHE_*` env vars, `X-Thor-Token`,
-  crate/binary names) are unchanged. The README keeps a license attribution to
-  the original project at https://github.com/Kc1t/alethe-agents.
+- New writes use Thor identifiers (`.thor/`, `thor/agent-*` branches, `THOR_*`
+  env vars, `X-Thor-Token`, crate/binary `thor`). Existing Alethe worktrees,
+  merge environments, agent hooks, and storage keys are still read so older
+  repos keep working. The README keeps a license attribution to the original
+  project at https://github.com/Kc1t/alethe-agents.
 - Thor Remote now mirrors the selected desktop theme, app icon, motion preference, and language
   while it is open. Its splash, workspace, terminal view, connection feedback, empty states, and
   recovery screens now use the same Thor design tokens and official branding.
@@ -972,7 +972,7 @@ the sidebar, and adds Antigravity support.
 - Removed the **Loose/Ungrouped** section label above ungrouped sidebar projects.
 - Removed the parked-terminal text notice from the overlay; the resume action remains available.
 
-[Unreleased]: https://github.com/Kc1t/alethe-agents/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/edsoncantuaria/thor
 [1.5.0]: https://github.com/Kc1t/alethe-agents/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/Kc1t/alethe-agents/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/Kc1t/alethe-agents/compare/v1.3.0...v1.4.0

@@ -52,7 +52,7 @@ export function AuditModal() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `alethe-audit-log-${Date.now()}.json`
+    a.download = `thor-audit-log-${Date.now()}.json`
     a.click()
     URL.revokeObjectURL(url)
   }

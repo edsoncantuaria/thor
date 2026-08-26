@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 
 function realBinaryPath(): string {
-  const name = process.platform === 'win32' ? 'thor.exe' : 'alethe'
+  const name = process.platform === 'win32' ? 'thor.exe' : 'thor'
   // target-e2e, not target/: an isolated build that never shares the binary or the
   // build lock with the owner's interactive `tauri dev` session (see
   // CARGO_TARGET_DIR in the `test:e2e:build` script in package.json).
@@ -52,6 +52,7 @@ export function prepareIsolatedLaunch(dataDir = mkdtempSync(join(tmpdir(), 'thor
   cleanup: () => void
 } {
   const env: Record<string, string> = {
+    THOR_E2E: '1',
     ALETHE_E2E: '1',
     THOR_APP_DATA_DIR: dataDir,
     ...(process.platform === 'win32'
@@ -67,7 +68,7 @@ export function prepareIsolatedLaunch(dataDir = mkdtempSync(join(tmpdir(), 'thor
       // Only deletes the temporary folder. Killing the process is the
       // @wdio/tauri-service's responsibility (it owns the lifecycle of the app it
       // spawned itself) — a pkill by name/path here would risk hitting the
-      // owner's interactive `tauri dev` `target/debug/alethe`, which uses the
+      // owner's interactive `tauri dev` `target/debug/thor`, which uses the
       // SAME binary. Never worth that risk just for test cleanup.
       rmSync(dataDir, { recursive: true, force: true })
     },

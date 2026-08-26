@@ -252,7 +252,7 @@ export function SidebarMergePanel() {
             projectName: proj.name,
             terminalId: term.id,
             worktreeAgentId: term.worktreeAgentId,
-            branchName: `alethe/agent-${term.worktreeAgentId}`,
+            branchName: `thor/agent-${term.worktreeAgentId}`,
             worktreePath: term.cwd,
             agentName: term.name,
             agentType: activeTab?.type ?? 'shell',

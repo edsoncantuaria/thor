@@ -199,7 +199,7 @@ export function MainMenu() {
           void action(async () => {
             const target = await saveFile({
               title: t('menu.exportLogsTitle'),
-              defaultPath: `alethe-logs-${new Date().toISOString().slice(0, 10)}.zip`,
+              defaultPath: `thor-logs-${new Date().toISOString().slice(0, 10)}.zip`,
               filters: [{ name: t('menu.logsFilter'), extensions: ['zip'] }],
             })
             if (target) await exportLogs(target)
@@ -216,7 +216,7 @@ export function MainMenu() {
           void action(async () => {
             const target = await saveFile({
               title: t('menu.exportBackupTitle'),
-              defaultPath: `alethe-backup-${new Date().toISOString().slice(0, 10)}.alethe.zip`,
+              defaultPath: `thor-backup-${new Date().toISOString().slice(0, 10)}.thor.zip`,
               filters: [{ name: t('menu.backupFilter'), extensions: ['zip'] }],
             })
             if (target) await exportBackup(target)

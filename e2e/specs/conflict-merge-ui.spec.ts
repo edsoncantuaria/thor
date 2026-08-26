@@ -66,14 +66,21 @@ describe('E2E: Merge conflict and clicking Integrate in the UI', function () {
     const migrated = await findLatestTerminal(projectId)
     expect(migrated.worktreeAgentId).toBeTruthy()
     agentAWorktreeId = migrated.worktreeAgentId!
-    agentAWorktreePath = join(repoPath, '.alethe', 'worktrees', agentAWorktreeId)
+    agentAWorktreePath = join(repoPath, '.thor', 'worktrees', agentAWorktreeId)
+    if (!existsSync(agentAWorktreePath)) {
+      const worktrees = await invokeTauri<{ path: string; agentId: string }[]>('worktree_list', {
+        repo: repoPath,
+      }).catch(() => [])
+      const match = worktrees.find((w) => w.agentId === agentAWorktreeId)
+      if (match) agentAWorktreePath = match.path
+    }
     expect(existsSync(agentAWorktreePath)).toBe(true)
 
     await snapshot('1-projeto-e-worktree-prontos')
   })
 
   it('creates a deterministic conflict between the agent worktree and the main branch', async () => {
-    const agentBranch = `alethe/agent-${agentAWorktreeId}`
+    const agentBranch = `thor/agent-${agentAWorktreeId}`
     writeFileSync(join(agentAWorktreePath, 'shared.txt'), 'mudança do agente na worktree\n')
     commitFileOnBranch(
       agentAWorktreePath,
@@ -109,7 +116,7 @@ describe('E2E: Merge conflict and clicking Integrate in the UI', function () {
     await clickByText('Integrar')
     await snapshot('4-apos-clicar-integrar')
 
-    // The mergeStore transitions preparing -> resolving and creates the ephemeral .alethe/merge-<id> worktree
+    // The mergeStore transitions preparing -> resolving and creates the ephemeral .thor/merge-<id> worktree
     const envResolved = await waitUntil(
       async () => {
         const mergeEnvs = await invokeTauri<{ id: string; path: string }[]>('worktree_list', {

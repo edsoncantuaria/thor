@@ -41,51 +41,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "alethe"
-version = "1.6.0"
-dependencies = [
- "base64 0.22.1",
- "cc",
- "chrono",
- "dirs-next",
- "discord-rich-presence",
- "dotenvy",
- "futures-util",
- "image",
- "keyring",
- "nanoid",
- "notify",
- "objc2",
- "objc2-app-kit",
- "objc2-foundation",
- "portable-pty",
- "qrcode",
- "regex",
- "reqwest 0.12.28",
- "rusqlite",
- "serde",
- "serde_json",
- "sysinfo",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-notification",
- "tauri-plugin-process",
- "tauri-plugin-single-instance",
- "tauri-plugin-updater",
- "tiny_http",
- "tokio",
- "tokio-tungstenite",
- "toml_edit 0.22.27",
- "tungstenite",
- "urlencoding",
- "which",
- "windows-sys 0.61.2",
- "winreg 0.52.0",
- "zip 0.6.6",
-]
-
-[[package]]
 name = "alloc-no-stdlib"
 version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5117,6 +5072,51 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.3",
+]
+
+[[package]]
+name = "thor"
+version = "1.6.0"
+dependencies = [
+ "base64 0.22.1",
+ "cc",
+ "chrono",
+ "dirs-next",
+ "discord-rich-presence",
+ "dotenvy",
+ "futures-util",
+ "image",
+ "keyring",
+ "nanoid",
+ "notify",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "portable-pty",
+ "qrcode",
+ "regex",
+ "reqwest 0.12.28",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-notification",
+ "tauri-plugin-process",
+ "tauri-plugin-single-instance",
+ "tauri-plugin-updater",
+ "tiny_http",
+ "tokio",
+ "tokio-tungstenite",
+ "toml_edit 0.22.27",
+ "tungstenite",
+ "urlencoding",
+ "which",
+ "windows-sys 0.61.2",
+ "winreg 0.52.0",
+ "zip 0.6.6",
 ]
 
 [[package]]

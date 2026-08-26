@@ -1229,7 +1229,7 @@ export function useXtermSession(params: {
           removeSession(sessionPersistenceKey)
           onSessionIdRef.current?.(undefined)
           terminal.write(
-            '\r\n\x1b[33m[alethe] Codex session is busy — opening a fresh session…\x1b[0m\r\n',
+            '\r\n\x1b[33m[thor] Codex session is busy — opening a fresh session…\x1b[0m\r\n',
           )
           void killPty(response.id).catch(() => {})
           setRetryKey((value) => value + 1)
@@ -1315,7 +1315,7 @@ export function useXtermSession(params: {
             removeSession(sessionPersistenceKey)
             onSessionIdRef.current?.(undefined)
             terminal.write(
-              '\r\n\x1b[33m[alethe] sessão anterior indisponível — reabrindo sessão nova…\x1b[0m\r\n',
+              '\r\n\x1b[33m[thor] previous session unavailable — opening a fresh session…\x1b[0m\r\n',
             )
             setRetryKey((v) => v + 1)
             return
@@ -1326,7 +1326,7 @@ export function useXtermSession(params: {
               `[pty-launch] ${command} saiu em ${elapsed}ms (code ${payload.code ?? '—'}) — sem retry`,
             )
             terminal.write(
-              `\r\n\x1b[31m[alethe] ${command} encerrou imediatamente (code ${payload.code ?? '—'}).\x1b[0m\r\n` +
+              `\r\n\x1b[31m[thor] ${command} exited immediately (code ${payload.code ?? '—'}).\x1b[0m\r\n` +
                 '\x1b[90mVerifique a instalação do CLI ou configure o caminho nas preferências.\x1b[0m\r\n',
             )
           }

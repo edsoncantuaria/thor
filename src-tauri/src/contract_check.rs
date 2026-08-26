@@ -44,6 +44,7 @@ const SKIP_DIRS: &[&str] = &[
     ".venv",
     "venv",
     "__pycache__",
+    ".thor",
     ".alethe",
     "graphify-out",
 ];
