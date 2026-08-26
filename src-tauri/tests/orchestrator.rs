@@ -107,7 +107,7 @@ impl PeakWatcher {
 fn the_handshake_advertises_every_tool() {
     let core = Core::default();
     let initialized = rpc(&core, 1, "initialize", json!({}));
-    assert_eq!(initialized["result"]["serverInfo"]["name"], json!("alethe"));
+    assert_eq!(initialized["result"]["serverInfo"]["name"], json!("thor"));
 
     let listed = rpc(&core, 2, "tools/list", json!({}));
     let names: Vec<&str> = listed["result"]["tools"]
