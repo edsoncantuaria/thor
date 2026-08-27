@@ -17,6 +17,12 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 - Preferences → Multiagent now offers an Impeccable design QA integration: install, status check, and
   an on/off toggle that gives real-time feedback on frontend design anti-patterns while agents work.
 
+### Changed
+
+- Rotated the minisign keypair the in-app updater uses to verify installer signatures; the CI signing
+  secrets were also configured for the first time on this fork, since no release had ever built
+  successfully through the Release workflow before.
+
 ## [1.0.1] — 2026-08-27
 
 ### Changed
