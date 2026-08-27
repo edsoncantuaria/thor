@@ -18,6 +18,11 @@ use serde_json::{json, Map, Value};
 const DEFAULT_MAX_CONCURRENT: usize = 4;
 const MAX_WAIT_MS: u64 = 600_000;
 const REPLY_LIMIT: usize = 16_000;
+/// Generous enough for a real coding task, bounded enough that a hung worker doesn't sit on a
+/// concurrency slot forever. Overridable via `Core::set_job_timeout_secs`, clamped 1 min – 2 h.
+const DEFAULT_JOB_TIMEOUT_SECS: u64 = 1800;
+/// How often the watchdog thread sweeps for jobs that have overrun their timeout.
+const WATCHDOG_INTERVAL: Duration = Duration::from_millis(1000);
 
 pub const STATUS_QUEUED: &str = "queued";
 pub const STATUS_RUNNING: &str = "running";
@@ -127,7 +132,7 @@ impl Launcher {
 /// retry on a bucket the user explicitly chose as this one's fallback (safe, cheap).
 fn looks_like_quota_exhaustion(text: &str) -> bool {
     let lower = text.to_lowercase();
-    const MARKERS: [&str; 12] = [
+    const MARKERS: [&str; 22] = [
         "rate limit",
         "rate_limit",
         "ratelimit",
@@ -140,8 +145,43 @@ fn looks_like_quota_exhaustion(text: &str) -> bool {
         "too many requests",
         "insufficient_quota",
         "overloaded",
+        // Broader, provider-agnostic net: HTTP statuses and phrasing other providers use for the
+        // same "back off and retry elsewhere" condition, not just OpenAI/Anthropic's own wording.
+        "402",
+        "403",
+        "500",
+        "502",
+        "503",
+        "529",
+        "capacity",
+        "try again later",
+        "exceeded your",
+        "billing",
     ];
     MARKERS.iter().any(|marker| lower.contains(marker))
+}
+
+/// Best-effort: the exact key spelling Codex's `tokenUsage` payload uses isn't pinned down
+/// against a live app-server response in this codebase, so this checks a few plausible
+/// spellings rather than committing to one fixed schema. An unrecognized shape just reports 0
+/// — safe (undercounts, never trips the budget on a shape it doesn't understand).
+fn extract_total_tokens(usage: &Value) -> u64 {
+    let as_u64 = |key: &str| usage.get(key).and_then(Value::as_u64);
+    if let Some(total) = as_u64("totalTokens")
+        .or_else(|| as_u64("total_tokens"))
+        .or_else(|| as_u64("total"))
+    {
+        return total;
+    }
+    let input = as_u64("inputTokens")
+        .or_else(|| as_u64("input_tokens"))
+        .or_else(|| as_u64("input"))
+        .unwrap_or(0);
+    let output = as_u64("outputTokens")
+        .or_else(|| as_u64("output_tokens"))
+        .or_else(|| as_u64("output"))
+        .unwrap_or(0);
+    input + output
 }
 
 fn now_ms() -> u64 {
@@ -171,6 +211,11 @@ struct Job {
     plan: Vec<String>,
     diff: Option<String>,
     tokens: Option<Value>,
+    /// Running total tokens this job's current bucket attempt has burned, parsed via
+    /// `extract_total_tokens` from Codex's `thread/tokenUsage/updated`. Reset to 0 on failover
+    /// along with the job's other transient per-attempt state — a failed-over attempt's spend
+    /// isn't retained in the total (accepted simplification, see plan notes).
+    tokens_total: u64,
     outcome: Option<String>,
     started_at: Option<u64>,
     ended_at: Option<u64>,
@@ -250,9 +295,32 @@ struct Inner {
     running: usize,
     max_concurrent: usize,
     job_counter: u64,
+    job_timeout_ms: u64,
+    /// `None` = unlimited (default — opt-in, doesn't change existing behavior). When set,
+    /// `thor_delegate`/`thor_send` refuse to start new work once `tokens_used() >= budget`.
+    token_budget: Option<u64>,
 }
 
 impl Inner {
+    /// Sum of every job's `tokens_total` — computed on demand rather than maintained as a
+    /// separately-mutated running counter, so there's no delta-tracking to get wrong (a job's
+    /// `tokens_total` is already the source of truth, updated in `on_worker_message`).
+    fn tokens_used(&self) -> u64 {
+        self.jobs.values().map(|job| job.tokens_total).sum()
+    }
+
+    fn check_token_budget(&self) -> Result<(), String> {
+        if let Some(budget) = self.token_budget {
+            let used = self.tokens_used();
+            if used >= budget {
+                return Err(format!(
+                    "token budget reached ({used}/{budget} tokens used) — release settled jobs or raise the budget before delegating more work"
+                ));
+            }
+        }
+        Ok(())
+    }
+
     fn snapshot(&self) -> Value {
         let jobs: Vec<Value> = self
             .order
@@ -264,7 +332,9 @@ impl Inner {
             "jobs": jobs,
             "running": self.running,
             "queued": self.queue.len(),
-            "concurrencyLimit": self.max_concurrent
+            "concurrencyLimit": self.max_concurrent,
+            "tokensUsed": self.tokens_used(),
+            "tokenBudget": self.token_budget
         })
     }
 
@@ -295,16 +365,19 @@ pub struct Core {
 
 impl Default for Core {
     fn default() -> Self {
-        Self {
+        let core = Self {
             inner: Arc::new(Mutex::new(Inner {
                 max_concurrent: DEFAULT_MAX_CONCURRENT,
+                job_timeout_ms: DEFAULT_JOB_TIMEOUT_SECS * 1000,
                 ..Inner::default()
             })),
             signal: Arc::new(Condvar::new()),
             auto_buckets: Arc::new(Mutex::new(HashMap::new())),
             user_buckets: Arc::new(Mutex::new(HashMap::new())),
             observer: Arc::new(Mutex::new(None)),
-        }
+        };
+        core.spawn_watchdog();
+        core
     }
 }
 
@@ -399,6 +472,61 @@ impl Core {
         guard(&self.inner).max_concurrent = limit.clamp(1, 16);
     }
 
+    pub fn set_job_timeout_secs(&self, secs: u64) {
+        guard(&self.inner).job_timeout_ms = secs.clamp(60, 7200) * 1000;
+    }
+
+    /// Bypasses the production clamp so tests can assert a kill within a couple seconds instead
+    /// of waiting out the real 60s floor.
+    #[cfg(test)]
+    pub fn test_set_job_timeout_ms(&self, ms: u64) {
+        guard(&self.inner).job_timeout_ms = ms;
+    }
+
+    pub fn set_token_budget(&self, budget: Option<u64>) {
+        guard(&self.inner).token_budget = budget;
+    }
+
+    fn spawn_watchdog(&self) {
+        let watchdog = self.clone();
+        thread::spawn(move || loop {
+            thread::sleep(WATCHDOG_INTERVAL);
+            watchdog.sweep_timeouts();
+        });
+    }
+
+    /// Kills and settles any `running` job that has overrun `job_timeout_ms`. Reuses `finish`'s
+    /// existing teardown/delivery/notify plumbing — a timeout's failure text never matches
+    /// `looks_like_quota_exhaustion`, so this naturally never triggers failover, which is
+    /// correct: a hang isn't a quota signal.
+    fn sweep_timeouts(&self) {
+        let timeout_ms = guard(&self.inner).job_timeout_ms;
+        let now = now_ms();
+        let expired: Vec<String> = {
+            let inner = guard(&self.inner);
+            inner
+                .jobs
+                .values()
+                .filter(|job| job.status == STATUS_RUNNING)
+                .filter_map(|job| job.started_at.map(|start| (job.id.clone(), start)))
+                .filter(|(_, start)| now.saturating_sub(*start) > timeout_ms)
+                .map(|(id, _)| id)
+                .collect()
+        };
+        for job_id in expired {
+            self.finish(
+                &job_id,
+                STATUS_FAILED,
+                Some("timeout".into()),
+                format!(
+                    "worker exceeded {}s without completing — killed",
+                    timeout_ms / 1000
+                ),
+                true,
+            );
+        }
+    }
+
     pub fn snapshot(&self) -> Value {
         guard(&self.inner).snapshot()
     }
@@ -459,9 +587,13 @@ impl Core {
             LauncherKind::CodexAppServer => {
                 self.spawn_codex_worker(job_id, &cwd, &spec, effective_model.as_deref(), &launcher)
             }
-            LauncherKind::OneShotRun => {
-                self.spawn_one_shot_worker(job_id, &cwd, &spec, effective_model.as_deref(), &launcher)
-            }
+            LauncherKind::OneShotRun => self.spawn_one_shot_worker(
+                job_id,
+                &cwd,
+                &spec,
+                effective_model.as_deref(),
+                &launcher,
+            ),
         }
     }
 
@@ -652,7 +784,11 @@ impl Core {
             core.finish(
                 &owned_id,
                 if ok { STATUS_DONE } else { STATUS_FAILED },
-                Some(if ok { "succeeded".into() } else { "failed".into() }),
+                Some(if ok {
+                    "succeeded".into()
+                } else {
+                    "failed".into()
+                }),
                 text,
                 true,
             );
@@ -763,7 +899,10 @@ impl Core {
                     .map(ToOwned::to_owned);
             }
             "thread/tokenUsage/updated" => {
-                job.tokens = params.get("tokenUsage").cloned();
+                if let Some(usage) = params.get("tokenUsage") {
+                    job.tokens_total = extract_total_tokens(usage);
+                    job.tokens = Some(usage.clone());
+                }
             }
             "turn/completed" | "turn/failed" => {
                 let completed = method == "turn/completed";
@@ -771,8 +910,16 @@ impl Core {
                 drop(inner);
                 self.finish(
                     job_id,
-                    if completed { STATUS_DONE } else { STATUS_FAILED },
-                    Some(if completed { "succeeded".into() } else { "failed".into() }),
+                    if completed {
+                        STATUS_DONE
+                    } else {
+                        STATUS_FAILED
+                    },
+                    Some(if completed {
+                        "succeeded".into()
+                    } else {
+                        "failed".into()
+                    }),
                     summary,
                     false,
                 );
@@ -822,6 +969,7 @@ impl Core {
         job.plan.clear();
         job.diff = None;
         job.tokens = None;
+        job.tokens_total = 0;
         job.outcome = None;
         job.started_at = None;
         job.ended_at = None;
@@ -920,6 +1068,10 @@ pub fn tools() -> Value {
                     "model": {
                         "type": "string",
                         "description": "Overrides the bucket's default model for this call (ignored by buckets with no model flag, e.g. plain codex). Example: \"ollama/qwen2.5-coder:7b\"."
+                    },
+                    "isolate": {
+                        "type": "boolean",
+                        "description": "Run this call's tasks in a fresh, isolated git worktree instead of cwd directly — a clean checkpoint before the worker touches anything, and no risk of colliding with other work in the same directory. Requires cwd to be inside a git repository. All tasks in one call share the same worktree (they already share bucket/model); for full task-level isolation make separate calls."
                     }
                 },
                 "required": ["tasks"]
@@ -1021,11 +1173,7 @@ fn required_str(arguments: &Map<String, Value>, key: &str) -> Result<String, Str
         .ok_or_else(|| format!("{key} is required"))
 }
 
-pub fn call_tool(
-    core: &Core,
-    name: &str,
-    arguments: &Map<String, Value>,
-) -> Result<Value, String> {
+pub fn call_tool(core: &Core, name: &str, arguments: &Map<String, Value>) -> Result<Value, String> {
     match name {
         "thor_delegate" => {
             let tasks = string_list(arguments, "tasks");
@@ -1057,6 +1205,7 @@ pub fn call_tool(
             let mut created = Vec::new();
             {
                 let mut inner = guard(&core.inner);
+                inner.check_token_budget()?;
                 for spec in tasks {
                     inner.job_counter += 1;
                     let id = format!("job-{:02}", inner.job_counter);
@@ -1077,6 +1226,7 @@ pub fn call_tool(
                             plan: Vec::new(),
                             diff: None,
                             tokens: None,
+                            tokens_total: 0,
                             outcome: None,
                             started_at: None,
                             ended_at: None,
@@ -1105,7 +1255,10 @@ pub fn call_tool(
         }
 
         "thor_check" => {
-            let wait = arguments.get("wait").and_then(Value::as_bool).unwrap_or(false);
+            let wait = arguments
+                .get("wait")
+                .and_then(Value::as_bool)
+                .unwrap_or(false);
             let until_all_settled = arguments
                 .get("untilAllSettled")
                 .and_then(Value::as_bool)
@@ -1219,7 +1372,9 @@ pub fn call_tool(
                 .clone()
                 .ok_or_else(|| format!("job {job_id} has no thread"))?;
             if job.stdin.is_none() {
-                return Err(format!("job {job_id} was released and cannot take more work"));
+                return Err(format!(
+                    "job {job_id} was released and cannot take more work"
+                ));
             }
             if inner.running >= inner.max_concurrent {
                 return Err(format!(
@@ -1227,6 +1382,7 @@ pub fn call_tool(
                     inner.max_concurrent
                 ));
             }
+            inner.check_token_budget()?;
             job_rpc(
                 &mut inner,
                 &job_id,
@@ -1339,7 +1495,10 @@ pub fn handle_mcp_body(core: &Core, body: &str) -> Option<String> {
         }),
         "tools/list" => json!({ "jsonrpc": "2.0", "id": id, "result": { "tools": tools() } }),
         "tools/call" => {
-            let name = params.get("name").and_then(Value::as_str).unwrap_or_default();
+            let name = params
+                .get("name")
+                .and_then(Value::as_str)
+                .unwrap_or_default();
             let empty = Map::new();
             let arguments = params
                 .get("arguments")
@@ -1370,4 +1529,64 @@ pub fn handle_mcp_body(core: &Core, body: &str) -> Option<String> {
     };
 
     Some(response.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn quota_markers_match_known_provider_phrasings() {
+        for text in [
+            "Error: 429 Too Many Requests",
+            "you have exceeded your current quota",
+            "rate_limit_exceeded",
+            "RESOURCE_EXHAUSTED: quota exceeded",
+            "the model is currently overloaded, please try again later",
+            "503 Service Unavailable",
+            "billing hard limit reached",
+        ] {
+            assert!(looks_like_quota_exhaustion(text), "should match: {text}");
+        }
+    }
+
+    #[test]
+    fn unrelated_failures_do_not_match() {
+        for text in [
+            "file not found",
+            "permission denied",
+            "syntax error on line 12",
+            "",
+        ] {
+            assert!(
+                !looks_like_quota_exhaustion(text),
+                "should not match: {text}"
+            );
+        }
+    }
+
+    #[test]
+    fn extracts_a_direct_total_field() {
+        assert_eq!(extract_total_tokens(&json!({ "totalTokens": 42 })), 42);
+        assert_eq!(extract_total_tokens(&json!({ "total_tokens": 7 })), 7);
+        assert_eq!(extract_total_tokens(&json!({ "total": 3 })), 3);
+    }
+
+    #[test]
+    fn falls_back_to_summing_input_and_output() {
+        assert_eq!(
+            extract_total_tokens(&json!({ "inputTokens": 10, "outputTokens": 5 })),
+            15
+        );
+        assert_eq!(
+            extract_total_tokens(&json!({ "input_tokens": 100, "output_tokens": 50 })),
+            150
+        );
+    }
+
+    #[test]
+    fn unknown_shapes_report_zero() {
+        assert_eq!(extract_total_tokens(&json!({ "somethingElse": 1 })), 0);
+        assert_eq!(extract_total_tokens(&json!({})), 0);
+    }
 }

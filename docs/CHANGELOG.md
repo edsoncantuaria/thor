@@ -10,6 +10,29 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ## [Unreleased]
 
+### Changed
+
+- The orchestrator's automatic bucket failover recognizes a much wider set of quota/rate-limit
+  phrasings (more HTTP statuses, "capacity", "billing", "try again later", ...), not just the
+  original English/OpenAI-shaped markers.
+
+### Added
+
+- A worker that hangs (stuck on an unexpected prompt, an infinite loop, ...) is now killed and
+  settled automatically after a configurable timeout (30 minutes by default) instead of holding
+  its concurrency slot forever.
+- The orchestrator now tracks aggregate token usage for Codex-protocol worker buckets and can
+  enforce an optional token budget — once reached, `thor_delegate`/`thor_send` refuse new work
+  until settled jobs are released or the budget is raised. Usage and the configured budget are
+  visible in `thor_status`. One-shot buckets (OpenCode, Claude in print mode, ...) don't report
+  usage and stay outside the budget.
+- `thor_delegate` accepts an optional `isolate: true` flag: the call's tasks run in a fresh,
+  isolated git worktree instead of directly in `cwd`, so a worker can't collide with other work
+  in the same directory. Releasing an isolated job (`thor_release`) commits whatever it left
+  pending as a checkpoint and, if anything changed, surfaces it as a Todo in the right project for
+  human review. The worktree itself isn't torn down automatically — it stays reachable through
+  the existing Multi-Agent worktree list for manual follow-up.
+
 ## [1.0.5] — 2026-08-27
 
 ### Fixed

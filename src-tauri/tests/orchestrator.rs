@@ -63,6 +63,30 @@ fn workspace(tag: &str) -> PathBuf {
     dir
 }
 
+/// Deterministic stand-in for a real agent CLI (`src/bin/orchestrator_fake_worker.rs`), driven
+/// entirely by env vars — no real Codex/OpenCode install, no shell, so it behaves identically on
+/// every CI platform. `env` is `(key, value)` pairs applied on top of a plain one-shot launcher.
+fn fake_launcher(label: &str, env: &[(&str, &str)]) -> Launcher {
+    let path = PathBuf::from(env!("CARGO_BIN_EXE_orchestrator_fake_worker"));
+    let mut launcher = Launcher::one_shot(label.to_string(), path, Vec::new(), None, None);
+    launcher
+        .env
+        .extend(env.iter().map(|(k, v)| (k.to_string(), v.to_string())));
+    launcher
+}
+
+fn fake_codex_launcher(tokens: u64) -> Launcher {
+    let path = PathBuf::from(env!("CARGO_BIN_EXE_orchestrator_fake_worker"));
+    let mut launcher = Launcher::codex_app_server(path);
+    launcher
+        .env
+        .push(("THOR_FAKE_MODE".into(), "codex_rpc".into()));
+    launcher
+        .env
+        .push(("THOR_FAKE_TOKENS".into(), tokens.to_string()));
+    launcher
+}
+
 struct PeakWatcher {
     peak: Arc<Mutex<usize>>,
     stop: Arc<Mutex<bool>>,
@@ -173,7 +197,10 @@ fn checking_with_no_work_returns_at_once() {
     let core = Core::default();
     let result = call(&core, "thor_check", json!({ "wait": true }));
     assert_eq!(result["workersStillBusy"], json!(0), "{result}");
-    assert_eq!(result["deliveries"].as_array().expect("deliveries").len(), 0);
+    assert_eq!(
+        result["deliveries"].as_array().expect("deliveries").len(),
+        0
+    );
 }
 
 #[test]
@@ -187,7 +214,11 @@ fn a_job_fails_cleanly_when_no_launcher_is_configured() {
     );
     assert_eq!(delegated["accepted"], json!(1), "{delegated}");
 
-    let checked = call(&core, "thor_check", json!({ "wait": true, "timeoutMs": 5000 }));
+    let checked = call(
+        &core,
+        "thor_check",
+        json!({ "wait": true, "timeoutMs": 5000 }),
+    );
     let deliveries = checked["deliveries"].as_array().expect("deliveries");
     assert_eq!(deliveries.len(), 1, "{checked}");
     assert_eq!(deliveries[0]["outcome"], json!("failed"));
@@ -222,6 +253,206 @@ fn the_observer_sees_every_state_change() {
     assert!(!snapshots.is_empty(), "the observer was never called");
     let last = snapshots.last().expect("a snapshot");
     assert!(last["jobs"].as_array().is_some_and(|jobs| !jobs.is_empty()));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn bucket_a_looks_exhausted_and_fails_over_to_bucket_b() {
+    let core = Core::default();
+    let mut a = fake_launcher(
+        "a",
+        &[
+            ("THOR_FAKE_EXIT_CODE", "1"),
+            ("THOR_FAKE_TEXT", "429 rate limit"),
+        ],
+    );
+    a.fallback = Some("b".to_string());
+    core.set_launcher("a", a);
+    core.set_launcher("b", fake_launcher("b", &[("THOR_FAKE_TEXT", "ok")]));
+
+    let dir = workspace("failover");
+    let delegated = call(
+        &core,
+        "thor_delegate",
+        json!({ "cwd": dir.to_string_lossy(), "bucket": "a", "tasks": ["anything"] }),
+    );
+    assert_eq!(delegated["accepted"], json!(1), "{delegated}");
+
+    let checked = call(
+        &core,
+        "thor_check",
+        json!({ "wait": true, "timeoutMs": 10000 }),
+    );
+    assert_eq!(checked["workersStillBusy"], json!(0), "{checked}");
+    let deliveries = checked["deliveries"].as_array().expect("deliveries");
+    assert!(
+        deliveries.iter().any(|d| d["type"] == json!("failover")),
+        "missing a failover delivery: {checked}"
+    );
+    assert!(
+        deliveries
+            .iter()
+            .any(|d| d["type"] == json!("worker_done") && d["outcome"] == json!("succeeded")),
+        "missing the final worker_done: {checked}"
+    );
+
+    let status = call(&core, "thor_status", json!({}));
+    let jobs = status["jobs"].as_array().expect("jobs");
+    assert_eq!(
+        jobs[0]["bucket"],
+        json!("b"),
+        "job stayed on the exhausted bucket: {status}"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn a_failure_with_no_fallback_configured_just_fails() {
+    let core = Core::default();
+    core.set_launcher(
+        "a",
+        fake_launcher(
+            "a",
+            &[
+                ("THOR_FAKE_EXIT_CODE", "1"),
+                ("THOR_FAKE_TEXT", "429 rate limit"),
+            ],
+        ),
+    );
+
+    let dir = workspace("nofallback");
+    call(
+        &core,
+        "thor_delegate",
+        json!({ "cwd": dir.to_string_lossy(), "bucket": "a", "tasks": ["anything"] }),
+    );
+    let checked = call(
+        &core,
+        "thor_check",
+        json!({ "wait": true, "timeoutMs": 10000 }),
+    );
+    let deliveries = checked["deliveries"].as_array().expect("deliveries");
+    assert_eq!(deliveries.len(), 1, "{checked}");
+    assert_eq!(deliveries[0]["type"], json!("worker_done"));
+    assert_eq!(deliveries[0]["outcome"], json!("failed"));
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn a_generic_failure_does_not_trigger_failover() {
+    let core = Core::default();
+    let mut a = fake_launcher(
+        "a",
+        &[
+            ("THOR_FAKE_EXIT_CODE", "1"),
+            ("THOR_FAKE_TEXT", "file not found"),
+        ],
+    );
+    a.fallback = Some("b".to_string());
+    core.set_launcher("a", a);
+    core.set_launcher("b", fake_launcher("b", &[("THOR_FAKE_TEXT", "ok")]));
+
+    let dir = workspace("nofailover");
+    call(
+        &core,
+        "thor_delegate",
+        json!({ "cwd": dir.to_string_lossy(), "bucket": "a", "tasks": ["anything"] }),
+    );
+    let checked = call(
+        &core,
+        "thor_check",
+        json!({ "wait": true, "timeoutMs": 10000 }),
+    );
+    let deliveries = checked["deliveries"].as_array().expect("deliveries");
+    assert_eq!(deliveries.len(), 1, "{checked}");
+    assert_eq!(deliveries[0]["type"], json!("worker_done"));
+    assert_eq!(deliveries[0]["outcome"], json!("failed"));
+
+    let status = call(&core, "thor_status", json!({}));
+    let jobs = status["jobs"].as_array().expect("jobs");
+    assert_eq!(
+        jobs[0]["bucket"],
+        json!("a"),
+        "bucket changed without a quota signal: {status}"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn a_hung_worker_is_killed_after_its_timeout() {
+    let core = Core::default();
+    core.test_set_job_timeout_ms(300);
+    core.set_launcher(
+        "slow",
+        fake_launcher("slow", &[("THOR_FAKE_SLEEP_MS", "5000")]),
+    );
+
+    let dir = workspace("timeout");
+    call(
+        &core,
+        "thor_delegate",
+        json!({ "cwd": dir.to_string_lossy(), "bucket": "slow", "tasks": ["anything"] }),
+    );
+    let checked = call(
+        &core,
+        "thor_check",
+        json!({ "wait": true, "timeoutMs": 10000 }),
+    );
+    assert_eq!(checked["workersStillBusy"], json!(0), "{checked}");
+    let deliveries = checked["deliveries"].as_array().expect("deliveries");
+    assert_eq!(deliveries.len(), 1, "{checked}");
+    assert_eq!(deliveries[0]["outcome"], json!("timeout"));
+    assert!(
+        deliveries[0]["text"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("exceeded"),
+        "{checked}"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn a_token_budget_blocks_further_delegation_once_reached() {
+    let core = Core::default();
+    core.set_launcher(AGENT_CODEX, fake_codex_launcher(500));
+    core.set_token_budget(Some(100));
+
+    let dir = workspace("budget");
+    let delegated = call(
+        &core,
+        "thor_delegate",
+        json!({ "cwd": dir.to_string_lossy(), "tasks": ["anything"] }),
+    );
+    assert_eq!(delegated["accepted"], json!(1), "{delegated}");
+
+    let checked = call(
+        &core,
+        "thor_check",
+        json!({ "wait": true, "timeoutMs": 10000 }),
+    );
+    assert_eq!(checked["workersStillBusy"], json!(0), "{checked}");
+
+    let status = call(&core, "thor_status", json!({}));
+    assert_eq!(status["tokensUsed"], json!(500), "{status}");
+
+    let blocked = call(
+        &core,
+        "thor_delegate",
+        json!({ "cwd": dir.to_string_lossy(), "tasks": ["more work"] }),
+    );
+    assert!(
+        blocked["error"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("token budget"),
+        "{blocked}"
+    );
+
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -264,7 +495,10 @@ fn two_workers_overlap_and_check_waits_for_both() {
         "both workers must land in one call: {checked}"
     );
     assert_eq!(peak, 2, "the workers never overlapped");
-    assert!(dir.join("ALPHA.txt").exists(), "ALPHA.txt missing: {checked}");
+    assert!(
+        dir.join("ALPHA.txt").exists(),
+        "ALPHA.txt missing: {checked}"
+    );
     assert!(dir.join("BETA.txt").exists(), "BETA.txt missing: {checked}");
 
     let _ = std::fs::remove_dir_all(&dir);

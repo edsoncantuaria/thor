@@ -237,6 +237,8 @@ pub fn run() {
             orchestrator::orchestrator_mcp_config_path,
             orchestrator::orchestrator_jobs,
             orchestrator::orchestrator_set_concurrency,
+            orchestrator::orchestrator_set_job_timeout_secs,
+            orchestrator::orchestrator_set_token_budget,
             orchestrator::orchestrator_set_buckets,
             orchestrator::orchestrator_list_buckets,
             browser_session::browser_session_start,

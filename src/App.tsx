@@ -53,6 +53,7 @@ import { useCloseConfirmation } from './hooks/useCloseConfirmation'
 import { useDiscordPresence } from './hooks/useDiscordPresence'
 import { useKeybindings } from './hooks/useKeybindings'
 import { useMcpIntroPrompt } from './hooks/useMcpIntroPrompt'
+import { useOrchestratorCheckpoints } from './hooks/useOrchestratorCheckpoints'
 import { useRemoteControlService } from './hooks/useRemoteControlService'
 import { useResourceSupervisor } from './hooks/useResourceSupervisor'
 import { startActivityTracker } from './lib/activityTracker'
@@ -274,6 +275,7 @@ export default function App() {
   useResourceSupervisor(hydrated)
   useAgentBrowserOffers(playwrightEnabled)
   useCliOpenRequests(hydrated)
+  useOrchestratorCheckpoints()
 
   useEffect(() => {
     void hydrate()

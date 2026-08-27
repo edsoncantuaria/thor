@@ -38,9 +38,21 @@ export type OrchestratorSnapshot = {
   running: number
   queued: number
   concurrencyLimit: number
+  tokensUsed: number
+  tokenBudget: number | null
+}
+
+export type OrchestratorIsolatedCheckpoint = {
+  jobId: string
+  cwd: string
+  branch: string
+  path: string
+  spec: string
+  diffSummary: string
 }
 
 const JOBS_EVENT = 'orchestrator://jobs'
+const ISOLATED_CHECKPOINT_EVENT = 'orchestrator://isolated-checkpoint'
 
 export async function orchestratorMcpConfigPath(): Promise<string> {
   return invoke<string>('orchestrator_mcp_config_path')
@@ -52,6 +64,15 @@ export async function orchestratorJobs(): Promise<OrchestratorSnapshot> {
 
 export async function orchestratorSetConcurrency(limit: number): Promise<void> {
   return invoke<void>('orchestrator_set_concurrency', { limit })
+}
+
+export async function orchestratorSetJobTimeoutSecs(secs: number): Promise<void> {
+  return invoke<void>('orchestrator_set_job_timeout_secs', { secs })
+}
+
+/** `null` clears the cap (unlimited). */
+export async function orchestratorSetTokenBudget(budget: number | null): Promise<void> {
+  return invoke<void>('orchestrator_set_token_budget', { budget })
 }
 
 export async function orchestratorSetBuckets(
@@ -69,5 +90,13 @@ export async function listenOrchestratorJobs(
 ): Promise<UnlistenFn> {
   return listen<{ jobs: OrchestratorJob[] }>(JOBS_EVENT, (event) => {
     handler(event.payload.jobs ?? [])
+  })
+}
+
+export async function listenOrchestratorIsolatedCheckpoint(
+  handler: (payload: OrchestratorIsolatedCheckpoint) => void,
+): Promise<UnlistenFn> {
+  return listen<OrchestratorIsolatedCheckpoint>(ISOLATED_CHECKPOINT_EVENT, (event) => {
+    handler(event.payload)
   })
 }
