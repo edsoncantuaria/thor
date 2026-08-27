@@ -10,6 +10,14 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ## [Unreleased]
 
+## [1.0.4] — 2026-08-27
+
+### Fixed
+
+- The bundled application icon (taskbar, dock, Start menu, and every installer) still shipped the
+  previous Alethe knight-avatar artwork instead of the current Thor portrait. It's now regenerated
+  from the master Thor portrait across every platform target (Windows, macOS, Linux, iOS, Android).
+
 ## [1.0.3] — 2026-08-27
 
 ### Added
@@ -1016,7 +1024,8 @@ the sidebar, and adds Antigravity support.
 - Removed the **Loose/Ungrouped** section label above ungrouped sidebar projects.
 - Removed the parked-terminal text notice from the overlay; the resume action remains available.
 
-[Unreleased]: https://github.com/edsoncantuaria/thor/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/edsoncantuaria/thor/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/edsoncantuaria/thor/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/edsoncantuaria/thor/compare/v1.0.1...v1.0.3
 [1.0.1]: https://github.com/edsoncantuaria/thor/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/edsoncantuaria/thor/releases/tag/v1.0.0
