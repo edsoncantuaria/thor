@@ -46,5 +46,6 @@ pnpm-debug.log*
 # Graphify — grafo gerado (cache/AST/graph.json ~80MB). Sempre reconstruível.
 graphify-out/
 
-# Impeccable — per-developer overrides (consent flag, private ignores)
+# Impeccable — per-developer overrides (consent flag, private ignores) and local hook cache
 .impeccable/config.local.json
+.impeccable/hook.cache.json

@@ -10,6 +10,15 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ## [Unreleased]
 
+## [1.0.5] — 2026-08-27
+
+### Fixed
+
+- The Windows installer's sidebar and header artwork still carried the old Alethe wordmark and
+  avatar. Both are regenerated from the current Thor portrait and app palette.
+- `.impeccable/hook.cache.json`, a local per-developer runtime cache, is now gitignored so it stops
+  showing up as a formatting failure in `npm run format:check`.
+
 ## [1.0.4] — 2026-08-27
 
 ### Fixed
@@ -1024,7 +1033,8 @@ the sidebar, and adds Antigravity support.
 - Removed the **Loose/Ungrouped** section label above ungrouped sidebar projects.
 - Removed the parked-terminal text notice from the overlay; the resume action remains available.
 
-[Unreleased]: https://github.com/edsoncantuaria/thor/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/edsoncantuaria/thor/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/edsoncantuaria/thor/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/edsoncantuaria/thor/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/edsoncantuaria/thor/compare/v1.0.1...v1.0.3
 [1.0.1]: https://github.com/edsoncantuaria/thor/compare/v1.0.0...v1.0.1
