@@ -162,6 +162,7 @@ impl Default for ResourceSupervisor {
     }
 }
 
+#[cfg_attr(not(any(windows, target_os = "linux")), allow(unused_variables))]
 fn process_private_commit_bytes(pid: u32, fallback: u64) -> u64 {
     #[cfg(windows)]
     {
@@ -254,7 +255,7 @@ impl ResourceSupervisor {
                                 .child
                                 .try_lock()
                                 .ok()
-                                .and_then(|mut child| child.process_id()),
+                                .and_then(|child| child.process_id()),
                             session.command.clone(),
                             session.cwd.clone(),
                         )
