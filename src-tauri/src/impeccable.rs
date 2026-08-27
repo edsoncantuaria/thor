@@ -58,9 +58,13 @@ pub struct ImpeccableStatus {
 pub fn impeccable_status(repo_path: String) -> ImpeccableStatus {
     let installed = hook_admin_script(&repo_path).is_file();
 
-    let config: Option<Value> = std::fs::read_to_string(Path::new(&repo_path).join(".impeccable").join("config.json"))
-        .ok()
-        .and_then(|text| serde_json::from_str(&text).ok());
+    let config: Option<Value> = std::fs::read_to_string(
+        Path::new(&repo_path)
+            .join(".impeccable")
+            .join("config.json"),
+    )
+    .ok()
+    .and_then(|text| serde_json::from_str(&text).ok());
 
     let count = |key: &str| -> usize {
         config

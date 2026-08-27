@@ -372,7 +372,9 @@ export function MultiagentPage() {
             {t('prefs.impeccableSelectProject')}
           </div>
         ) : loadingImpeccable ? (
-          <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{t('prefs.impeccableLoading')}</div>
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
+            {t('prefs.impeccableLoading')}
+          </div>
         ) : (
           <div className={styles.integrationFields}>
             {!impeccable?.installed ? (
