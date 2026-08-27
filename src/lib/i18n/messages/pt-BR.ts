@@ -1697,8 +1697,7 @@ export const ptBR: Record<MessageKey, string> = {
   'ws.confirmOverwriteForeignAgent':
     'Já existe um agent "{name}" neste projeto que NÃO foi criado pelo Thor. Sobrescrever?',
   'ws.confirmRemoveAgent': 'Remover o agent "{name}" do projeto?',
-  'ws.confirmRemoveForeignAgent':
-    'O agent "{name}" NÃO foi criado pelo Thor. Remover mesmo assim?',
+  'ws.confirmRemoveForeignAgent': 'O agent "{name}" NÃO foi criado pelo Thor. Remover mesmo assim?',
   'ws.moreToolCalls': '+{count} tool calls — clique pra ver tudo',
   'ws.back': 'voltar',
   'ws.agentCanvasPoc': 'agent canvas — poc',

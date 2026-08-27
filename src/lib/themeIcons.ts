@@ -27,9 +27,7 @@ export const APP_ICON_OPTIONS: { id: AppIconTheme; label: string }[] = [
 ]
 
 export function normalizeAppIconTheme(value: unknown): AppIconTheme {
-  return typeof value === 'string' && value in ICON_FILES
-    ? (value as AppIconTheme)
-    : 'elite-gold'
+  return typeof value === 'string' && value in ICON_FILES ? (value as AppIconTheme) : 'elite-gold'
 }
 
 function preferredSize(): number {

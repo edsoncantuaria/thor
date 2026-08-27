@@ -51,7 +51,10 @@ export async function ollamaListInstances(): Promise<OllamaInstanceInfo[]> {
   return invoke<OllamaInstanceInfo[]>('ollama_list_instances')
 }
 
-export async function ollamaStartInstance(model: string, port?: number): Promise<OllamaInstanceInfo> {
+export async function ollamaStartInstance(
+  model: string,
+  port?: number,
+): Promise<OllamaInstanceInfo> {
   return invoke<OllamaInstanceInfo>('ollama_start_instance', { model, port })
 }
 

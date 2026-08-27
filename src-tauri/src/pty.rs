@@ -1661,8 +1661,29 @@ mod tests {
     #[test]
     fn a_kill_never_runs_while_the_child_lock_is_held() {
         let source = include_str!("pty.rs");
-        for (index, _) in source.match_indices("child.lock()") {
-            let tail = &source[index..];
+        let without_tests = source
+            .split("#[cfg(test)]")
+            .next()
+            .expect("production source");
+        let helper_start = without_tests
+            .find("fn kill_tree_without_holding_child")
+            .expect("the pid-then-kill helper exists");
+        let helper_end = without_tests[helper_start..]
+            .find("\npub(crate) fn kill_process_tree")
+            .map(|offset| helper_start + offset)
+            .expect("kill_process_tree follows the helper");
+        let helper = &without_tests[helper_start..helper_end];
+        assert!(
+            helper.contains("child.lock()") && helper.contains("kill_process_tree("),
+            "the helper must read the pid under the lock, then kill after dropping it"
+        );
+        let scanned = format!(
+            "{}{}",
+            &without_tests[..helper_start],
+            &without_tests[helper_end..]
+        );
+        for (index, _) in scanned.match_indices("child.lock()") {
+            let tail = &scanned[index..];
             let block_end = tail
                 .find(
                     "
@@ -1672,7 +1693,7 @@ mod tests {
             let block = &tail[..block_end.min(600)];
             assert!(
                 !block.contains("kill_process_tree("),
-                "a child lock is held across kill_process_tree near byte {index};                  read the pid, release the lock, then kill"
+                "a child lock is held across kill_process_tree near byte {index}; read the pid, release the lock, then kill"
             );
         }
     }

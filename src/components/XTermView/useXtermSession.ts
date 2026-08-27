@@ -334,7 +334,9 @@ export function useXtermSession(params: {
               : undefined,
           )
           clampHorizontalScroll()
-        } catch {}
+        } catch {
+          // xterm can throw if the buffer is mid-dispose.
+        }
       }
       if (pendingWriteLength > 0) {
         writeFrame = window.requestAnimationFrame(flushPendingWrite)
@@ -368,7 +370,9 @@ export function useXtermSession(params: {
           terminal.write(replay, () => {
             try {
               terminal.scrollToBottom()
-            } catch {}
+            } catch {
+              // Replay can finish after the terminal is already gone.
+            }
             resolve()
           })
         } catch {
@@ -393,7 +397,9 @@ export function useXtermSession(params: {
       event.stopPropagation()
       try {
         terminal.scrollLines(lines)
-      } catch {}
+      } catch {
+        // Wheel can fire after the terminal is disposed.
+      }
     }
     container.addEventListener('wheel', onWheel, { passive: false, capture: true })
 
@@ -842,7 +848,9 @@ export function useXtermSession(params: {
         try {
           const rect = container?.getBoundingClientRect()
           if (rect && rect.width >= 50 && rect.height >= 30) fitAddon.fit()
-        } catch {}
+        } catch {
+          // Fit throws when the addon is not attached yet.
+        }
         setCommandNotFound(null)
         setBootPhase('preparing')
 
@@ -947,7 +955,9 @@ export function useXtermSession(params: {
               removeSession(sessionPersistenceKey)
               onSessionIdRef.current?.(undefined)
             }
-          } catch {}
+          } catch {
+            // Listing sessions is best-effort; spawn without resume if it fails.
+          }
           if (disposed) return
         }
 
@@ -965,7 +975,9 @@ export function useXtermSession(params: {
             const candidates = gsdChildId ? sessions.filter((s) => s.id !== gsdChildId) : sessions
             const claimed = claimMostRecentSession('opencode', cwd, candidates)
             if (claimed) resumeId = claimed.id
-          } catch {}
+          } catch {
+            // OpenCode session discovery is best-effort.
+          }
           if (disposed) return
         }
         const preparedRuntime = command

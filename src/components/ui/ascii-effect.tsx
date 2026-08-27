@@ -335,7 +335,11 @@ export function AsciiEffect({
         colorMode === 'source'
           ? `rgb(${pixels[pixel]}, ${pixels[pixel + 1]}, ${pixels[pixel + 2]})`
           : colorPalette[Math.round(clamp(value) * (colorPalette.length - 1))]
-      ctx.fillText(character, column * cellWidth - cellWidth + offsetX, row * cellHeight - cellHeight)
+      ctx.fillText(
+        character,
+        column * cellWidth - cellWidth + offsetX,
+        row * cellHeight - cellHeight,
+      )
     }
 
     // Renders the full, un-displaced ASCII grid once into `glyphLayer`. The
@@ -358,8 +362,17 @@ export function AsciiEffect({
     const draw = (now: number) => {
       const cache = sampleCache
       if (!loaded || !width || !height || !cache) return
-      const { columns, rows, cellWidth, cellHeight, flowRowSin, flowRowCos, flowColBase, flowColSin, flowColCos } =
-        cache
+      const {
+        columns,
+        rows,
+        cellWidth,
+        cellHeight,
+        flowRowSin,
+        flowRowCos,
+        flowColBase,
+        flowColSin,
+        flowColCos,
+      } = cache
       const motionReduced = isMotionReduced()
       pointerState.x += (pointerState.targetX - pointerState.x) * 0.08
       pointerState.y += (pointerState.targetY - pointerState.y) * 0.08
@@ -460,7 +473,15 @@ export function AsciiEffect({
           }
           const sampledColumn = Math.round(clamp(sourceColumn, 0, columns - 1))
           const sampledRow = Math.round(clamp(sourceRow, 0, rows - 1))
-          paintCell(context, cache, column, row, sampledColumn, sampledRow, glitchBands.get(row) ?? 0)
+          paintCell(
+            context,
+            cache,
+            column,
+            row,
+            sampledColumn,
+            sampledRow,
+            glitchBands.get(row) ?? 0,
+          )
         }
       }
     }

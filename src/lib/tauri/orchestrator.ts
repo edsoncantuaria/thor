@@ -3,12 +3,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import type { OrchestratorBucketConfig } from '../types'
 
 export type OrchestratorJobStatus =
-  | 'queued'
-  | 'running'
-  | 'done'
-  | 'failed'
-  | 'cancelled'
-  | 'released'
+  'queued' | 'running' | 'done' | 'failed' | 'cancelled' | 'released'
 
 export type OrchestratorJob = {
   id: string
@@ -36,8 +31,7 @@ export type OrchestratorBucketInfo = {
 }
 
 export type OrchestratorBucketSaveStatus =
-  | { id: string; resolved: boolean; path: string | null }
-  | { error: string }
+  { id: string; resolved: boolean; path: string | null } | { error: string }
 
 export type OrchestratorSnapshot = {
   jobs: OrchestratorJob[]

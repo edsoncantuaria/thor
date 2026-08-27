@@ -195,7 +195,9 @@ export function GhosttySurface({
           window.clearInterval(iv)
           onExitRef.current?.()
         }
-      } catch {}
+      } catch {
+        // The surface may already have been destroyed between polls.
+      }
     }, EXIT_POLL_MS)
     return () => {
       stopped = true

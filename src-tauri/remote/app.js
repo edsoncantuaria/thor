@@ -162,7 +162,8 @@ const groupColorNames = {
   '#0a0a0a': 'black',
 }
 
-let sessionToken = sessionStorage.getItem(SESSION_KEY) || sessionStorage.getItem('alethe.remote.session') || ''
+let sessionToken =
+  sessionStorage.getItem(SESSION_KEY) || sessionStorage.getItem('alethe.remote.session') || ''
 let wsBase = null
 let readOnly = false
 let state = { groups: [], projects: [] }

@@ -29,11 +29,6 @@ import controls from '../controls.module.css'
 import styles from '../PreferencesModal.module.css'
 import { SettingsSection } from './primitives'
 
-   
-                                                                            
-                                                                           
-                                                       
-   
 function TerminalCommandSection() {
   const t = useT()
   const [status, setStatus] = useState<CliShimStatus | null>(null)
@@ -264,7 +259,9 @@ function OllamaSection() {
                   disabled={!pullTarget.trim() || pullingModel !== null}
                   onClick={() => void pull()}
                 >
-                  {pullingModel ? t('prefs.ollamaPulling', { model: pullingModel }) : t('prefs.ollamaPull')}
+                  {pullingModel
+                    ? t('prefs.ollamaPulling', { model: pullingModel })
+                    : t('prefs.ollamaPull')}
                 </button>
               </div>
             </div>
@@ -354,7 +351,11 @@ function OptimizerSection() {
   }
 
   return (
-    <SettingsSection id="optimizer" title={t('prefs.optimizer')} description={t('prefs.optimizerDesc')}>
+    <SettingsSection
+      id="optimizer"
+      title={t('prefs.optimizer')}
+      description={t('prefs.optimizerDesc')}
+    >
       <div className={styles.integrationFields}>
         <div className={styles.segmented}>
           <button
@@ -366,14 +367,18 @@ function OptimizerSection() {
           </button>
           <button
             type="button"
-            className={preferences.optimizerWrapper === 'caveman' ? styles.segmentActive : undefined}
+            className={
+              preferences.optimizerWrapper === 'caveman' ? styles.segmentActive : undefined
+            }
             onClick={() => setWrapper('caveman')}
           >
             Caveman
           </button>
           <button
             type="button"
-            className={preferences.optimizerWrapper === 'headroom' ? styles.segmentActive : undefined}
+            className={
+              preferences.optimizerWrapper === 'headroom' ? styles.segmentActive : undefined
+            }
             onClick={() => setWrapper('headroom')}
           >
             Headroom
@@ -381,7 +386,10 @@ function OptimizerSection() {
         </div>
 
         <div className={styles.cliActions}>
-          <span>Caveman — {cavemanInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}</span>
+          <span>
+            Caveman —{' '}
+            {cavemanInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}
+          </span>
           <button
             type="button"
             className={`${controls.btn} ${controls.btnPrimary}`}
@@ -393,7 +401,10 @@ function OptimizerSection() {
         </div>
 
         <div className={styles.cliActions}>
-          <span>Headroom — {headroomInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}</span>
+          <span>
+            Headroom —{' '}
+            {headroomInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}
+          </span>
           <button
             type="button"
             className={`${controls.btn} ${controls.btnPrimary}`}
@@ -405,7 +416,9 @@ function OptimizerSection() {
         </div>
 
         <div className={styles.cliActions}>
-          <span>RTK — {rtkInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}</span>
+          <span>
+            RTK — {rtkInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}
+          </span>
           <button
             type="button"
             className={`${controls.btn} ${controls.btnPrimary}`}
@@ -421,7 +434,9 @@ function OptimizerSection() {
               disabled={busy !== null}
               onClick={() => void run('rtk-configure', optimizerConfigureRtk)}
             >
-              {busy === 'rtk-configure' ? t('prefs.optimizerRtkConfiguring') : t('prefs.optimizerRtkConfigure')}
+              {busy === 'rtk-configure'
+                ? t('prefs.optimizerRtkConfiguring')
+                : t('prefs.optimizerRtkConfigure')}
             </button>
           ) : null}
         </div>
@@ -498,11 +513,15 @@ function OrchestratorBucketsSection() {
     })
   }
 
-  const fallbackOptions = (selfId: string) => [
-    { id: 'codex', label: 'Codex (default)' },
-    { id: 'opencode', label: 'OpenCode (default)' },
-    ...buckets.map((bucket) => ({ id: bucket.id, label: bucket.label || bucket.command || bucket.id })),
-  ].filter((option) => option.id !== selfId)
+  const fallbackOptions = (selfId: string) =>
+    [
+      { id: 'codex', label: 'Codex (default)' },
+      { id: 'opencode', label: 'OpenCode (default)' },
+      ...buckets.map((bucket) => ({
+        id: bucket.id,
+        label: bucket.label || bucket.command || bucket.id,
+      })),
+    ].filter((option) => option.id !== selfId)
 
   return (
     <SettingsSection
