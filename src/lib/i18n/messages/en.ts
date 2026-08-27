@@ -750,6 +750,18 @@ export const en = {
   'prefs.orchestratorBucketMissing': 'not found on PATH',
   'prefs.orchestratorProtocolAppServer': 'Steerable',
   'prefs.orchestratorProtocolOneShot': 'One-shot',
+  'prefs.impeccable': 'Impeccable design QA',
+  'prefs.impeccableDesc':
+    'Design anti-pattern detector for the selected project — flags gradients, hardcoded colors, contrast issues, and design-system drift on every UI edit.',
+  'prefs.impeccableSelectProject': 'Select a project above to manage Impeccable for it.',
+  'prefs.impeccableLoading': 'Checking status…',
+  'prefs.impeccableNotInstalled': 'Not installed in this project.',
+  'prefs.impeccableInstall': 'Install',
+  'prefs.impeccableInstalling': 'Installing…',
+  'prefs.impeccableHookOn': 'Hook on',
+  'prefs.impeccableHookOff': 'Hook off',
+  'prefs.impeccableIgnoreCounts':
+    '{rules} ignored rule(s), {files} ignored file(s), {values} ignored value(s).',
   'prefs.spotify': 'Spotify',
   'prefs.spotifyDesc': 'Configure the Spotify application used by the Now Playing widget.',
   'prefs.discordPresence': 'Discord Rich Presence',

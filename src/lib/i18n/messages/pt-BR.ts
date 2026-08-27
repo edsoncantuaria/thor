@@ -760,6 +760,18 @@ export const ptBR: Record<MessageKey, string> = {
   'prefs.orchestratorBucketMissing': 'não encontrado no PATH',
   'prefs.orchestratorProtocolAppServer': 'Direcionável',
   'prefs.orchestratorProtocolOneShot': 'Um disparo',
+  'prefs.impeccable': 'QA de design (Impeccable)',
+  'prefs.impeccableDesc':
+    'Detector de anti-padrões de design para o projeto selecionado — aponta gradientes, cores hardcoded, problemas de contraste e desvio do design system a cada edição de UI.',
+  'prefs.impeccableSelectProject': 'Selecione um projeto acima para gerenciar o Impeccable nele.',
+  'prefs.impeccableLoading': 'Verificando status…',
+  'prefs.impeccableNotInstalled': 'Não instalado neste projeto.',
+  'prefs.impeccableInstall': 'Instalar',
+  'prefs.impeccableInstalling': 'Instalando…',
+  'prefs.impeccableHookOn': 'Hook ligado',
+  'prefs.impeccableHookOff': 'Hook desligado',
+  'prefs.impeccableIgnoreCounts':
+    '{rules} regra(s) ignorada(s), {files} arquivo(s) ignorado(s), {values} valor(es) ignorado(s).',
   'prefs.spotify': 'Spotify',
   'prefs.spotifyDesc': 'Configure o aplicativo do Spotify usado no widget Now Playing.',
   'prefs.discordPresence': 'Rich Presence do Discord',

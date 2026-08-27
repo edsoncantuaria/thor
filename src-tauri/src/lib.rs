@@ -33,6 +33,7 @@ mod github_sync;
 mod graphify;
 mod handoff;
 mod health_probe;
+mod impeccable;
 mod logging;
 mod mcp_agents;
 mod mcp_catalog;
@@ -265,6 +266,9 @@ pub fn run() {
             optimizer::optimizer_install_rtk,
             optimizer::optimizer_configure_rtk,
             optimizer::optimizer_install_headroom,
+            impeccable::impeccable_status,
+            impeccable::impeccable_install,
+            impeccable::impeccable_set_hook,
             ollama::ollama_is_installed,
             ollama::ollama_install,
             ollama::ollama_list_models,

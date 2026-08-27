@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useT } from '../../../lib/i18n'
 import {
   getPlanningAutocommit,
   getTelemetryMetrics,
   getTelemetryTraces,
+  impeccableInstall,
+  impeccableSetHook,
+  impeccableStatus,
   planningAuditHistory,
   pluginInstall,
   pluginUninstall,
@@ -12,6 +16,7 @@ import {
 } from '../../../lib/tauri'
 import type {
   EventBusPayload,
+  ImpeccableStatus,
   MetricData,
   PluginManifest,
   PlanningCommit,
@@ -24,6 +29,7 @@ import { SettingsSection } from './primitives'
 import { Dropdown } from '../../ui/Dropdown'
 
 export function MultiagentPage() {
+  const t = useT()
   const projects = useProjectsStore((state) => state.projects)
   const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0]?.id ?? '')
   const schedulerStore = useSchedulerStore()
@@ -38,6 +44,11 @@ export function MultiagentPage() {
   const [autocommit, setAutocommit] = useState(false)
   const [auditLogs, setAuditLogs] = useState<PlanningCommit[]>([])
   const [loadingAudit, setLoadingAudit] = useState(false)
+
+  const [impeccable, setImpeccable] = useState<ImpeccableStatus | null>(null)
+  const [loadingImpeccable, setLoadingImpeccable] = useState(false)
+  const [impeccableBusy, setImpeccableBusy] = useState(false)
+  const [impeccableError, setImpeccableError] = useState<string | null>(null)
 
   const loadTelemetry = useCallback(async () => {
     try {
@@ -117,6 +128,55 @@ export function MultiagentPage() {
   const handleTick = () => {
     if (selectedProjectId && repoPath) {
       void schedulerStore.tick(selectedProjectId, repoPath)
+    }
+  }
+
+  const loadImpeccableStatus = useCallback(async (path: string) => {
+    setLoadingImpeccable(true)
+    setImpeccableError(null)
+    try {
+      setImpeccable(await impeccableStatus(path))
+    } catch (err) {
+      setImpeccable(null)
+      setImpeccableError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setLoadingImpeccable(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (repoPath) {
+      void loadImpeccableStatus(repoPath)
+    } else {
+      setImpeccable(null)
+    }
+  }, [repoPath, loadImpeccableStatus])
+
+  const handleImpeccableInstall = async () => {
+    if (!repoPath) return
+    setImpeccableBusy(true)
+    setImpeccableError(null)
+    try {
+      await impeccableInstall(repoPath)
+      await loadImpeccableStatus(repoPath)
+    } catch (err) {
+      setImpeccableError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setImpeccableBusy(false)
+    }
+  }
+
+  const handleImpeccableToggle = async (enabled: boolean) => {
+    if (!repoPath) return
+    setImpeccableBusy(true)
+    setImpeccableError(null)
+    try {
+      await impeccableSetHook(repoPath, enabled)
+      await loadImpeccableStatus(repoPath)
+    } catch (err) {
+      setImpeccableError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setImpeccableBusy(false)
     }
   }
 
@@ -298,6 +358,66 @@ export function MultiagentPage() {
         ) : (
           <div style={{ fontSize: 11, color: 'var(--fg-muted)', fontStyle: 'italic' }}>
             Select a project to inspect and orchestrate its tasks.
+          </div>
+        )}
+      </SettingsSection>
+
+      <SettingsSection
+        id="multiagent-impeccable"
+        title={t('prefs.impeccable')}
+        description={t('prefs.impeccableDesc')}
+      >
+        {!selectedProjectId ? (
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)', fontStyle: 'italic' }}>
+            {t('prefs.impeccableSelectProject')}
+          </div>
+        ) : loadingImpeccable ? (
+          <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{t('prefs.impeccableLoading')}</div>
+        ) : (
+          <div className={styles.integrationFields}>
+            {!impeccable?.installed ? (
+              <div className={styles.cliActions}>
+                <p>{t('prefs.impeccableNotInstalled')}</p>
+                <button
+                  type="button"
+                  className={`${controls.btn} ${controls.btnPrimary}`}
+                  disabled={impeccableBusy}
+                  onClick={() => void handleImpeccableInstall()}
+                >
+                  {impeccableBusy ? t('prefs.impeccableInstalling') : t('prefs.impeccableInstall')}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className={styles.segmented}>
+                  <button
+                    type="button"
+                    className={impeccable.hookEnabled ? styles.segmentActive : undefined}
+                    disabled={impeccableBusy}
+                    onClick={() => void handleImpeccableToggle(true)}
+                  >
+                    {t('prefs.impeccableHookOn')}
+                  </button>
+                  <button
+                    type="button"
+                    className={!impeccable.hookEnabled ? styles.segmentActive : undefined}
+                    disabled={impeccableBusy}
+                    onClick={() => void handleImpeccableToggle(false)}
+                  >
+                    {t('prefs.impeccableHookOff')}
+                  </button>
+                </div>
+                <p className={styles.cliPath}>
+                  {t('prefs.impeccableIgnoreCounts', {
+                    rules: impeccable.ignoreRules,
+                    files: impeccable.ignoreFiles,
+                    values: impeccable.ignoreValues,
+                  })}
+                </p>
+              </>
+            )}
+
+            {impeccableError ? <p className={styles.cliWarning}>{impeccableError}</p> : null}
           </div>
         )}
       </SettingsSection>
