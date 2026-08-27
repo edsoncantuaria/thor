@@ -4,7 +4,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { pickDirectory } from '../../lib/dialog'
 import { useT } from '../../lib/i18n'
 import { basename } from '../../lib/paths'
-import { AGENT_TYPE_LABELS, type AgentRuntimeProfile, type AgentType,ALL_AGENT_TYPES, UNRESTRICTED_FLAG } from '../../lib/types'
+import { ollamaListModels, type OllamaModelInfo, ollamaStartInstance } from '../../lib/tauri'
+import {
+  AGENT_TYPE_LABELS,
+  type AgentRuntimeProfile,
+  type AgentType,
+  ALL_AGENT_TYPES,
+  UNRESTRICTED_FLAG,
+} from '../../lib/types'
 import { getProjectDefaultCwd, useProjectsStore } from '../../stores/projectsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { AgentIcon } from '../icons/AgentIcons'
@@ -37,6 +44,11 @@ export function NewTerminalModal() {
   const [type, setType] = useState<AgentType>('claude')
   const [runtimeProfile, setRuntimeProfile] = useState<AgentRuntimeProfile>('lean')
   const [cwd, setCwd] = useState('')
+  const [ollamaModels, setOllamaModels] = useState<OllamaModelInfo[]>([])
+  const [ollamaModel, setOllamaModel] = useState('')
+  const [ollamaReachable, setOllamaReachable] = useState<boolean | null>(null)
+  const [ollamaStarting, setOllamaStarting] = useState(false)
+  const [ollamaStartError, setOllamaStartError] = useState<string | null>(null)
   const [unrestricted, setUnrestricted] = useState<Record<AgentType, boolean>>({
     shell: false,
     claude: false,
@@ -91,10 +103,61 @@ export function NewTerminalModal() {
     })
   }, [open, context?.projectId, inheritedCwd, defaultType, alwaysStartUnrestricted])
 
+  useEffect(() => {
+    if (!open || type !== 'opencode') return
+    let disposed = false
+    void ollamaListModels()
+      .then((models) => {
+        if (disposed) return
+        setOllamaModels(models)
+        setOllamaReachable(true)
+      })
+      .catch(() => {
+        if (disposed) return
+        setOllamaModels([])
+        setOllamaReachable(false)
+      })
+    return () => {
+      disposed = true
+    }
+  }, [open, type])
+
+  const startOllama = async () => {
+    setOllamaStarting(true)
+    setOllamaStartError(null)
+    try {
+      await ollamaStartInstance('')
+    } catch (cause) {
+      setOllamaStartError(cause instanceof Error ? cause.message : String(cause))
+      setOllamaStarting(false)
+      return
+    }
+    // `ollama serve` takes a moment to bind its HTTP listener.
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 300))
+      try {
+        const models = await ollamaListModels()
+        setOllamaModels(models)
+        setOllamaReachable(true)
+        setOllamaStarting(false)
+        return
+      } catch {
+        // keep retrying until the attempts run out
+      }
+    }
+    setOllamaStartError(t('term.opencodeOllamaStartTimeout'))
+    setOllamaStarting(false)
+  }
+
+  useEffect(() => {
+    if (type !== 'opencode') setOllamaModel('')
+  }, [type])
+
   const reset = () => {
     setType(defaultType)
     setRuntimeProfile('lean')
     setCwd('')
+    setOllamaModel('')
     setUnrestricted({
       shell: false,
       claude: false,
@@ -112,7 +175,10 @@ export function NewTerminalModal() {
     const finalName = selectedAgent.label
     const finalCwd = cwd.trim() || inheritedCwd
     const flag = UNRESTRICTED_FLAG[type]
-    const extraArgs = unrestricted[type] && flag ? [flag] : undefined
+    const args: string[] = []
+    if (unrestricted[type] && flag) args.push(flag)
+    if (type === 'opencode' && ollamaModel) args.push('--model', `ollama/${ollamaModel}`)
+    const extraArgs = args.length > 0 ? args : undefined
     const creation = {
       name: finalName,
       cwd: finalCwd,
@@ -210,6 +276,63 @@ export function NewTerminalModal() {
             />
             <span>{t('term.alwaysUnrestricted')}</span>
           </label>
+        ) : null}
+        {type === 'opencode' ? (
+          <div className={controls.field}>
+            <label className={controls.label}>{t('term.opencodeOllama')}</label>
+            <span className={controls.hint}>{t('term.opencodeOllamaDesc')}</span>
+            {ollamaReachable && ollamaModels.length > 0 ? (
+              <div className={controls.pillRow}>
+                <button
+                  type="button"
+                  className={`${controls.pill} ${ollamaModel === '' ? controls.pillActive : ''}`}
+                  onClick={() => setOllamaModel('')}
+                >
+                  {t('term.opencodeOllamaNone')}
+                </button>
+                {ollamaModels.map((model) => (
+                  <button
+                    key={model.name}
+                    type="button"
+                    className={`${controls.pill} ${ollamaModel === model.name ? controls.pillActive : ''}`}
+                    onClick={() => setOllamaModel(model.name)}
+                  >
+                    {model.name}
+                  </button>
+                ))}
+              </div>
+            ) : ollamaReachable && ollamaModels.length === 0 ? (
+              <div className={styles.autoNameHint}>
+                <Info size={13} />
+                <span>{t('term.opencodeOllamaEmpty')}</span>
+                <button
+                  type="button"
+                  className={styles.browseButton}
+                  onClick={() => {
+                    closeModal()
+                    useUiStore.getState().openModal_('preferences', { category: 'integrations' })
+                  }}
+                >
+                  {t('term.opencodeOllamaOpenSettings')}
+                </button>
+              </div>
+            ) : (
+              <div className={styles.autoNameHint}>
+                <Info size={13} />
+                <span>{ollamaStartError ?? t('term.opencodeOllamaNotRunning')}</span>
+                <button
+                  type="button"
+                  className={styles.browseButton}
+                  disabled={ollamaStarting}
+                  onClick={() => void startOllama()}
+                >
+                  {ollamaStarting
+                    ? t('term.opencodeOllamaStarting')
+                    : t('term.opencodeOllamaStart')}
+                </button>
+              </div>
+            )}
+          </div>
         ) : null}
       </section>
 

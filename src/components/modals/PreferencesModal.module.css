@@ -1195,6 +1195,14 @@
   min-width: 0;
 }
 
+.bucketEnv {
+  width: 100%;
+  resize: vertical;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 .bucketStatus {
   font-size: 10px;
   font-family: var(--font-mono, monospace);

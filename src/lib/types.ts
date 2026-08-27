@@ -539,6 +539,15 @@ export type OrchestratorBucketConfig = {
    * "gemini-flash"). Empty means no automatic failover.
    */
   fallback: string
+  /**
+   * Extra environment variables for this bucket's worker process, one "KEY=VALUE" per line.
+   * The native relay hook: point a CLI at any OpenAI-compatible proxy (Luno, Apifox AI, or
+   * anything from the aggregator lists) by setting OPENAI_BASE_URL/OPENAI_API_KEY here instead
+   * of the vendor's own endpoint — no wrapper script needed. Not limited to those two names;
+   * any CLI-specific env var works the same way (e.g. ANTHROPIC_BASE_URL for a Claude-compatible
+   * proxy).
+   */
+  env: string
 }
 
 export type ResourcePolicyMode = 'smart-lru' | 'manual'

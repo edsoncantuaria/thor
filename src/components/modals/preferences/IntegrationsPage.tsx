@@ -485,6 +485,7 @@ function OrchestratorBucketsSection() {
       modelFlag: '--model',
       model: '',
       fallback: '',
+      env: '',
     }
     setPreferences({ orchestratorBuckets: [...buckets, bucket] })
   }
@@ -600,6 +601,15 @@ function OrchestratorBucketsSection() {
                   />
                 </div>
               ) : null}
+
+              <textarea
+                className={`${controls.input} ${styles.bucketEnv}`}
+                value={bucket.env}
+                placeholder={t('prefs.orchestratorBucketEnvPlaceholder')}
+                onChange={(event) => updateBucket(bucket.id, { env: event.target.value })}
+                spellCheck={false}
+                rows={2}
+              />
             </div>
           ))}
         </div>

@@ -147,6 +147,17 @@ export function WorkspaceView() {
   const projectsById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects])
   const groupsById = useMemo(() => new Map(groups.map((g) => [g.id, g])), [groups])
 
+  useEffect(() => {
+    // Returning to the workspace from Home fully remounts every XTermView
+    // underneath (it's not a hidden/shown toggle) — freshly created terminal
+    // canvases sometimes don't get composited by the webview until something
+    // forces a repaint (moving the mouse "fixes" it, which is the tell).
+    // Broadcast the same resize-request every terminal already listens for
+    // (see useXtermSession.ts's onResizeRequest, which itself retries at
+    // +120ms/+320ms) so the first paint doesn't depend on user input.
+    window.dispatchEvent(new CustomEvent('thor:terminal-resize-request'))
+  }, [])
+
   const [liveTabIds, setLiveTabIds] = useState<string[]>([])
 
   useEffect(() => {

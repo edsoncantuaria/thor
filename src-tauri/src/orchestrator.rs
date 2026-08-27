@@ -168,6 +168,28 @@ fn parse_bucket(entry: &Value) -> Result<(String, Launcher, Value), String> {
         .map(str::trim)
         .filter(|value| !value.is_empty() && *value != id)
         .map(ToOwned::to_owned);
+    // The native relay hook: e.g. OPENAI_BASE_URL/OPENAI_API_KEY to point a CLI at an
+    // OpenAI-compatible proxy instead of the vendor's own endpoint. One KEY=VALUE per line,
+    // "#"-prefixed lines ignored, same convention as a .env file.
+    launcher.env.extend(
+        entry
+            .get("env")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .lines()
+            .filter_map(|line| {
+                let line = line.trim();
+                if line.is_empty() || line.starts_with('#') {
+                    return None;
+                }
+                let (key, value) = line.split_once('=')?;
+                let key = key.trim();
+                if key.is_empty() {
+                    return None;
+                }
+                Some((key.to_string(), value.trim().to_string()))
+            }),
+    );
 
     let status = json!({
         "id": id,

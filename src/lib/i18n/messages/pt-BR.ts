@@ -752,6 +752,8 @@ export const ptBR: Record<MessageKey, string> = {
   'prefs.orchestratorBucketArgs': 'Argumentos extras antes da tarefa (ex.: run)',
   'prefs.orchestratorBucketModelFlag': 'Flag do modelo (ex.: --model)',
   'prefs.orchestratorBucketFallbackNone': 'Sem fallback em quota/rate limit',
+  'prefs.orchestratorBucketEnvPlaceholder':
+    'Variáveis de ambiente extras, uma KEY=VALUE por linha — ex.: OPENAI_BASE_URL=https://api.exemplo.com/v1 para relayar por um proxy compatível com OpenAI em vez do endpoint do fabricante',
   'prefs.orchestratorBucketAdd': 'Adicionar bucket',
   'prefs.orchestratorBucketRemove': 'Remover',
   'prefs.orchestratorBucketFound': 'encontrado no PATH',
@@ -1176,6 +1178,16 @@ export const ptBR: Record<MessageKey, string> = {
     'O Claude inicia em safe mode para isolar problemas de MCP/plugin. O Codex usa a configuração leve conservadora.',
   'term.runtimeProfile.opencodeNote':
     'O OpenCode ainda não tem perfil diferenciado — qualquer opção aqui inicia ele do mesmo jeito.',
+  'term.opencodeOllama': 'Rodar num modelo local do Ollama',
+  'term.opencodeOllamaDesc':
+    'Aponta essa sessão do OpenCode para um modelo já baixado no Ollama em vez do provedor padrão dele.',
+  'term.opencodeOllamaNone': 'Padrão',
+  'term.opencodeOllamaEmpty': 'Nenhum modelo do Ollama baixado ainda.',
+  'term.opencodeOllamaOpenSettings': 'Configurar Ollama',
+  'term.opencodeOllamaNotRunning': 'O Ollama não está rodando.',
+  'term.opencodeOllamaStart': 'Iniciar Ollama',
+  'term.opencodeOllamaStarting': 'Iniciando…',
+  'term.opencodeOllamaStartTimeout': 'O Ollama não subiu a tempo — tente de novo.',
   'term.bootPreparing': 'Preparando terminal…',
   'term.bootQueued': 'Aguardando uma vaga para iniciar…',
   'term.bootSpawning': 'Iniciando processo…',

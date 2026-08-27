@@ -10,8 +10,17 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-08-27
+
+First public release of Thor.
+
 ### Added
 
+- The New Terminal dialog offers a local-model picker when OpenCode is selected: pick any model
+  already pulled in Ollama and that session launches pointed at it (`--model ollama/<name>`)
+  instead of OpenCode's default provider. If Ollama isn't running yet, a "Start Ollama" button
+  starts it in place instead of only pointing at Preferences; if no models are pulled at all, it
+  still links to Preferences → Integrations → Ollama to pull one.
 - On Linux, agent terminals now inherit the same expanded PATH used for launcher discovery
   (nvm, bun, npm-prefix, pnpm, volta, fnm, asdf, mise, Nix, `~/.local/bin`, Cargo), so child
   tools stay visible when Thor is started from a desktop menu with a minimal PATH.
@@ -26,11 +35,16 @@ Notable user-facing changes to **Thor** are documented here. The format is based
   Orchestrator settings page lets you configure any number of worker "buckets" — any agent CLI
   (Claude in print mode, Cursor, a second OpenCode pointed at a local Ollama model, etc.), with
   its own protocol (Codex's steerable app-server mode, or a generic one-shot `command [args]
-  [model flag] task` invocation), default model, and extra args. Codex and OpenCode still work
-  out of the box when installed. `thor_delegate` picks a bucket by id (`bucket` field) and can
-  override its model per call; `thor_status` lists every configured bucket so the lead agent
-  can discover what's available instead of guessing. `thor_steer`/`thor_send` correctly
-  refuse one-shot buckets, since they have no live thread to steer.
+  [model flag] task` invocation), default model, extra args, and extra environment variables
+  (a native relay hook — point a bucket at any OpenAI-compatible proxy, e.g. Luno or Apifox AI,
+  via `OPENAI_BASE_URL`/`OPENAI_API_KEY`, instead of the vendor's own endpoint, with no wrapper
+  script needed). Codex and OpenCode still work out of the box when installed. `thor_delegate`
+  picks a bucket by id (`bucket` field) and can override its model per call; `thor_status` lists
+  every configured bucket so the lead agent can discover what's available instead of guessing.
+  `thor_steer`/`thor_send` correctly refuse one-shot buckets, since they have no live thread to
+  steer. A bucket can also name a fallback bucket: if it fails with what looks like a
+  quota/rate-limit error, the same task automatically retries there (e.g. Claude Sonnet falling
+  back to Gemini Flash).
 - Agent CLIs installed via nvm, bun, `npm --prefix`, pnpm or volta are now detected on Linux
   even when Thor is launched from the desktop menu — which inherits a minimal PATH — matching
   the existing `~/.local/bin` and `~/.cargo/bin` fallbacks. Onboarding and agent tabs now see
@@ -78,6 +92,13 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ### Changed
 
+- The animated ASCII home/loading background no longer redraws every character on every frame.
+  The idle flow animation now re-renders its glyphs once into an offscreen layer and animates by
+  blitting shifted strips of that layer, instead of re-running text rendering for every cell of
+  the grid on every frame — the main source of the background's CPU cost. Its gradient colors are
+  also resolved once instead of re-parsed per character, and highlights roll off smoothly instead
+  of clipping, so very bright areas of the background keep visible detail instead of collapsing
+  into a single flat glyph.
 - Window opacity controls appear only on Windows, where the native API exists. The preference is
   still stored so a Windows value round-trips if you switch machines.
 - Orphan-process protection status copy is platform-neutral (no longer mentions Windows Job Object
@@ -117,6 +138,10 @@ Notable user-facing changes to **Thor** are documented here. The format is based
 
 ### Fixed
 
+- Reopening a project after visiting Home no longer leaves its terminals rendering black until the
+  mouse moves. Coming back from Home fully remounts every terminal, and their freshly created
+  canvases could go un-painted until some input forced a repaint; the workspace now proactively
+  asks every terminal to refresh as soon as it remounts instead of waiting on that.
 - The Source Control panel in the right sidebar no longer stays empty for a selected project that
   has no open terminal — it now falls back to the project's default working directory.
 - Closing the app now actually stops the agents it started. Shutdown handed the work to a
@@ -972,7 +997,8 @@ the sidebar, and adds Antigravity support.
 - Removed the **Loose/Ungrouped** section label above ungrouped sidebar projects.
 - Removed the parked-terminal text notice from the overlay; the resume action remains available.
 
-[Unreleased]: https://github.com/edsoncantuaria/thor
+[Unreleased]: https://github.com/edsoncantuaria/thor/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/edsoncantuaria/thor/releases/tag/v1.0.0
 [1.5.0]: https://github.com/Kc1t/alethe-agents/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/Kc1t/alethe-agents/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/Kc1t/alethe-agents/compare/v1.3.0...v1.4.0

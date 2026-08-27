@@ -191,17 +191,22 @@ describe('AsciiEffect scheduling', () => {
   })
 
   it('keeps the Home effect at its original 8px grid and 30 FPS cadence', () => {
+    const drawImage = context.drawImage as ReturnType<typeof vi.fn>
     render(<AsciiEffect imageSrc="background.png" variant="flow" fontSize={8} />)
 
     expect(context.font).toContain('8px')
+    // The default flow config (no mouse ripple, axis-aligned direction) redraws
+    // via drawImage() blits of the pre-rendered glyph layer instead of calling
+    // fillText() per cell every frame — fillText only runs once, to build that
+    // layer. drawImage() is the per-frame signal now.
     runFrame(1000)
-    const drawsAfterFirstFrame = fillText.mock.calls.length
+    const drawsAfterFirstFrame = drawImage.mock.calls.length
 
     runFrame(1020)
-    expect(fillText).toHaveBeenCalledTimes(drawsAfterFirstFrame)
+    expect(drawImage).toHaveBeenCalledTimes(drawsAfterFirstFrame)
 
     runFrame(1034)
-    expect(fillText.mock.calls.length).toBeGreaterThan(drawsAfterFirstFrame)
+    expect(drawImage.mock.calls.length).toBeGreaterThan(drawsAfterFirstFrame)
   })
 
   it('rebuilds the sample only when the rendered size changes', () => {

@@ -742,6 +742,8 @@ export const en = {
   'prefs.orchestratorBucketArgs': 'Extra args before the task (e.g. run)',
   'prefs.orchestratorBucketModelFlag': 'Model flag (e.g. --model)',
   'prefs.orchestratorBucketFallbackNone': 'No fallback on quota/rate limit',
+  'prefs.orchestratorBucketEnvPlaceholder':
+    'Extra env vars, one KEY=VALUE per line — e.g. OPENAI_BASE_URL=https://api.example.com/v1 to relay through an OpenAI-compatible proxy instead of the vendor endpoint',
   'prefs.orchestratorBucketAdd': 'Add bucket',
   'prefs.orchestratorBucketRemove': 'Remove',
   'prefs.orchestratorBucketFound': 'found on PATH',
@@ -1162,6 +1164,16 @@ export const en = {
     'Claude starts in safe mode to isolate MCP/plugin problems. Codex uses the conservative lean setup.',
   'term.runtimeProfile.opencodeNote':
     "OpenCode doesn't have a differentiated profile yet — every option launches it the same way.",
+  'term.opencodeOllama': 'Run on a local Ollama model',
+  'term.opencodeOllamaDesc':
+    'Point this OpenCode session at a model already pulled in Ollama instead of its default provider.',
+  'term.opencodeOllamaNone': 'Default',
+  'term.opencodeOllamaEmpty': 'No Ollama models pulled yet.',
+  'term.opencodeOllamaOpenSettings': 'Set up Ollama',
+  'term.opencodeOllamaNotRunning': "Ollama isn't running.",
+  'term.opencodeOllamaStart': 'Start Ollama',
+  'term.opencodeOllamaStarting': 'Starting…',
+  'term.opencodeOllamaStartTimeout': "Ollama didn't come up in time — try again.",
   'term.bootPreparing': 'Preparing terminal…',
   'term.bootQueued': 'Waiting for a spawn slot…',
   'term.bootSpawning': 'Starting process…',

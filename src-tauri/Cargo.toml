@@ -1,8 +1,8 @@
 [package]
 name = "thor"
-version = "1.6.0"
+version = "1.0.0"
 description = "Thor — terminal multiplexer GUI for orchestrating coding agents"
-authors = ["Kauã Miguel"]
+authors = ["Edson Cantuaria"]
 license = "AGPL-3.0-or-later"
 edition = "2021"
 default-run = "thor"

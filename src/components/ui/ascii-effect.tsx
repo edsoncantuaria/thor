@@ -45,9 +45,30 @@ type SampleCache = {
   cellHeight: number
   pixels: Uint8ClampedArray
   luminance: Float32Array
+  // Flow-field sin/cos, decomposed by column and row so draw() can combine them
+  // per cell with the angle-addition identity instead of calling Math.sin/cos
+  // once per cell (see draw()).
+  flowRowSin: Float32Array
+  flowRowCos: Float32Array
+  flowColBase: Float32Array
+  flowColSin: Float32Array
+  flowColCos: Float32Array
 }
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value))
+
+// Above this level, boosted brightness rolls off smoothly toward 1 instead of
+// hard-clamping — otherwise every pixel past the clip point collapses onto
+// the same luminance value (and the same glyph/color), losing all highlight
+// detail.
+const HIGHLIGHT_KNEE = 0.82
+
+function softKnee(value: number, knee: number): number {
+  if (value <= knee) return value
+  return knee + (1 - knee) * (1 - Math.exp(-(value - knee) / (1 - knee)))
+}
+
+const PALETTE_STEPS = 256
 
 function resolveColor(element: HTMLElement, color: string): string {
   const match = /^var\((--[^),]+)(?:,[^)]+)?\)$/.exec(color.trim())
@@ -78,6 +99,17 @@ function gradientColor(colors: string[], amount: number): string {
   const to = parseHex(colors[index + 1])
   if (!from || !to) return colors[Math.round(position)] ?? colors[0]
   return `rgb(${from.map((channel, i) => Math.round(channel + (to[i] - channel) * mix)).join(', ')})`
+}
+
+// gradientColor() re-parses hex/CSS colors on every call. Cells only need one
+// of `steps` discrete colors, so resolve the whole ramp once (per color/theme
+// change) instead of per cell per frame.
+function buildPalette(colors: string[], steps: number): string[] {
+  const palette = new Array<string>(steps)
+  for (let i = 0; i < steps; i += 1) {
+    palette[i] = gradientColor(colors, i / (steps - 1))
+  }
+  return palette
 }
 
 export function AsciiEffect({
@@ -132,7 +164,13 @@ export function AsciiEffect({
     const context = canvas.getContext('2d')
     const sampleCanvas = document.createElement('canvas')
     const sampleContext = sampleCanvas.getContext('2d', { willReadFrequently: true })
-    if (!context || !sampleContext) return
+    // Offscreen buffer holding the un-displaced ASCII grid. The flow variant's
+    // horizontal drift is redrawn from this per frame via drawImage() (a handful
+    // of cheap blits) instead of re-running fillText() for every cell every
+    // frame — see canBlitFlow in draw().
+    const glyphLayer = document.createElement('canvas')
+    const glyphLayerContext = glyphLayer.getContext('2d')
+    if (!context || !sampleContext || !glyphLayerContext) return
     const pointerState = pointer.current
 
     const image = new Image()
@@ -140,6 +178,11 @@ export function AsciiEffect({
     const effectColors = colorSignature.split('\u0000')
     const targetFrameMs = 1000 / Math.min(60, Math.max(1, frameRate))
     const supportsIntersectionObserver = typeof IntersectionObserver !== 'undefined'
+    // Flow direction is a per-mount constant (this whole effect re-runs when
+    // the prop changes), so resolve it once instead of every frame.
+    const flowRadians = (flowDirection * Math.PI) / 180
+    const directionX = Math.cos(flowRadians)
+    const directionY = Math.sin(flowRadians)
     let frame = 0
     let width = 0
     let height = 0
@@ -155,7 +198,9 @@ export function AsciiEffect({
     let sampleCache: SampleCache | null = null
     let sampleDirty = true
     let resolvedColors: string[] = []
+    let colorPalette: string[] = []
     let resolvedBackground = 'transparent'
+    let glyphLayerDirty = true
 
     const isMotionReduced = () => reducedMotion || systemReducedMotion
     const canAnimate = () =>
@@ -168,7 +213,9 @@ export function AsciiEffect({
 
     const refreshColors = () => {
       resolvedColors = effectColors.map((color) => resolveColor(container, color))
+      colorPalette = buildPalette(resolvedColors, PALETTE_STEPS)
       resolvedBackground = resolveColor(container, backgroundColor)
+      glyphLayerDirty = true
     }
 
     const rebuildSample = () => {
@@ -211,7 +258,7 @@ export function AsciiEffect({
         let value =
           (pixels[pixel] * 0.2126 + pixels[pixel + 1] * 0.7152 + pixels[pixel + 2] * 0.0722) / 255
         value = clamp((value - 0.5) * Math.max(0, contrast) + 0.5)
-        value = clamp(value * brightnessBoost * alpha)
+        value = clamp(softKnee(value * brightnessBoost * alpha, HIGHLIGHT_KNEE))
         luminance[index] =
           value <= threshold ? 0 : (value - threshold) / Math.max(0.001, 1 - threshold)
       }
@@ -235,14 +282,84 @@ export function AsciiEffect({
         })
       }
 
-      sampleCache = { columns, rows, cellWidth, cellHeight, pixels, luminance }
+      // Row component of the flow field never depends on time, so it's fully
+      // resolved here. The column component still needs `now` and is filled
+      // in per frame by draw() (see flowColSin/flowColCos below).
+      const flowRowSin = new Float32Array(rows)
+      const flowRowCos = new Float32Array(rows)
+      for (let row = 0; row < rows; row += 1) {
+        const angle = row * cellHeight * directionY * flowFrequency
+        flowRowSin[row] = Math.sin(angle)
+        flowRowCos[row] = Math.cos(angle)
+      }
+      const flowColBase = new Float32Array(columns)
+      for (let column = 0; column < columns; column += 1) {
+        flowColBase[column] = column * cellWidth * directionX * flowFrequency
+      }
+
+      sampleCache = {
+        columns,
+        rows,
+        cellWidth,
+        cellHeight,
+        pixels,
+        luminance,
+        flowRowSin,
+        flowRowCos,
+        flowColBase,
+        flowColSin: new Float32Array(columns),
+        flowColCos: new Float32Array(columns),
+      }
       sampleDirty = false
+      glyphLayerDirty = true
+    }
+
+    // Shared by the full per-cell path and the static glyph-layer pre-render:
+    // resolve one cell's character + color and paint it.
+    const paintCell = (
+      ctx: CanvasRenderingContext2D,
+      cache: SampleCache,
+      column: number,
+      row: number,
+      sampledColumn: number,
+      sampledRow: number,
+      offsetX: number,
+    ) => {
+      const { columns, cellWidth, cellHeight, pixels, luminance } = cache
+      const sampleIndex = sampledRow * columns + sampledColumn
+      const pixel = sampleIndex * 4
+      const value = invert ? 1 - clamp(luminance[sampleIndex]) : clamp(luminance[sampleIndex])
+      const character = chars[Math.min(chars.length - 1, Math.floor(value * (chars.length - 1)))]
+      if (!character?.trim()) return
+      ctx.fillStyle =
+        colorMode === 'source'
+          ? `rgb(${pixels[pixel]}, ${pixels[pixel + 1]}, ${pixels[pixel + 2]})`
+          : colorPalette[Math.round(clamp(value) * (colorPalette.length - 1))]
+      ctx.fillText(character, column * cellWidth - cellWidth + offsetX, row * cellHeight - cellHeight)
+    }
+
+    // Renders the full, un-displaced ASCII grid once into `glyphLayer`. The
+    // fast flow-blit path in draw() reuses this instead of re-running
+    // fillText() for every cell every frame.
+    const renderStaticGlyphLayer = () => {
+      const cache = sampleCache
+      if (!cache) return
+      glyphLayerContext.clearRect(0, 0, width, height)
+      glyphLayerContext.textBaseline = 'top'
+      glyphLayerContext.font = `${fontWeight} ${fontSize}px ${fontFamily}`
+      for (let row = 0; row < cache.rows; row += 1) {
+        for (let column = 0; column < cache.columns; column += 1) {
+          paintCell(glyphLayerContext, cache, column, row, column, row, 0)
+        }
+      }
+      glyphLayerDirty = false
     }
 
     const draw = (now: number) => {
       const cache = sampleCache
       if (!loaded || !width || !height || !cache) return
-      const { columns, rows, cellWidth, cellHeight, pixels, luminance } = cache
+      const { columns, rows, cellWidth, cellHeight, flowRowSin, flowRowCos, flowColBase, flowColSin, flowColCos } =
+        cache
       const motionReduced = isMotionReduced()
       pointerState.x += (pointerState.targetX - pointerState.x) * 0.08
       pointerState.y += (pointerState.targetY - pointerState.y) * 0.08
@@ -270,9 +387,49 @@ export function AsciiEffect({
         variant === 'glitch' && !motionReduced && revealDuration > 0
           ? clamp((now - startedAt) / revealDuration)
           : 1
-      const radians = (flowDirection * Math.PI) / 180
-      const directionX = Math.cos(radians)
-      const directionY = Math.sin(radians)
+      const flowActive = variant === 'flow' && !motionReduced
+      if (flowActive) {
+        // Per-cell phase is (colBase[column] + t) + rowPhase[row]; resolve the
+        // time-dependent column half once per frame and combine with the
+        // (already static) row half per cell via the angle-addition identity
+        // below, instead of calling Math.sin/cos once per cell.
+        const t = now * flowSpeed * Math.PI * 0.002
+        for (let column = 0; column < columns; column += 1) {
+          const angle = flowColBase[column] + t
+          flowColSin[column] = Math.sin(angle)
+          flowColCos[column] = Math.cos(angle)
+        }
+      }
+
+      // Fast path: the flow variant with the default (axis-aligned horizontal)
+      // direction and no mouse ripple only ever shifts whole columns
+      // sideways — every cell in a column drifts by the same amount (see the
+      // phase decomposition above: with directionY === 0 the row component
+      // is always zero). So "redrawing" is really just re-blitting vertical
+      // strips of an already-rendered glyph image, not re-rasterizing every
+      // character every frame.
+      const canBlitFlow = flowActive && !pointerState.active && Math.abs(directionY) < 1e-6
+      if (canBlitFlow) {
+        if (glyphLayerDirty) renderStaticGlyphLayer()
+        for (let column = 0; column < columns; column += 1) {
+          const drift = flowColSin[column] * flowStrength
+          const sourceColumn = Math.round(
+            clamp(column - (directionX * drift) / cellWidth, 0, columns - 1),
+          )
+          context.drawImage(
+            glyphLayer,
+            sourceColumn * cellWidth * dpr,
+            0,
+            cellWidth * dpr,
+            glyphLayer.height,
+            column * cellWidth,
+            0,
+            cellWidth,
+            height,
+          )
+        }
+        return
+      }
 
       for (let row = 0; row < rows; row += 1) {
         for (let column = 0; column < columns; column += 1) {
@@ -281,17 +438,15 @@ export function AsciiEffect({
           if (Math.hypot(dx, dy) > reveal * 0.72) continue
           let sourceColumn = column
           let sourceRow = row
-          if (variant === 'flow' && !motionReduced) {
-            const x = column * cellWidth
-            const y = row * cellHeight
-            const phase =
-              (x * directionX + y * directionY) * flowFrequency + now * flowSpeed * Math.PI * 0.002
-            const drift = Math.sin(phase) * flowStrength
+          if (flowActive) {
+            const sinPhase =
+              flowColSin[column] * flowRowCos[row] + flowColCos[column] * flowRowSin[row]
+            const drift = sinPhase * flowStrength
             sourceColumn -= (directionX * drift) / cellWidth
             sourceRow -= (directionY * drift) / cellHeight
             if (pointerState.active && mouseRadius > 0) {
-              const mouseX = x - pointerState.x
-              const mouseY = y - pointerState.y
+              const mouseX = column * cellWidth - pointerState.x
+              const mouseY = row * cellHeight - pointerState.y
               const distance = Math.hypot(mouseX, mouseY)
               const influence = clamp(1 - distance / mouseRadius)
               if (distance > 0 && influence > 0) {
@@ -305,21 +460,7 @@ export function AsciiEffect({
           }
           const sampledColumn = Math.round(clamp(sourceColumn, 0, columns - 1))
           const sampledRow = Math.round(clamp(sourceRow, 0, rows - 1))
-          const sampleIndex = sampledRow * columns + sampledColumn
-          const pixel = sampleIndex * 4
-          const value = invert ? 1 - clamp(luminance[sampleIndex]) : clamp(luminance[sampleIndex])
-          const character =
-            chars[Math.min(chars.length - 1, Math.floor(value * (chars.length - 1)))]
-          if (!character?.trim()) continue
-          context.fillStyle =
-            colorMode === 'source'
-              ? `rgb(${pixels[pixel]}, ${pixels[pixel + 1]}, ${pixels[pixel + 2]})`
-              : gradientColor(resolvedColors, value)
-          context.fillText(
-            character,
-            column * cellWidth - cellWidth + (glitchBands.get(row) ?? 0),
-            row * cellHeight - cellHeight,
-          )
+          paintCell(context, cache, column, row, sampledColumn, sampledRow, glitchBands.get(row) ?? 0)
         }
       }
     }
@@ -373,6 +514,10 @@ export function AsciiEffect({
       canvas.width = Math.round(width * dpr)
       canvas.height = Math.round(height * dpr)
       context.setTransform(dpr, 0, 0, dpr, 0, 0)
+      glyphLayer.width = canvas.width
+      glyphLayer.height = canvas.height
+      glyphLayerContext.setTransform(dpr, 0, 0, dpr, 0, 0)
+      glyphLayerDirty = true
       if (!loaded) return
       sampleDirty = true
       updatePlayback()

@@ -10,7 +10,7 @@
 (Claude Code, Codex, OpenCode, and others) and shells in parallel, inside a persistent workspace
 with real terminals (PTYs), layouts, themes, history, and RAM control.
 
-> Status: **v1.6.0**. Identifier: `com.thor.app`.
+> Status: **v1.0.0**. Identifier: `com.thor.app`.
 
 ## 2. Where you are
 
