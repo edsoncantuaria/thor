@@ -64,7 +64,6 @@ mod resources;
 mod scheduler;
 mod session_watcher;
 mod skills;
-mod spotify;
 mod stats;
 mod supervisor;
 mod telemetry;
@@ -274,10 +273,13 @@ pub fn run() {
             ollama::ollama_is_installed,
             ollama::ollama_install,
             ollama::ollama_list_models,
+            ollama::ollama_detect_external,
             ollama::ollama_pull_model,
             ollama::ollama_list_instances,
             ollama::ollama_start_instance,
             ollama::ollama_stop_instance,
+            ollama::ollama_get_instance_stats,
+            ollama::ollama_opencode_config_write,
             agent_library::list_installed_agents,
             agent_library::install_agent,
             agent_library::uninstall_agent,
@@ -373,7 +375,8 @@ pub fn run() {
             diagnostics::open_data_folder,
             diagnostics::open_spawn_log,
             diagnostics::open_in_file_explorer,
-            diagnostics::open_in_vscode,
+            diagnostics::open_in_editor,
+            diagnostics::find_editor_launcher,
             diagnostics::open_in_browser,
             diagnostics::read_clipboard_text,
             diagnostics::write_clipboard_text,
@@ -390,10 +393,6 @@ pub fn run() {
             resources::get_runtime_snapshot,
             resources::set_resource_policy,
             resources::update_pty_runtime_meta,
-            spotify::spotify_login,
-            spotify::spotify_logout,
-            spotify::spotify_status,
-            spotify::spotify_get_current,
             claude_sessions::snapshot_claude_sessions,
             claude_sessions::list_claude_sessions,
             claude_sessions::get_claude_session_title,

@@ -5,5 +5,20 @@
       "maxFindings": 5,
       "maxChars": 8000
     }
+  },
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/components/ProjectSidebar/ProjectSidebar.module.css"
+        ],
+        "createdAt": "2026-08-28T00:23:53.576Z",
+        "reason": "pre-existing, untouched this session: .activeCard (L865) and [data-visual-style=normal] .projectRow (L1701) left-border uses --project-color to encode each project's own color identity (an established per-project color-coding feature), not a decorative AI-slop accent"
+      }
+    ]
   }
 }

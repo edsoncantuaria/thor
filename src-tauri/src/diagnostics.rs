@@ -4,7 +4,7 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::AppHandle;
 
-use crate::cli_resolver::find_vscode_launcher;
+use crate::cli_resolver::{find_cursor_launcher, find_vscode_launcher};
 use crate::paths::{app_data_dir, spawn_log_path};
 
 fn existing_path_from_user_input(path: &str) -> Result<PathBuf, String> {
@@ -126,12 +126,37 @@ fn linux_show_items(path: &std::path::Path) -> Result<(), String> {
     }
 }
 
+/// Resolves the launcher for a configured external editor. `editor` is `"vscode"`, `"cursor"`, or
+/// `"custom"` (in which case `custom_command` is used verbatim as the program name/path).
+fn resolve_editor_launcher(editor: &str, custom_command: Option<&str>) -> Result<PathBuf, String> {
+    match editor {
+        "vscode" => find_vscode_launcher().ok_or_else(|| {
+            "VS Code not found (searched PATH, Snap, Flatpak, and common install locations)"
+                .to_string()
+        }),
+        "cursor" => find_cursor_launcher().ok_or_else(|| {
+            "Cursor not found (searched PATH, Snap, Flatpak, and common install locations)"
+                .to_string()
+        }),
+        "custom" => {
+            let trimmed = custom_command.unwrap_or("").trim();
+            if trimmed.is_empty() {
+                return Err("Custom editor command not configured".to_string());
+            }
+            Ok(PathBuf::from(trimmed))
+        }
+        other => Err(format!("Unknown editor: {other}")),
+    }
+}
+
 #[tauri::command]
-pub fn open_in_vscode(path: String) -> Result<(), String> {
+pub fn open_in_editor(
+    path: String,
+    editor: String,
+    custom_command: Option<String>,
+) -> Result<(), String> {
     let target = existing_path_from_user_input(&path)?;
-    let launcher = find_vscode_launcher().ok_or_else(|| {
-        "VS Code not found (searched PATH, Snap, Flatpak, and common install locations)".to_string()
-    })?;
+    let launcher = resolve_editor_launcher(&editor, custom_command.as_deref())?;
     let is_cmd = launcher
         .extension()
         .and_then(|s| s.to_str())
@@ -153,6 +178,19 @@ pub fn open_in_vscode(path: String) -> Result<(), String> {
         command.spawn()
     };
     result.map(|_| ()).map_err(|e| e.to_string())
+}
+
+/// Read-only lookup for the Preferences UI's found/not-found status. Only supports the two
+/// well-known editors — a "custom" command's availability is checked via the existing generic
+/// `find_cli_launcher` command instead of duplicating that logic here.
+#[tauri::command]
+pub fn find_editor_launcher(editor: String) -> Option<String> {
+    let launcher = match editor.as_str() {
+        "vscode" => find_vscode_launcher(),
+        "cursor" => find_cursor_launcher(),
+        _ => None,
+    };
+    launcher.map(|p| p.to_string_lossy().to_string())
 }
 
 #[tauri::command]

@@ -31,6 +31,13 @@ describe('applyOptimizerWrap', () => {
     })
   })
 
+  it('wraps caveman with "run --" for agents caveman does not recognize (e.g. Antigravity)', () => {
+    expect(applyOptimizerWrap('caveman', 'agy', ['--dangerously-skip-permissions'])).toEqual({
+      command: 'caveman',
+      extraArgs: ['run', '--', 'agy', '--dangerously-skip-permissions'],
+    })
+  })
+
   it('defaults extraArgs to an empty array when none were passed', () => {
     expect(applyOptimizerWrap('caveman', 'claude', undefined)).toEqual({
       command: 'caveman',

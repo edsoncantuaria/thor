@@ -443,16 +443,21 @@ fn linux_fnm_version_dirs() -> Vec<PathBuf> {
     versions.into_iter().map(|(path, _)| path).collect()
 }
 
+/// Checks `path_names` on PATH first, then each fixed candidate file. Returns the first hit.
+fn first_editor_launcher(path_names: &[&str], candidates: Vec<PathBuf>) -> Option<PathBuf> {
+    for name in path_names {
+        if let Ok(path) = which::which(name) {
+            return Some(path);
+        }
+    }
+    candidates.into_iter().find(|candidate| candidate.is_file())
+}
+
 /// Looks for the VS Code launcher (`code`) in common locations plus PATH.
 /// Returns the first one that exists.
 pub fn find_vscode_launcher() -> Option<PathBuf> {
     #[cfg(not(windows))]
     {
-        for name in ["code", "code-insiders", "codium"] {
-            if let Ok(path) = which::which(name) {
-                return Some(path);
-            }
-        }
         let mut candidates = Vec::<PathBuf>::new();
         candidates.push(PathBuf::from("/usr/share/code/bin/code"));
         candidates.push(PathBuf::from("/usr/bin/code"));
@@ -470,12 +475,7 @@ pub fn find_vscode_launcher() -> Option<PathBuf> {
         candidates.push(PathBuf::from(
             "/var/lib/flatpak/exports/bin/com.visualstudio.code",
         ));
-        for candidate in candidates {
-            if candidate.is_file() {
-                return Some(candidate);
-            }
-        }
-        None
+        first_editor_launcher(&["code", "code-insiders", "codium"], candidates)
     }
 
     #[cfg(windows)]
@@ -512,6 +512,58 @@ pub fn find_vscode_launcher() -> Option<PathBuf> {
                     return Some(candidate);
                 }
             }
+        }
+
+        dirs.splice(0..0, split_windows_path_expanded(&rebuilt_path()));
+        for dir in dirs {
+            for name in path_candidates {
+                let candidate = dir.join(name);
+                if candidate.is_file() {
+                    return Some(candidate);
+                }
+            }
+        }
+        None
+    }
+}
+
+/// Looks for the Cursor launcher (`cursor`) in common locations plus PATH.
+/// Returns the first one that exists.
+pub fn find_cursor_launcher() -> Option<PathBuf> {
+    #[cfg(not(windows))]
+    {
+        let mut candidates = Vec::<PathBuf>::new();
+        candidates.push(PathBuf::from("/usr/bin/cursor"));
+        candidates.push(PathBuf::from("/opt/cursor/cursor"));
+        candidates.push(PathBuf::from("/snap/bin/cursor"));
+        if let Some(home) = env::var_os("HOME").map(PathBuf::from) {
+            candidates.push(home.join(".local").join("bin").join("cursor"));
+            candidates.push(
+                home.join(".local")
+                    .join("share")
+                    .join("flatpak")
+                    .join("exports")
+                    .join("bin")
+                    .join("com.cursor.Cursor"),
+            );
+        }
+        candidates.push(PathBuf::from(
+            "/var/lib/flatpak/exports/bin/com.cursor.Cursor",
+        ));
+        first_editor_launcher(&["cursor"], candidates)
+    }
+
+    #[cfg(windows)]
+    {
+        let path_candidates = ["cursor.cmd", "cursor.exe"];
+        let mut dirs: Vec<PathBuf> = Vec::new();
+        if let Some(local) = env::var_os("LOCALAPPDATA").map(PathBuf::from) {
+            let root = local.join("Programs").join("cursor");
+            let root_exe = root.join("Cursor.exe");
+            if root_exe.is_file() {
+                return Some(root_exe);
+            }
+            dirs.push(root.join("bin"));
         }
 
         dirs.splice(0..0, split_windows_path_expanded(&rebuilt_path()));

@@ -2,6 +2,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core'
 import {
   ArrowRightLeft,
   Clock,
+  Code2,
   GripVertical,
   Maximize2,
   Minimize2,
@@ -16,18 +17,13 @@ import {
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 
 import { preparePtyRuntimeLaunch } from '../../lib/agentRuntimeAdapter'
+import { externalEditorLabel, openInConfiguredEditor } from '../../lib/externalEditor'
 import { buildGhosttyCommand } from '../../lib/ghosttyCommand'
 import { useT } from '../../lib/i18n'
 import { shouldUseNativeBackend } from '../../lib/platform'
 import { buildAgentLaunch } from '../../lib/sessionLaunch'
 import { getActiveSessions, savedConversationIdFor, saveSession } from '../../lib/sessionResume'
-import {
-  completeAgentHandoff,
-  getPtyCwd,
-  openInVscode,
-  restartPty,
-  snapshotCodexSessions,
-} from '../../lib/tauri'
+import { completeAgentHandoff, getPtyCwd, restartPty, snapshotCodexSessions } from '../../lib/tauri'
 import {
   agentCliCommand,
   type AgentType,
@@ -137,6 +133,8 @@ export const TerminalPane = memo(function TerminalPane({
   // Native Ghostty rendering is opt-in and macOS-only; other platforms use xterm.js.
   const nativeTerminalMacos = useProjectsStore((s) => s.preferences.nativeTerminalMacos ?? false)
   const useNativeBackend = shouldUseNativeBackend(nativeTerminalMacos)
+  const externalEditor = useProjectsStore((s) => s.preferences.externalEditor)
+  const externalEditorCommand = useProjectsStore((s) => s.preferences.externalEditorCommand)
 
   // repo para injetar o MCP (o XTermView resolve o config/bootstrap).
   const graphifyRepo = useProjectsStore((s) => {
@@ -180,14 +178,14 @@ export const TerminalPane = memo(function TerminalPane({
     (activeTab?.type === 'claude' && (claudeUsage?.five_hour.utilization ?? 0) >= 100) ||
     (activeTab?.type === 'codex' && codexUsage?.rate_limited === true)
 
-  const openVscode = async () => {
+  const openEditor = async () => {
     let target = cwd
     if (!target && activeTab?.ptyId) {
       target = (await getPtyCwd(activeTab.ptyId).catch(() => null)) ?? ''
     }
     if (!target) return
-    await openInVscode(target).catch((err) => {
-      console.error('open vscode falhou', err)
+    await openInConfiguredEditor(target, { externalEditor, externalEditorCommand }).catch((err) => {
+      console.error('open editor falhou', err)
     })
   }
 
@@ -444,12 +442,20 @@ export const TerminalPane = memo(function TerminalPane({
               <button
                 type="button"
                 className={styles.action}
-                onClick={() => void openVscode()}
-                title={t('ui.terminal.openInVscode')}
-                aria-label={t('ui.terminal.openInVscode')}
+                onClick={() => void openEditor()}
+                title={t('ui.terminal.openInEditor', {
+                  name: externalEditorLabel({ externalEditor, externalEditorCommand }, t),
+                })}
+                aria-label={t('ui.terminal.openInEditor', {
+                  name: externalEditorLabel({ externalEditor, externalEditorCommand }, t),
+                })}
                 disabled={!activeTab}
               >
-                <VSCodeIcon size={12} />
+                {externalEditor === 'vscode' ? (
+                  <VSCodeIcon size={12} />
+                ) : (
+                  <Code2 size={12} />
+                )}
               </button>
               <button
                 type="button"

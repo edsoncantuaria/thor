@@ -34,7 +34,6 @@ describe('security and privacy documentation', () => {
       'Automatic update check | **Off**',
       'Provider usage polling | **On**',
       'Discord Rich Presence | **On**',
-      'Spotify Now Playing | **Off / unconfigured**',
       'GitHub Sync | **Off / disconnected; manual**',
       'MCP registry | **MCP feature on; search on demand**',
       'Embedded web content | **Browser feature on; no page open**',

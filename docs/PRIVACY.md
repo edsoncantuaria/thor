@@ -1,7 +1,7 @@
 # Privacy and data flow
 
 This document describes the behavior of the current Thor `main` branch. It is a technical data-flow
-guide, not a policy for Anthropic, OpenAI, Google, GitHub, Spotify, Discord, an MCP publisher, or any
+guide, not a policy for Anthropic, OpenAI, Google, GitHub, Discord, an MCP publisher, or any
 other third party.
 
 ## Local-first, not local-only
@@ -20,14 +20,13 @@ connect when enabled or used.
 Thor uses Tauri's platform-specific application local-data directory. It keeps a profile registry at
 the root and isolates most state under `profiles/<profileId>/`. Typical data includes:
 
-- `projects.json`: projects, groups, terminal and layout state, preferences, custom CLI paths, recent
-  items, and Spotify client ID/client secret if entered in Preferences;
+- `projects.json`: projects, groups, terminal and layout state, preferences, custom CLI paths, and
+  recent items;
 - `scrollback/*.bin`: terminal scrollback snapshots;
 - `activity-stats.json`: local activity summaries;
 - `spawn.log`: process-launch and suspension diagnostics, including command/launcher representations,
   a PATH preview, identifiers, and timing data;
-- `spotify_tokens.json` and `github_sync.json`: integration credentials and sync metadata when those
-  integrations are connected;
+- `github_sync.json`: integration credentials and sync metadata when that integration is connected;
 - `handoffs/<handoffId>/context.md`: a temporary cross-agent context packet when a handoff is used;
 - `mcp/registry-cache.json` and MCP backup files: registry results and backups made while managing
   agent configuration; and
@@ -60,8 +59,8 @@ messages, or payloads supplied by app features.
 - **Delete profile** removes that profile directory; Thor prevents deletion of the last profile.
 - **Reset/factory reset** removes active-profile data or, for the full reset, the app local-data root.
   The reset is best effort while files are open, and the app should be relaunched afterward.
-- **Spotify disconnect** removes `spotify_tokens.json`. **GitHub Sync logout** clears its stored token
-  but leaves non-secret sync metadata in `github_sync.json`.
+- **GitHub Sync logout** clears its stored token but leaves non-secret sync metadata in
+  `github_sync.json`.
 
 Deleting Thor data does not delete copies already exported or synced, repositories, coding-agent
 histories/configuration, operating-system credentials, remote GitHub Gists, or data held by external
@@ -71,8 +70,6 @@ services. Remove those at their source as well.
 
 Thor does not currently move all integration secrets into an operating-system keyring:
 
-- Spotify client ID/client secret are persisted as preferences in `projects.json`; Spotify access and
-  refresh tokens are JSON fields in `spotify_tokens.json`.
 - A GitHub personal access token is a JSON field in `github_sync.json`.
 - Profile backups can contain those files and values.
 - MCP credentials remain in the agent configuration files where the user adds them. Thor masks
@@ -111,7 +108,6 @@ does not necessarily mean it sends a request before the stated trigger.
 | Automatic update check | **Off** | This build does not configure an update feed (`plugins.updater.endpoints` is empty). Packaged updater artifacts are not downloaded on startup. This is separate from platform publisher signing: current Windows installers are not code-signed and macOS builds are not notarized. |
 | Provider usage polling | **On** | While the title bar is mounted, Thor schedules Claude, Codex, and Antigravity usage reads shortly after startup and every five minutes; ticks are skipped while the window is unfocused/hidden. The three topbar indicators default visible. Claude sends its bearer credential to `https://api.anthropic.com/api/oauth/usage`; Antigravity sends its bearer credential to `https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels`; Codex is queried through a short-lived `codex app-server` subprocess. The current visibility preferences hide indicators but do not gate the polling effects. |
 | Discord Rich Presence | **On** | Every 30 seconds, Thor sends generic activity text (Thor and the current app view, not project names) to the local Discord desktop IPC client. Discord controls any onward network publication under the Discord account's settings and terms. It can be disabled in Preferences. |
-| Spotify Now Playing | **Off / unconfigured** | No Spotify request succeeds on a clean profile because credentials and OAuth tokens are absent. Connecting opens Spotify authorization, temporarily listens only on `127.0.0.1:8888`, exchanges/refreshes tokens at `accounts.spotify.com`, and polls current or recent playback at `api.spotify.com` when a Now Playing widget is enabled. Returned cover-image URLs may cause requests to Spotify's image host. |
 | GitHub Sync | **Off / disconnected; manual** | Entering a token validates it against `https://api.github.com/user`. Explicit Push uploads `projects.json` and, if present, `activity-stats.json` to a secret GitHub Gist; explicit Pull downloads them. A secret Gist is access-controlled by GitHub, not end-to-end encrypted by Thor. Thor does not periodically push or pull. |
 | MCP registry | **MCP feature on; search on demand** | Local agent configs are scanned without registry traffic. Searching the add flow queries `https://registry.modelcontextprotocol.io/v0/servers` and caches the first page of up to 20 search terms under the profile. Adding a result writes agent configuration; package runtimes or remote URLs connect later when an agent/MCP client runs them. |
 | MCP health checks and server tools | **On demand** | A Check action launches the selected coding-agent CLI so that CLI can test configured servers. The generic health probe may start a user-configured server command and probe it on an ephemeral loopback port. Those subprocesses and MCP servers can contact their configured hosts. |

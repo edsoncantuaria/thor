@@ -1,5 +1,6 @@
 import {
   Archive,
+  Code2,
   FileText,
   FolderOpen,
   Globe2,
@@ -15,9 +16,10 @@ import {
 } from 'lucide-react'
 
 import { preparePtyRuntimeLaunch } from '../../lib/agentRuntimeAdapter'
+import { externalEditorLabel, openInConfiguredEditor } from '../../lib/externalEditor'
 import { useT } from '../../lib/i18n'
 import { buildAgentLaunch } from '../../lib/sessionLaunch'
-import { getPtyCwd, openInFileExplorer, openInVscode, restartPty } from '../../lib/tauri'
+import { getPtyCwd, openInFileExplorer, restartPty } from '../../lib/tauri'
 import { agentCliCommand, type Group, type Project, type Terminal } from '../../lib/types'
 import { useProjectsStore } from '../../stores/projectsStore'
 import { useTerminalsStore } from '../../stores/terminalsStore'
@@ -447,9 +449,18 @@ export function createSidebarMenus(deps: SidebarMenuDeps) {
             },
             {
               kind: 'item' as const,
-              label: t('ui.terminal.openInVscode'),
-              icon: <FolderOpen size={14} />,
-              onClick: () => void openTerminalPath(term, openInVscode, 'VS Code'),
+              label: t('ui.terminal.openInEditor', {
+                name: externalEditorLabel(useProjectsStore.getState().preferences, t),
+              }),
+              icon: <Code2 size={14} />,
+              onClick: () => {
+                const { externalEditor, externalEditorCommand } = useProjectsStore.getState().preferences
+                void openTerminalPath(
+                  term,
+                  (path) => openInConfiguredEditor(path, { externalEditor, externalEditorCommand }),
+                  externalEditorLabel({ externalEditor, externalEditorCommand }, t),
+                )
+              },
             },
             {
               kind: 'item' as const,

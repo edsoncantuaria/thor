@@ -38,7 +38,7 @@ import { type Group, type Project } from '../../lib/types'
 import { useProjectsStore } from '../../stores/projectsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { EmptyState } from '../EmptyState'
-import { SidebarNowPlaying } from '../SidebarNowPlaying'
+import { OllamaIcon } from '../icons/AgentIcons'
 import { UserProfile } from '../UserProfile'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { FileExplorer } from './FileExplorer'
@@ -529,6 +529,15 @@ function CleanProjectSidebar() {
             <GitBranch size={14} />
           </button>
         ) : null}
+        <button
+          type="button"
+          aria-label={t('ui.sidebar.localAi')}
+          title={t('ui.sidebar.localAi')}
+          className={`${styles.toolbarButton} ${activeView === 'localAi' ? styles.toolbarButtonActive : ''}`}
+          onClick={() => setActiveView('localAi')}
+        >
+          <OllamaIcon size={14} />
+        </button>
         <span className={styles.toolbarSpacer} />
         <button
           type="button"
@@ -722,7 +731,6 @@ function CleanProjectSidebar() {
         </div>
       ) : null}
       <div className={styles.sidebarFooter}>
-        <SidebarNowPlaying />
         <SidebarUpdate />
         <UserProfile />
       </div>

@@ -36,7 +36,7 @@ import { type Group, type Project } from '../../lib/types'
 import { useProjectsStore } from '../../stores/projectsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { EmptyState } from '../EmptyState'
-import { SidebarNowPlaying } from '../SidebarNowPlaying'
+import { OllamaIcon } from '../icons/AgentIcons'
 import { UserProfile } from '../UserProfile'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { FileExplorer } from './FileExplorer'
@@ -522,6 +522,18 @@ export function NormalProjectSidebar() {
             <span>{t('ui.sidebar.git')}</span>
           </button>
         ) : null}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeView === 'localAi'}
+          aria-label={t('ui.sidebar.localAi')}
+          title={t('ui.sidebar.localAi')}
+          className={`${styles.sidebarTab} ${activeView === 'localAi' ? styles.sidebarTabActive : ''}`}
+          onClick={() => setActiveView('localAi')}
+        >
+          <OllamaIcon size={14} />
+          <span>{t('ui.sidebar.localAi')}</span>
+        </button>
       </div>
 
       <div className={styles.quickNavList}>
@@ -708,7 +720,6 @@ export function NormalProjectSidebar() {
           </div>
         </div>
       ) : null}
-      <SidebarNowPlaying />
       <SidebarUpdate />
       <UserProfile />
     </aside>

@@ -133,9 +133,6 @@ registry, npm/pnpm/Volta/fnm/nvm/Bun/Cargo/Scoop/Chocolatey, and can be pointed 
   from your phone. It is off by default and uses unencrypted HTTP/WebSocket transport on the LAN, so
   enable it only on a trusted network. Clean profiles are read-only; answering agents requires a
   separate input opt-in, and shell input has its own additional opt-in.
-- Spotify Now Playing, using your own Spotify app credentials in **Preferences ▸ Spotify** with
-  `http://127.0.0.1:8888/callback` as the redirect URI. Current releases store those credentials in
-  local profile files; see the privacy guide before exporting or sharing profile data.
 
 ## Core Concepts
 

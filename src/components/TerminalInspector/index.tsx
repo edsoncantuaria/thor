@@ -1,4 +1,5 @@
 import {
+  Code2,
   ExternalLink,
   Eye,
   EyeOff,
@@ -16,16 +17,11 @@ import {
 import { useMemo, useState, type ReactNode } from 'react'
 
 import { preparePtyRuntimeLaunch } from '../../lib/agentRuntimeAdapter'
+import { externalEditorLabel, openInConfiguredEditor } from '../../lib/externalEditor'
 import { buildAgentLaunch } from '../../lib/sessionLaunch'
 import { useT } from '../../lib/i18n'
 import { agentCliCommand, type SubTab, type Terminal } from '../../lib/types'
-import {
-  getPtyCwd,
-  openInBrowser,
-  openInFileExplorer,
-  openInVscode,
-  restartPty,
-} from '../../lib/tauri'
+import { getPtyCwd, openInBrowser, openInFileExplorer, restartPty } from '../../lib/tauri'
 import { useProjectsStore } from '../../stores/projectsStore'
 import { useTerminalsStore } from '../../stores/terminalsStore'
 import { useUiStore } from '../../stores/uiStore'
@@ -67,6 +63,8 @@ function InspectorBody({ projectId, terminal }: { projectId: string; terminal: T
   const terminalTheme = useProjectsStore(
     (state) => state.preferences.terminalTheme ?? state.preferences.uiTheme,
   )
+  const externalEditor = useProjectsStore((state) => state.preferences.externalEditor)
+  const externalEditorCommand = useProjectsStore((state) => state.preferences.externalEditorCommand)
   const setActiveTab = useProjectsStore((state) => state.setActiveTab)
   const setLaneVisible = useProjectsStore((state) => state.setLaneVisible)
   const setTerminalDisabled = useProjectsStore((state) => state.setTerminalDisabled)
@@ -208,9 +206,16 @@ function InspectorBody({ projectId, terminal }: { projectId: string; terminal: T
               onClick={() => void openWithCwd(openInFileExplorer, 'Explorer')}
             />
             <InspectorAction
-              icon={<VSCodeIcon size={14} />}
-              label={t('ui.terminal.openInVscode')}
-              onClick={() => void openWithCwd(openInVscode, 'VS Code')}
+              icon={externalEditor === 'vscode' ? <VSCodeIcon size={14} /> : <Code2 size={14} />}
+              label={t('ui.terminal.openInEditor', {
+                name: externalEditorLabel({ externalEditor, externalEditorCommand }, t),
+              })}
+              onClick={() =>
+                void openWithCwd(
+                  (path) => openInConfiguredEditor(path, { externalEditor, externalEditorCommand }),
+                  externalEditorLabel({ externalEditor, externalEditorCommand }, t),
+                )
+              }
             />
             <InspectorAction
               icon={<RefreshCw size={14} />}

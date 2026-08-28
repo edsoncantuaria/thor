@@ -56,8 +56,16 @@ export async function openInFileExplorer(path: string): Promise<void> {
   await invoke('open_in_file_explorer', { path })
 }
 
-export async function openInVscode(path: string): Promise<void> {
-  await invoke('open_in_vscode', { path })
+export async function openInEditor(
+  path: string,
+  editor: string,
+  customCommand?: string,
+): Promise<void> {
+  await invoke('open_in_editor', { path, editor, customCommand })
+}
+
+export async function findEditorLauncher(editor: string): Promise<string | null> {
+  return invoke<string | null>('find_editor_launcher', { editor })
 }
 
 export async function openInBrowser(target: string): Promise<void> {

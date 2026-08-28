@@ -444,9 +444,6 @@ export type Preferences = {
   /** Local do controle Git: sidebar esquerda ou direita. */
   gitControlPlacement: 'left' | 'right'
 
-  /** Credenciais locais do Spotify Developer Dashboard para Now Playing. */
-  spotifyClientId: string
-  spotifyClientSecret: string
   /** Exibe a atividade atual do Thor no perfil do Discord. */
   discordRichPresenceEnabled: boolean
   /** Itens opcionais exibidos no canto direito da topbar. */
@@ -485,6 +482,10 @@ export type Preferences = {
   dictationEnabled: boolean
   /** Wrapper de otimização de tokens aplicado ao spawnar um agente conhecido. Mutuamente exclusivo — os dois interceptam o mesmo mecanismo. Default 'none'. */
   optimizerWrapper: 'none' | 'caveman' | 'headroom'
+  /** External editor launched by "Open in Editor" actions. Default 'vscode'. */
+  externalEditor: 'vscode' | 'cursor' | 'custom'
+  /** Launcher command or path used when externalEditor is 'custom'. */
+  externalEditorCommand: string
   /** Quantos PTYs podem ser spawnados em paralelo (fila global). Default 3. */
   spawnConcurrency: number
 
@@ -619,8 +620,6 @@ export const DEFAULT_PREFERENCES: Preferences = {
   lastTerminalCreation: null,
   topbarStyle: 'classic',
   gitControlPlacement: 'left',
-  spotifyClientId: '',
-  spotifyClientSecret: '',
   discordRichPresenceEnabled: false,
   topbarShowClaudeUsage: true,
   topbarShowCodexUsage: true,
@@ -653,6 +652,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
   notifyOnLimitReset: true,
   dictationEnabled: false,
   optimizerWrapper: 'none',
+  externalEditor: 'vscode',
+  externalEditorCommand: '',
   spawnConcurrency: 3,
   resourcePolicy: {
     mode: 'manual',

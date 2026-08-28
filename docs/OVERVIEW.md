@@ -57,7 +57,6 @@ Typical files include:
 - `profiles.json`: local account/profile registry.
 - `profiles/<profileId>/projects.json`: projects, groups, workspace state, preferences, and CLI paths.
 - `profiles/<profileId>/scrollback/`: terminal scrollback snapshots.
-- `profiles/<profileId>/spotify_tokens.json`: local Spotify token cache, when configured.
 - `profiles/<profileId>/github_sync.json`: GitHub Sync token and metadata, when configured.
 - `profiles/<profileId>/spawn.log`: command, launcher, path-preview, timing, and PTY diagnostics.
 - `profiles/<profileId>/handoffs/` and `mcp/`: temporary handoff packets, registry cache, and MCP backups.

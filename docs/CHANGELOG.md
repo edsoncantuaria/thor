@@ -32,6 +32,55 @@ Notable user-facing changes to **Thor** are documented here. The format is based
   pending as a checkpoint and, if anything changed, surfaces it as a Todo in the right project for
   human review. The worktree itself isn't torn down automatically — it stays reachable through
   the existing Multi-Agent worktree list for manual follow-up.
+- A dedicated "Local AI" sidebar panel for managing Ollama: pick and start/stop a local model,
+  and see it running — live CPU/RAM (and GPU, when `nvidia-smi` is available), plus real
+  token/request throughput. Each managed instance now sits behind a lightweight local reverse
+  proxy (streamed, not buffered, so live token output is unaffected) so Thor can observe real
+  usage instead of guessing at it; if the proxy can't come up for any reason, the instance still
+  falls back to running directly, just without the throughput numbers. Ollama running outside
+  Thor (a system service, or started by hand) also shows up as a read-only "external daemon"
+  card — just what it's serving, since Thor can't manage a process it didn't start.
+- "Open in Editor" (terminal button, sidebar context menu, and Terminal Inspector) now targets a
+  configurable external editor — VS Code, Cursor, or any other VS Code-based IDE via a custom
+  command — settable from Preferences → Integrations and from onboarding.
+
+### Removed
+
+- The Spotify Now Playing integration (Home hero player dock, sidebar widget, OAuth login, and the
+  Preferences settings card) has been removed.
+
+### Fixed
+
+- The Antigravity usage widget could show "not signed in" even with a valid `agy` session: Thor
+  only checked the OS keyring (Secret Service on Linux, Keychain on macOS) for the OAuth token,
+  but `agy` falls back to writing it as a plain file
+  (`~/.gemini/antigravity-cli/antigravity-oauth-token`) when no Secret Service session is
+  reachable — common outside a standard GNOME/KDE desktop session. Thor now also checks that
+  file.
+- Creating an OpenCode terminal pointed at a local Ollama model could fail immediately with
+  "Provider not found: ollama" / "Model ollama/&lt;name&gt; is not valid": OpenCode doesn't
+  auto-discover a local Ollama daemon, it needs an explicit `provider.ollama` entry in
+  `opencode.json`, which Thor never wrote. Thor now ensures that entry (pointed at whichever
+  Ollama daemon actually has the models — the standard port when something answers there,
+  otherwise the single running Thor-managed instance) before launching that terminal, without
+  touching any other provider or `mcp` entries already in the file.
+- The token-optimization settings (Caveman, Headroom, RTK) kept showing the "Install" button
+  even after detecting the tool was already installed. The button is now hidden once a tool is
+  confirmed installed.
+- Opening Antigravity with the caveman token-optimizer wrapper enabled failed with "not a known
+  agent": caveman only recognizes a fixed set of CLI names (`claude`, `codex`, `opencode`, ...) as
+  a direct first argument, and Antigravity's CLI (`agy`) isn't one of them. The wrapper now falls
+  back to caveman's `run -- <cmd>` form for any agent caveman doesn't recognize by name.
+- Onboarding's agent detection step could show the Install/Download action for a CLI that was
+  already installed: rescanning after installing one agent re-checked every agent with a short
+  timeout, and a slow lookup for an unrelated (already-detected) agent was treated as "not
+  installed" instead of "unknown," flipping it back to the install prompt. Timed-out lookups now
+  keep the previously known state and are quietly reconciled in the background.
+- Onboarding's Features step (last step) could show a feature's icon and title floating
+  mid-height instead of aligned with its neighbors: feature descriptions vary a lot in length, so
+  the grid stretches shorter cards to match a taller sibling in the same row, and centering the
+  icon/title against that stretched height pulled it away from the row's shared top edge. Cards
+  now anchor their content to the top.
 
 ## [1.0.5] — 2026-08-27
 

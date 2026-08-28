@@ -107,8 +107,6 @@ export function normalizePreferences(raw: LegacyPreferences | undefined): Prefer
     displayName: preferences.displayName.trim(),
     profileImageUrl: preferences.profileImageUrl.trim(),
     todoStoragePath: preferences.todoStoragePath.trim(),
-    spotifyClientId: preferences.spotifyClientId.trim(),
-    spotifyClientSecret: preferences.spotifyClientSecret.trim(),
     uiZoom: clampUiZoom(preferences.uiZoom),
     appIconTheme: normalizeAppIconTheme(preferences.appIconTheme),
     spawnConcurrency: clampSpawnConcurrency(preferences.spawnConcurrency),

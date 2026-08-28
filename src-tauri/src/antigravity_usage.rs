@@ -1,9 +1,10 @@
 use serde::Serialize;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 use crate::cli_resolver;
+use crate::provider_common::provider_home_dir;
 
 const MODELS_URL: &str =
     "https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels";
@@ -68,12 +69,68 @@ fn extract_token_from_entry(entry: &keyring::Entry) -> Option<String> {
     None
 }
 
+fn read_token_from_file(path: &std::path::Path) -> Option<String> {
+    let secret = std::fs::read_to_string(path).ok()?;
+    parse_token_from_secret(&secret)
+}
+
+/// `keyring`'s secret-service backend only matches items tagged with its own
+/// `target` attribute (defaulting to a search scoped to the "default"
+/// collection when that tag is absent) — a 3rd-party writer with no `target`
+/// attribute sitting in a *different* collection (`agy`'s Go client writes to
+/// the "login" collection, confirmed via direct D-Bus inspection) is
+/// invisible to it. This walks every collection directly, service-agnostic
+/// of which one is "default", to find it.
+#[cfg(target_os = "linux")]
+fn search_all_secret_service_collections(service: &str, username: &str) -> Option<String> {
+    use dbus_secret_service::{EncryptionType, SecretService};
+
+    let ss = SecretService::connect(EncryptionType::Dh).ok()?;
+    let mut attrs: HashMap<&str, &str> = HashMap::new();
+    attrs.insert("service", service);
+    attrs.insert("username", username);
+
+    for collection in ss.get_all_collections().ok()? {
+        let Ok(items) = collection.search_items(attrs.clone()) else {
+            continue;
+        };
+        for item in items {
+            if item.ensure_unlocked().is_err() {
+                continue;
+            }
+            let Ok(secret_bytes) = item.get_secret() else {
+                continue;
+            };
+            let Ok(secret) = String::from_utf8(secret_bytes) else {
+                continue;
+            };
+            if let Some(token) = parse_token_from_secret(&secret) {
+                return Some(token);
+            }
+        }
+    }
+    None
+}
+
+#[cfg(not(target_os = "linux"))]
+fn search_all_secret_service_collections(_service: &str, _username: &str) -> Option<String> {
+    None
+}
+
 /// O `agy` guarda o envelope OAuth no Credential Manager (Windows) usando o
-/// target literal `gemini:antigravity`, enquanto no Linux (Secret Service) e
-/// macOS (Keychain) grava com service `gemini` e username `antigravity` sem
-/// target explícito. Testamos ambas as formas para compatibilidade cross-platform.
-/// Apenas o access token é mantido em memória durante a requisição; nunca
-/// persistimos nem registramos o segredo.
+/// target literal `gemini:antigravity`. No Linux, confirmado via inspeção
+/// direta do D-Bus, ele grava (e mantém atualizado, incluindo o `expiry`) num
+/// item `{service: "gemini", username: "antigravity"}` na coleção **"login"**
+/// do Secret Service — não na coleção "default" — e sem o atributo `target`
+/// que o `keyring` crate exige pra achar itens de terceiros fora da coleção
+/// default. Isso faz os passos 1/2 abaixo nunca encontrarem o item real, daí
+/// o passo 3 (varredura de todas as coleções). Também existe um envelope em
+/// texto plano, no mesmo formato, em
+/// `~/.gemini/antigravity-cli/antigravity-oauth-token` — mas ele não é
+/// atualizado nos refreshes seguintes (fica com o token da primeira sessão,
+/// expirado), então só serve como último recurso caso nem o Secret Service
+/// responda. Apenas o access token é mantido em memória durante a requisição;
+/// nunca persistimos nem registramos o segredo.
 fn discover_access_token() -> Option<String> {
     // 1. Target literal `gemini:antigravity` (necessário no Windows Credential Manager)
     if let Ok(entry) =
@@ -87,6 +144,21 @@ fn discover_access_token() -> Option<String> {
     // 2. Entrada padrão service + user (Linux Secret Service / macOS Keychain)
     if let Ok(entry) = keyring::Entry::new("gemini", "antigravity") {
         if let Some(token) = extract_token_from_entry(&entry) {
+            return Some(token);
+        }
+    }
+
+    // 3. Varredura direta de todas as coleções do Secret Service (ver doc de
+    //    `search_all_secret_service_collections`) — cobre o item real do
+    //    `agy`, que o passo 2 não acha.
+    if let Some(token) = search_all_secret_service_collections("gemini", "antigravity") {
+        return Some(token);
+    }
+
+    // 4. Fallback em arquivo (ver doc acima).
+    if let Some(path) = provider_home_dir(&[".gemini", "antigravity-cli", "antigravity-oauth-token"])
+    {
+        if let Some(token) = read_token_from_file(&path) {
             return Some(token);
         }
     }
@@ -339,9 +411,45 @@ mod tests {
     }
 
     #[test]
+    fn reads_access_token_from_the_agy_oauth_file_fallback() {
+        let path =
+            std::env::temp_dir().join(format!("thor-agy-oauth-test-{}.json", std::process::id()));
+        std::fs::write(
+            &path,
+            r#"{"token":{"access_token":"ya29.file-fallback-token","token_type":"Bearer","refresh_token":"r","expiry":"2026-01-01T00:00:00Z"},"auth_method":"consumer"}"#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            read_token_from_file(&path),
+            Some("ya29.file-fallback-token".to_string())
+        );
+
+        std::fs::remove_file(&path).unwrap();
+    }
+
+    #[test]
+    fn file_fallback_returns_none_for_a_missing_file() {
+        let path = std::env::temp_dir().join("thor-agy-oauth-test-does-not-exist.json");
+        assert_eq!(read_token_from_file(&path), None);
+    }
+
+    #[test]
     fn live_token_discovery_returns_option() {
         // Doesn't panic in headless/any environment; returns Some if credentials exist in keyring.
         let token = discover_access_token();
+        if let Some(tok) = token {
+            assert!(!tok.is_empty());
+        }
+    }
+
+    #[test]
+    fn live_all_collections_search_returns_option() {
+        // Same "doesn't panic in headless/any environment" contract as
+        // `live_token_discovery_returns_option` above — this one specifically
+        // exercises the every-collection Secret Service walk (Linux only;
+        // a no-op `None` on other platforms).
+        let token = search_all_secret_service_collections("gemini", "antigravity");
         if let Some(tok) = token {
             assert!(!tok.is_empty());
         }

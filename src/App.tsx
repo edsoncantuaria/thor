@@ -75,6 +75,9 @@ const AgentCanvasPOC = lazy(() =>
 const HomeView = lazy(() =>
   import('./components/HomeView').then((module) => ({ default: module.HomeView })),
 )
+const LocalAiView = lazy(() =>
+  import('./components/LocalAiView').then((module) => ({ default: module.LocalAiView })),
+)
 const LayoutDesignerModal = lazy(() =>
   import('./components/modals/LayoutDesignerModal').then((module) => ({
     default: module.LayoutDesignerModal,
@@ -616,6 +619,8 @@ export default function App() {
                     <AgentSandbox />
                   ) : activeView === 'agentCanvas' ? (
                     <AgentCanvasPOC />
+                  ) : activeView === 'localAi' ? (
+                    <LocalAiView />
                   ) : (
                     <WorkspaceView />
                   )}

@@ -262,13 +262,6 @@ export function PreferencesModal() {
       },
       {
         category: 'integrations',
-        target: 'spotify',
-        label: t('prefs.spotify'),
-        description: t('prefs.spotifyDesc'),
-        keywords: 'spotify music música client id secret',
-      },
-      {
-        category: 'integrations',
         target: 'discord',
         label: t('prefs.discordPresence'),
         description: t('prefs.discordPresenceHint'),

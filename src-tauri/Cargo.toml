@@ -43,7 +43,7 @@ qrcode = { version = "0.14", default-features = false, features = ["svg"] }
 which = "6"
 zip = "0.6"
 sysinfo = "0.31"
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "blocking"] }
 tiny_http = "0.12"
 # keyring v3 não habilita NENHUM backend de plataforma por padrão — sem uma
 # feature explícita ele usa um store mock e todo get_password() falha. Os
@@ -51,7 +51,6 @@ tiny_http = "0.12"
 keyring = { version = "3", default-features = false }
 chrono = { version = "0.4", default-features = false, features = ["std"] }
 dirs-next = "2"
-base64 = "0.22"
 image = { version = "0.25", default-features = false, features = ["png", "bmp"] }
 urlencoding = "2"
 dotenvy = "0.15"
@@ -103,6 +102,13 @@ windows-sys = { version = "0.61", features = [
 # sistema pra criptografia da sessão D-Bus.
 [target.'cfg(target_os = "linux")'.dependencies]
 keyring = { version = "3", default-features = false, features = ["sync-secret-service", "crypto-rust"] }
+# `keyring` só resolve segredos gravados na coleção "default" (ou sem o
+# atributo `target`, mas aí só busca na coleção default) — um item de 3º
+# terceiro sem esse atributo gravado em outra coleção (ex: "login", onde o
+# `agy` grava o token do Antigravity) fica invisível pra ele. Usamos o mesmo
+# crate por baixo do `sync-secret-service` diretamente pra varrer todas as
+# coleções nesse caso (ver `antigravity_usage.rs`).
+dbus-secret-service = { version = "4", default-features = false, features = ["crypto-rust"] }
 
 # Em dev, unwind permite que um panic de comando vire Err em vez de derrubar o
 # app inteiro durante uma sessão de HMR. Release segue abort (binário menor).

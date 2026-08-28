@@ -56,7 +56,7 @@ export default tseslint.config(
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
-      // Todo IPC do backend passa por um wrapper de lib (tauri.ts / spotify.ts),
+      // Todo IPC do backend passa por um wrapper de lib (src/lib/tauri/),
       // nunca invoke() cru em componente/store/hook (convenção do projeto).
       'no-restricted-imports': [
         'error',
@@ -74,7 +74,7 @@ export default tseslint.config(
   },
   {
     // Wrappers de IPC — os únicos autorizados a chamar invoke() diretamente.
-    files: ['src/lib/tauri/**', 'src/lib/spotify.ts'],
+    files: ['src/lib/tauri/**'],
     rules: { 'no-restricted-imports': 'off' },
   },
   {

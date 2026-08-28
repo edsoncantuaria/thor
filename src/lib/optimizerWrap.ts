@@ -5,6 +5,20 @@ export type OptimizerWrapResult = {
   extraArgs: string[] | undefined
 }
 
+// Agent CLIs caveman recognizes by name (`caveman <agent>`). Anything else
+// must go through `caveman run -- <cmd>` or caveman rejects it with
+// "not a known agent". Source: `caveman --help`.
+const CAVEMAN_KNOWN_AGENTS = new Set([
+  'aider',
+  'claude',
+  'codex',
+  'gemini',
+  'hermes',
+  'openclaw',
+  'opencode',
+  'pi',
+])
+
 /**
  * Prefixes an agent's spawn command with the chosen token-optimizer wrapper.
  * `command` is only ever set when spawning a known agent CLI (plain shell
@@ -21,7 +35,10 @@ export function applyOptimizerWrap(
 
   const args = extraArgs ?? []
   if (wrapper === 'caveman') {
-    return { command: 'caveman', extraArgs: [command, ...args] }
+    if (CAVEMAN_KNOWN_AGENTS.has(command)) {
+      return { command: 'caveman', extraArgs: [command, ...args] }
+    }
+    return { command: 'caveman', extraArgs: ['run', '--', command, ...args] }
   }
   return { command: 'headroom', extraArgs: ['wrap', command, ...args] }
 }

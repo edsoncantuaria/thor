@@ -45,6 +45,7 @@ import {
   listenPtyActivity,
   listenPtyData,
   listenPtyExit,
+  ollamaOpenCodeConfigWrite,
   orchestratorMcpConfigPath,
   playwrightMcpConfigPath,
   ptyExists,
@@ -999,6 +1000,20 @@ export function useXtermSession(params: {
             await graphifyOpenCodeConfigWrite(graphifyRepo).catch(() => {})
           } else if (command === 'codex') {
             await graphifyCodexConfigWrite(graphifyRepo).catch(() => {})
+          }
+          if (disposed) return
+        }
+
+        if (command === 'opencode' && cwd) {
+          const modelFlagIndex = (extraArgs ?? []).indexOf('--model')
+          const modelArg = modelFlagIndex >= 0 ? extraArgs?.[modelFlagIndex + 1] : undefined
+          const ollamaModel = modelArg?.startsWith('ollama/')
+            ? modelArg.slice('ollama/'.length)
+            : undefined
+          if (ollamaModel) {
+            await ollamaOpenCodeConfigWrite(cwd, ollamaModel).catch((error) => {
+              console.error(`[pty-launch] ollamaOpenCodeConfigWrite falhou pra ${cwd}:`, error)
+            })
           }
           if (disposed) return
         }

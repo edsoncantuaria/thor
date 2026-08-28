@@ -674,7 +674,10 @@
 
 .agentOption {
   display: flex;
-  align-items: center;
+  /* Description length varies a lot per feature, so the grid stretches short cards to match a
+     tall sibling in the same row — anchor to the top instead of centering, or the icon/title of
+     the short cards drift away from their row-mates' icon/title. */
+  align-items: flex-start;
   gap: 12px;
   min-height: 68px;
   padding: 14px;

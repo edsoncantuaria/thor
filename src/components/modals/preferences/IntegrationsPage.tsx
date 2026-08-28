@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
 import { useEffect, useState } from 'react'
 
+import { isConfiguredEditorAvailable } from '../../../lib/externalEditor'
 import { useT } from '../../../lib/i18n'
 import {
   cliShimInstall,
@@ -28,6 +29,76 @@ import { useProjectsStore } from '../../../stores/projectsStore'
 import controls from '../controls.module.css'
 import styles from '../PreferencesModal.module.css'
 import { SettingsSection } from './primitives'
+
+export function ExternalEditorSection() {
+  const t = useT()
+  const preferences = useProjectsStore((state) => state.preferences)
+  const setPreferences = useProjectsStore((state) => state.setPreferences)
+  const [available, setAvailable] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    let disposed = false
+    setAvailable(null)
+    void isConfiguredEditorAvailable(preferences).then((value) => {
+      if (!disposed) setAvailable(value)
+    })
+    return () => {
+      disposed = true
+    }
+  }, [preferences.externalEditor, preferences.externalEditorCommand])
+
+  return (
+    <SettingsSection
+      id="external-editor"
+      title={t('prefs.externalEditor')}
+      description={t('prefs.externalEditorDesc')}
+    >
+      <div className={styles.integrationFields}>
+        <div className={styles.segmented}>
+          <button
+            type="button"
+            className={preferences.externalEditor === 'vscode' ? styles.segmentActive : undefined}
+            onClick={() => setPreferences({ externalEditor: 'vscode' })}
+          >
+            {t('prefs.externalEditorVscode')}
+          </button>
+          <button
+            type="button"
+            className={preferences.externalEditor === 'cursor' ? styles.segmentActive : undefined}
+            onClick={() => setPreferences({ externalEditor: 'cursor' })}
+          >
+            {t('prefs.externalEditorCursor')}
+          </button>
+          <button
+            type="button"
+            className={preferences.externalEditor === 'custom' ? styles.segmentActive : undefined}
+            onClick={() => setPreferences({ externalEditor: 'custom' })}
+          >
+            {t('prefs.externalEditorOther')}
+          </button>
+        </div>
+
+        {preferences.externalEditor === 'custom' ? (
+          <input
+            className={controls.input}
+            value={preferences.externalEditorCommand}
+            placeholder={t('prefs.externalEditorCustomPlaceholder')}
+            onChange={(event) => setPreferences({ externalEditorCommand: event.target.value })}
+            spellCheck={false}
+          />
+        ) : null}
+
+        {available !== null ? (
+          <span
+            className={`${styles.bucketStatus} ${available ? styles.bucketStatusOk : styles.bucketStatusMissing}`}
+          >
+            {available ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}
+          </span>
+        ) : null}
+      </div>
+    </SettingsSection>
+  )
+}
 
 function TerminalCommandSection() {
   const t = useT()
@@ -390,14 +461,16 @@ function OptimizerSection() {
             Caveman —{' '}
             {cavemanInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}
           </span>
-          <button
-            type="button"
-            className={`${controls.btn} ${controls.btnPrimary}`}
-            disabled={busy !== null}
-            onClick={() => void run('caveman', optimizerInstallCaveman)}
-          >
-            {busy === 'caveman' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
-          </button>
+          {cavemanInstalled ? null : (
+            <button
+              type="button"
+              className={`${controls.btn} ${controls.btnPrimary}`}
+              disabled={busy !== null}
+              onClick={() => void run('caveman', optimizerInstallCaveman)}
+            >
+              {busy === 'caveman' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
+            </button>
+          )}
         </div>
 
         <div className={styles.cliActions}>
@@ -405,28 +478,32 @@ function OptimizerSection() {
             Headroom —{' '}
             {headroomInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}
           </span>
-          <button
-            type="button"
-            className={`${controls.btn} ${controls.btnPrimary}`}
-            disabled={busy !== null}
-            onClick={() => void run('headroom', optimizerInstallHeadroom)}
-          >
-            {busy === 'headroom' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
-          </button>
+          {headroomInstalled ? null : (
+            <button
+              type="button"
+              className={`${controls.btn} ${controls.btnPrimary}`}
+              disabled={busy !== null}
+              onClick={() => void run('headroom', optimizerInstallHeadroom)}
+            >
+              {busy === 'headroom' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
+            </button>
+          )}
         </div>
 
         <div className={styles.cliActions}>
           <span>
             RTK — {rtkInstalled ? t('prefs.optimizerInstalled') : t('prefs.optimizerNotInstalled')}
           </span>
-          <button
-            type="button"
-            className={`${controls.btn} ${controls.btnPrimary}`}
-            disabled={busy !== null}
-            onClick={() => void run('rtk', optimizerInstallRtk)}
-          >
-            {busy === 'rtk' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
-          </button>
+          {rtkInstalled ? null : (
+            <button
+              type="button"
+              className={`${controls.btn} ${controls.btnPrimary}`}
+              disabled={busy !== null}
+              onClick={() => void run('rtk', optimizerInstallRtk)}
+            >
+              {busy === 'rtk' ? t('prefs.optimizerInstalling') : t('prefs.optimizerInstall')}
+            </button>
+          )}
           {rtkInstalled ? (
             <button
               type="button"
@@ -655,42 +732,13 @@ export function IntegrationsPage() {
     <>
       <TerminalCommandSection />
 
+      <ExternalEditorSection />
+
       <OllamaSection />
 
       <OptimizerSection />
 
       <OrchestratorBucketsSection />
-
-      <SettingsSection id="spotify" title={t('prefs.spotify')} description={t('prefs.spotifyDesc')}>
-        <div className={styles.integrationFields}>
-          <label>
-            <span>Client ID</span>
-            <input
-              className={controls.input}
-              value={preferences.spotifyClientId}
-              onChange={(event) => setPreferences({ spotifyClientId: event.target.value })}
-              spellCheck={false}
-            />
-          </label>
-          <label>
-            <span>Client Secret</span>
-            <input
-              className={controls.input}
-              type="password"
-              value={preferences.spotifyClientSecret}
-              onChange={(event) => setPreferences({ spotifyClientSecret: event.target.value })}
-              spellCheck={false}
-            />
-          </label>
-          <p>
-            {t('prefs.spotifyHint', {
-              redirect: 'http://127.0.0.1:8888/callback',
-              idEnv: 'SPOTIFY_CLIENT_ID',
-              secretEnv: 'SPOTIFY_CLIENT_SECRET',
-            })}
-          </p>
-        </div>
-      </SettingsSection>
 
       <SettingsSection
         id="discord"

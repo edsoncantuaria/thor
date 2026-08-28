@@ -71,6 +71,28 @@ export function AntigravityIcon({ size = 16 }: { size?: number }) {
   return <img src={antigravityLogo} alt="" width={size} height={size} draggable={false} />
 }
 
+// Dedicated glyph for the Local AI (Ollama) panel: a chip/processor mark,
+// signaling on-device compute rather than a cloud provider's brand mark.
+export function OllamaIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <rect x="4" y="4" width="8" height="8" rx="1.5" />
+      <path
+        d="M6.5 4V2M9.5 4V2M6.5 14v-2M9.5 14v-2M4 6.5H2M4 9.5H2M14 6.5h-2M14 9.5h-2"
+        strokeLinecap="round"
+      />
+      <circle cx="8" cy="8" r="1.4" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 // GitHub Copilot mark from primer/octicons (MIT).
 export function CopilotIcon({ size = 16 }: { size?: number }) {
   return (

@@ -3,6 +3,7 @@ import {
   Bot,
   BrainCircuit,
   Check,
+  Code2,
   GitBranch,
   Globe,
   ListTodo,
@@ -14,12 +15,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { latestVersionFor } from '../../lib/agentVersions'
 import { FEATURES } from '../../lib/features'
-import { LOCALES, useT } from '../../lib/i18n'
+import { LOCALES, type MessageKey, useT } from '../../lib/i18n'
 import { DEFAULT_PROFILE_IMAGE_URL, getProfileInitial } from '../../lib/profile'
 import { agentCliVersion, findCliLauncher } from '../../lib/tauri'
 import { APP_ICON_OPTIONS, getThemeIcon } from '../../lib/themeIcons'
 import { THEME_OPTIONS, themeDescription, themeLabel } from '../../lib/themes'
-import { agentCliCommand, type AgentType, type VisualStyle } from '../../lib/types'
+import { agentCliCommand, type AgentType, type Preferences, type VisualStyle } from '../../lib/types'
 import { useProjectsStore } from '../../stores/projectsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { ImageInput } from './ImageInput'
@@ -32,7 +33,11 @@ const VISUAL_STYLES: VisualStyle[] = ['normal', 'clean']
 
 const CLI_DETECTION_TIMEOUT_MS = 4000
 
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+// A timed-out check means "unknown", not "not found" — callers must not treat this the same as a
+// genuine miss, or a slow rescan can make an already-installed CLI look uninstalled again.
+const AGENT_DETECTION_TIMED_OUT = Symbol('agent-detection-timed-out')
+
+function withTimeout<T, F>(promise: Promise<T>, ms: number, fallback: F): Promise<T | F> {
   return new Promise((resolve) => {
     let settled = false
     const timer = window.setTimeout(() => {
@@ -40,7 +45,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
       settled = true
       resolve(fallback)
     }, ms)
-    const done = (value: T) => {
+    const done = (value: T | F) => {
       if (settled) return
       settled = true
       window.clearTimeout(timer)
@@ -72,6 +77,12 @@ const FEATURE_ICONS = {
   playwright: Bot,
   orchestrator: Workflow,
 } as const
+
+const EXTERNAL_EDITOR_OPTIONS: { id: Preferences['externalEditor']; labelKey: MessageKey }[] = [
+  { id: 'vscode', labelKey: 'prefs.externalEditorVscode' },
+  { id: 'cursor', labelKey: 'prefs.externalEditorCursor' },
+  { id: 'custom', labelKey: 'prefs.externalEditorOther' },
+]
 
 export function OnboardingModal() {
   const t = useT()
@@ -118,24 +129,33 @@ export function OnboardingModal() {
       AGENTS.map(async (agent) => {
         const command = agentCliCommand(agent.id)
         if (!command) return [agent.id, null] as const
-        try {
-          const found = await withTimeout(findCliLauncher(command), CLI_DETECTION_TIMEOUT_MS, null)
-          return [agent.id, found] as const
-        } catch {
-          return [agent.id, null] as const
-        }
+        const found = await withTimeout(
+          findCliLauncher(command),
+          CLI_DETECTION_TIMEOUT_MS,
+          AGENT_DETECTION_TIMED_OUT,
+        )
+        return [agent.id, found] as const
       }),
     )
 
-    const availability = Object.fromEntries(
-      detected.map(([id, path]) => [id, Boolean(path)]),
-    ) as Record<CodingAgent, boolean>
-    const resolvedPaths = Object.fromEntries(
-      detected.filter(([, path]) => path).map(([id, path]) => [id, path as string]),
-    ) as Partial<Record<CodingAgent, string>>
-
-    setAgentAvailability(availability)
-    setAgentPaths(resolvedPaths)
+    let mergedAvailability: Partial<Record<CodingAgent, boolean>> = {}
+    setAgentAvailability((current) => {
+      mergedAvailability = { ...current }
+      for (const [id, found] of detected) {
+        if (found === AGENT_DETECTION_TIMED_OUT) continue
+        mergedAvailability[id] = Boolean(found)
+      }
+      return mergedAvailability
+    })
+    setAgentPaths((current) => {
+      const next = { ...current }
+      for (const [id, found] of detected) {
+        if (found === AGENT_DETECTION_TIMED_OUT) continue
+        if (found) next[id] = found
+        else delete next[id]
+      }
+      return next
+    })
     setPreferences({
       enabledAgents: {
         ...useProjectsStore.getState().preferences.enabledAgents,
@@ -144,8 +164,23 @@ export function OnboardingModal() {
     })
     setDetectingAgents(false)
 
+    // A slow lookup isn't a "not installed" verdict — resolve it in the background and reconcile
+    // once it lands, instead of leaving the row stuck on whatever the timeout produced.
+    const timedOut = detected.filter(([, found]) => found === AGENT_DETECTION_TIMED_OUT)
+    if (timedOut.length > 0) {
+      void Promise.all(
+        timedOut.map(async ([id]) => {
+          const command = agentCliCommand(id)
+          if (!command) return
+          const found = await findCliLauncher(command).catch(() => null)
+          setAgentAvailability((current) => ({ ...current, [id]: Boolean(found) }))
+          if (found) setAgentPaths((current) => ({ ...current, [id]: found }))
+        }),
+      )
+    }
+
     // Versions and the registry lookup run after detection so the table is interactive first.
-    const installed = AGENTS.filter((agent) => availability[agent.id])
+    const installed = AGENTS.filter((agent) => mergedAvailability[agent.id])
     await Promise.all(
       installed.map(async (agent) => {
         const command = agentCliCommand(agent.id)
@@ -589,6 +624,57 @@ export function OnboardingModal() {
                           )
                         })}
                       </div>
+
+                      <div className={styles.sectionIntro}>
+                        <h2 className={styles.sectionTitle}>
+                          {t('onboarding.externalEditorTitle')}
+                        </h2>
+                        <p className={styles.sectionSubtitle}>
+                          {t('onboarding.externalEditorSubtitle')}
+                        </p>
+                      </div>
+                      <div className={styles.agentGrid}>
+                        {EXTERNAL_EDITOR_OPTIONS.map((option) => {
+                          const active = preferences.externalEditor === option.id
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              className={[
+                                styles.agentOption,
+                                active ? styles.agentOptionActive : '',
+                              ]
+                                .filter(Boolean)
+                                .join(' ')}
+                              onClick={() => setPreferences({ externalEditor: option.id })}
+                              data-autofocus={active ? 'true' : undefined}
+                            >
+                              <div className={styles.agentIconWrap}>
+                                <Code2 size={20} />
+                              </div>
+                              <div className={styles.agentOptionBody}>
+                                <div className={styles.agentNameRow}>
+                                  <span className={styles.agentName}>{t(option.labelKey)}</span>
+                                  {active ? (
+                                    <Check size={15} className={styles.checkMark} />
+                                  ) : null}
+                                </div>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {preferences.externalEditor === 'custom' ? (
+                        <input
+                          className={styles.input}
+                          value={preferences.externalEditorCommand}
+                          placeholder={t('prefs.externalEditorCustomPlaceholder')}
+                          onChange={(event) =>
+                            setPreferences({ externalEditorCommand: event.target.value })
+                          }
+                          spellCheck={false}
+                        />
+                      ) : null}
                     </>
                   ) : null}
                 </div>
